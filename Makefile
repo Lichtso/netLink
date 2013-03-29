@@ -2,7 +2,7 @@ SOURCES := Core.cpp Socket.cpp SocketManager.cpp
 OBJS := $(SOURCES:.cpp=.o)
 OUT = out/libNetLink.a
 
-ifeq ($CXX,"g++")
+ifeq ($CC,"gcc")
 	CFLAGS = -std=c++0x
 else 
 	CFLAGS = -std=c++11 -stdlib=libc++
