@@ -15,3 +15,5 @@ Features:
 * Protocols: TCP, UDP, UDP-Multicast
 * Socket can be used as std::streambuf
 * SocketManager calls events for connecting, disconnecting, receiving data and write buffer overflow
+
+[![Build Status](https://travis-ci.org/Lichtso/netLink.png)](https://travis-ci.org/Lichtso/netLink)
