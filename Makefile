@@ -2,7 +2,7 @@ SOURCES := Core.cpp Socket.cpp SocketManager.cpp
 OBJS := $(SOURCES:.cpp=.o)
 OUT = out/libNetLink.a
 
-ifeq ($CC,gcc)
+ifeq ($CXX,"g++")
 	CFLAGS = -std=c++0x
 else 
 	CFLAGS = -std=c++11 -stdlib=libc++
@@ -11,6 +11,7 @@ endif
 all: build
 
 build: $(OBJS)
+	echo $(CXX)
 	mkdir -p out
 	ar rcs $(OUT) $(OBJS)
 	rm -f *.o
