@@ -1,8 +1,12 @@
 SOURCES := Core.cpp Socket.cpp SocketManager.cpp
-INCLUDES := 
 OBJS := $(SOURCES:.cpp=.o)
 OUT = out/libNetLink.a
-CFLAGS = -std=c++11 -stdlib=libc++
+
+ifeq ($CC,gcc)
+	CFLAGS = -std=c++0x
+else 
+	CFLAGS = -std=c++11 -stdlib=libc++
+endif
 
 all: build
 
