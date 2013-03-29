@@ -20,7 +20,7 @@
 
 */
 
-#include "SocketManager.h"
+#include "include/SocketManager.h"
 
 NL_NAMESPACE
 
