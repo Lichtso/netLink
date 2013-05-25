@@ -1,4 +1,4 @@
-SOURCES := Core.cpp Socket.cpp SocketManager.cpp
+SOURCES := MsgPack.cpp Core.cpp Socket.cpp SocketManager.cpp
 OBJS := $(SOURCES:.cpp=.o)
 OUT = out/libNetLink.a
 

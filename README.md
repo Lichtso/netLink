@@ -9,11 +9,9 @@ http://netlinksockets.sourceforge.net
 Features:
 * C++ 11
 * IPv4, IPv6
-* Operating Systems: Mac OS, Linux, Windows
+* Operating Systems: Mac OS, Linux, (Windows deprecated)
 * Enable/Disable blocking mode
 * Join/Leave Multicast groups
 * Protocols: TCP, UDP, UDP-Multicast
 * Socket can be used as std::streambuf
 * SocketManager calls events for connecting, disconnecting, receiving data and write buffer overflow
-
-[![Build Status](https://travis-ci.org/Lichtso/netLink.png)](https://travis-ci.org/Lichtso/netLink)

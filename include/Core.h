@@ -55,12 +55,7 @@
 
 #endif
 
-#include <set>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <functional>
-
+#include "MsgPack.h"
 
 #define foreach_e(c,i) for(auto end##i = (c).end(), next##i = (c).begin(), \
 i = (next##i==end##i)?end##i:next##i++; \

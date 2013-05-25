@@ -42,10 +42,12 @@ class Exception {
         ERROR_READ,
         ERROR_SEND,
         ERROR_INIT,
+        STREAM_UNDERFLOW,
         
         //Wrong parameters
         BAD_PROTOCOL,
-        BAD_TYPE
+        BAD_TYPE,
+        EXPECTED_NULL
     } code; //!< NetLinks error code
     int nativeErrorCode; //!< Systems error code
     

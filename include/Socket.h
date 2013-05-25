@@ -107,9 +107,9 @@ class Socket : public std::streambuf {
     //! Get the size of the output intermediate buffer in bytes
     std::streamsize getOutputBufferSize();
     //! Set the size of the input intermediate buffer in bytes (unread contents are lost)
-    void setInputBufferSize(std::streamsize size = 65536);
+    void setInputBufferSize(std::streamsize size);
     //! Set the size of the output intermediate buffer in bytes (unwritten contents are lost)
-    void setOutputBufferSize(std::streamsize size = 65536);
+    void setOutputBufferSize(std::streamsize size);
     
     /*! Updates the blocking mode of the socket.
      A socket will be non blocking by default.
