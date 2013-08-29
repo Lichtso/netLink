@@ -146,7 +146,7 @@ void Socket::setMulticastGroup(struct sockaddr_storage* addr, bool join) {
         }
     }else{
         auto sin = reinterpret_cast<struct sockaddr_in6*>(addr)->sin6_addr;
-        if(sin.__u6_addr.__u6_addr8[0] == 0xFF) {
+        if(sin.s6_addr[0] == 0xFF) {
             struct ipv6_mreq mreq;
             mreq.ipv6mr_multiaddr = sin;
             mreq.ipv6mr_interface = 0;
@@ -355,7 +355,7 @@ void Socket::initSocket(bool blockingConnect) {
 Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
                struct sockaddr_storage* remoteAddr, IPVer _ipVer)
                 :handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal),
-                ipVer(_ipVer), type(TCP_SERVERS_CLIENT), recvStatus(SOCKET_STATUS_OPEN) {
+                recvStatus(SOCKET_STATUS_OPEN), ipVer(_ipVer), type(TCP_SERVERS_CLIENT) {
     getSocketInfoFromStorage(remoteAddr, hostRemote, portRemote);
     setBlockingMode(false);
 }

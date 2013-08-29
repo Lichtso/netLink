@@ -52,14 +52,14 @@ class Socket : public std::streambuf {
            struct sockaddr_storage* remoteAddr, IPVer ipVer);
     
     public:
-    IPVer ipVer = ANY;
-    SocketType type = NONE;
+    int handle = -1; //!< Handle used for the system interface
     std::string hostLocal, //!< Host string of local
                 hostRemote; //!< Host string of remote
-    int handle = -1; //!< Handle used for the system interface
-    unsigned int recvStatus = SOCKET_STATUS_NOT_CONNECTED, //!< Or listen queue size if socket is TCP_SERVER
-                 portLocal = 0, //!< Port of local
-                 portRemote = 0; //!< Port of remote
+    unsigned int portLocal = 0, //!< Port of local
+                 portRemote = 0, //!< Port of remote
+                 recvStatus = SOCKET_STATUS_NOT_CONNECTED; //!< Or listen queue size if socket is TCP_SERVER
+    IPVer ipVer = ANY;
+    SocketType type = NONE;
     
     /*! Setup socket as TCP client
      @param hostRemote The remote host to connect to

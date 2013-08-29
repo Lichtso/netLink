@@ -493,7 +493,7 @@ MsgPackStream& MsgPackStream::operator<<(unsigned long long& value) {
 MsgPackStream& MsgPackStream::operator<<(char& value) {
     if(value >= -32 && value < 0)
         streamBuffer->sputc(0xE0 | (-1-value));
-    else if(value >= 0 && value < 128)
+    else if(value >= 0)
         streamBuffer->sputc(0x80 | value);
     else{
         streamBuffer->sputc(0xD0);
