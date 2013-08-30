@@ -1,35 +1,29 @@
 UNAME_S := $(shell uname -s)
 CLANG := clang++ -c -Wall -std=c++11 -stdlib=libc++
 SOURCES := MsgPack.cpp Core.cpp Socket.cpp SocketManager.cpp
-OUT := out/libNetLink
+OBJS := $(SOURCES:.cpp=.o)
+OUT := out/libNetLink.a
 
 all: build
+	rm -f *.o
 
 ifeq ($(UNAME_S),Linux)
-OBJS := $(SOURCES:.cpp=.bc)
 build: $(OBJS)
-	#Asuming that clang-3.4 and libcxx are given.
+	#Asuming that clang-3.4 and libcxx are installed.
 	mkdir -p out
-	llvm-link-3.4 -o $(OUT).bc $(OBJS)
-	llvm-ar-3.4 rcs $(OUT).a $(OUT).bc
-	rm -f *.bc
+	llvm-ar-3.4 rcs $(OUT) $(OBJS)
 endif
 
-%.bc: %.cpp
-	$(CLANG) -cxx-isystem ../libcxx/include/ -emit-llvm $<
-
 ifeq ($(UNAME_S),Darwin)
-OBJS := $(SOURCES:.cpp=.o)
 build: $(OBJS)
-	#Asuming that only XCode is installed.
+	#Asuming that XCode is installed.
 	mkdir -p out
-	ar rcs $(OUT).a $(OBJS)
-	rm -f *.o
+	ar rcs $(OUT) $(OBJS)
 endif
 
 .cpp.o:
 	$(CLANG) $<
 
 clean: 
-	rm -f *.o *.bc
+	rm -f *.o
 	rm -rf out/
