@@ -1,6 +1,16 @@
 /*
-    netLink: C++11 networking library
+    netLink: c++ 11 networking library
     Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the use of this software.
+    Permission is granted to anyone to use this software for any purpose, 
+    including commercial applications, and to alter it and redistribute it freely, 
+    subject to the following restrictions:
+    
+    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
 */
 
 
@@ -87,7 +97,7 @@ std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
         return std::streambuf::xsgetn(buffer, size);
     
     try {
-        return receive(buffer, std::min(size, showmanyc()));
+        return receive(buffer, size);
     } catch(Exception err) {
         return 0;
     }
@@ -101,19 +111,6 @@ std::streamsize Socket::xsputn(const char_type* buffer, std::streamsize size) {
         return send(buffer, size);
     } catch(Exception err) {
         return 0;
-    }
-}
-
-Socket::int_type Socket::syncInputBuffer() {
-    if(inputIntermediateSize == 0) //No input output buffer
-        return -1;
-
-    try {
-        std::streamsize readBytes = receive(eback(), std::min(inputIntermediateSize, showmanyc()));
-        setg(eback(), eback(), eback()+readBytes);
-        return (readBytes) ? *eback() : -1;
-    } catch(Exception err) {
-        return -1;
     }
 }
 
@@ -134,7 +131,10 @@ Socket::int_type Socket::sync() {
 }
 
 Socket::int_type Socket::underflow() {
-    return (type == UDP_PEER) ? -1 : syncInputBuffer();
+    if(type == UDP_PEER)
+        return -1;
+    advanceInputBuffer();
+    return *eback();
 }
 
 Socket::int_type Socket::overflow(int_type c) {
@@ -276,7 +276,31 @@ std::streamsize Socket::showmanyc() {
         return result;
 }
 
+std::streamsize Socket::advanceInputBuffer() {
+    if(inputIntermediateSize == 0) //No input buffer
+        return 0;
+
+    std::streamsize inAvail;
+    if(type == UDP_PEER)
+        inAvail = 0;
+    else{
+        inAvail = egptr()-gptr();
+        memmove(eback(), gptr(), inAvail);
+    }
+
+    try {
+        inAvail += receive(eback()+inAvail, inputIntermediateSize-inAvail);
+    } catch(Exception err) {
+        
+    }
+
+    setg(eback(), eback(), eback()+inAvail);
+    return inAvail;
+}
+
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
+    size = std::min(size, showmanyc());
+    
     switch(type) {
         case UDP_PEER: {
             struct sockaddr remoteAddr;
@@ -406,12 +430,6 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
     }
 
     setMulticastGroup(reinterpret_cast<struct sockaddr*>(&addr), join);
-}
-
-std::streamsize Socket::advanceToNextPacket() {
-    if(type != UDP_PEER)
-        throw Exception(Exception::BAD_TYPE);
-    return (syncInputBuffer() == -1) ? 0 : egptr()-eback();
 }
 
 Socket* Socket::accept() {

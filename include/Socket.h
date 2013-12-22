@@ -1,6 +1,16 @@
 /*
-    netLink: C++11 networking library
+    netLink: c++ 11 networking library
     Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the use of this software.
+    Permission is granted to anyone to use this software for any purpose, 
+    including commercial applications, and to alter it and redistribute it freely, 
+    subject to the following restrictions:
+    
+    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
 */
 
 #ifndef netLink_Socket
@@ -26,13 +36,8 @@ namespace netLink {
         void setMulticastGroup(const struct sockaddr* addr, bool join);
         std::streamsize xsgetn(char_type* buffer, std::streamsize size);
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
-        //! Receives all available bytes and returns the first byte else -1 on failure
-        int_type syncInputBuffer();
-        //! Sends all outstanding bytes and returns 0 else -1 on failure
         int_type sync();
-        //! Checks if the Socket is not UDP and then returns syncInputBuffer()
         int_type underflow();
-        //! sync() and writes c in the output buffer
         int_type overflow(int_type c = -1);
         
         void initSocket(bool blocking);
@@ -83,6 +88,13 @@ namespace netLink {
 
         //! Returns the outstanding bytes in system cache to read
         std::streamsize showmanyc();
+        /*! Shifts the remaining data to the beginning of the input intermediate buffer
+            and fills up the input intermediate buffer by receiving data if TCP
+            or writes the next received packet at the beginning of the input intermediate buffer if UDP
+         @return Size of the read packet or 0 on error
+         @pre The input intermediate buffer must be used
+         */
+        std::streamsize advanceInputBuffer();
         //! Receives size bytes into buffer
         std::streamsize receive(char_type* buffer, std::streamsize size);
         //! Sends size bytes from buffer
@@ -113,11 +125,6 @@ namespace netLink {
          @pre Type needs to be UDP_PEER
          */
         void setMulticastGroup(const std::string& address, bool join);
-        /*! Clears the input intermediate buffer and fills it with the next packet
-         @return Size of the read packet or 0 on error
-         @pre Type needs to be UDP_PEER and the input intermediate buffer must be used
-         */
-        std::streamsize advanceToNextPacket();
         /*! Accepts a TCP connection and returns it
          @return The new accepted socket (type will be TCP_SERVERS_CLIENT)
          @pre Type needs to be TCP_SERVER

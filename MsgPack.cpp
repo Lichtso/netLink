@@ -1,13 +1,23 @@
 /*
-    netLink: C++11 networking library
+    netLink: c++ 11 networking library
     Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the use of this software.
+    Permission is granted to anyone to use this software for any purpose, 
+    including commercial applications, and to alter it and redistribute it freely, 
+    subject to the following restrictions:
+    
+    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
 */
 
 #include "include/Core.h"
 
 namespace netLink {
 
-unsigned char MsgPack::Stream::getNextByte() {
+uint8_t MsgPack::Stream::getNextByte() {
     int value = streamBuffer->sgetc();
     if(value < 0) //EOF
         throw Exception(Exception::STREAM_UNDERFLOW);
@@ -28,15 +38,15 @@ void MsgPack::Stream::checkBytesInAvail(unsigned int size, unsigned int unget) {
 }
 
 void MsgPack::Stream::readByte1(void* storage) {
-    checkBytesInAvail(1);
+    checkBytesInAvail(2);
     streamBuffer->sbumpc();
-    *reinterpret_cast<unsigned char*>(storage) = streamBuffer->sbumpc();
+    *reinterpret_cast<uint8_t*>(storage) = streamBuffer->sbumpc();
 }
 
 void MsgPack::Stream::readByte2(void* _storage) {
-    checkBytesInAvail(2);
+    checkBytesInAvail(3);
     streamBuffer->sbumpc();
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     storage[0] = streamBuffer->sbumpc();
     storage[1] = streamBuffer->sbumpc();
@@ -47,9 +57,9 @@ void MsgPack::Stream::readByte2(void* _storage) {
 }
 
 void MsgPack::Stream::readByte4(void* _storage) {
-    checkBytesInAvail(4);
+    checkBytesInAvail(5);
     streamBuffer->sbumpc();
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     storage[0] = streamBuffer->sbumpc();
     storage[1] = streamBuffer->sbumpc();
@@ -64,9 +74,9 @@ void MsgPack::Stream::readByte4(void* _storage) {
 }
 
 void MsgPack::Stream::readByte8(void* _storage) {
-    checkBytesInAvail(8);
+    checkBytesInAvail(9);
     streamBuffer->sbumpc();
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     storage[0] = streamBuffer->sbumpc();
     storage[1] = streamBuffer->sbumpc();
@@ -89,7 +99,7 @@ void MsgPack::Stream::readByte8(void* _storage) {
 }
 
 void MsgPack::Stream::writeByte2(void* _storage) {
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     streamBuffer->sputc(storage[0]);
     streamBuffer->sputc(storage[1]);
@@ -100,7 +110,7 @@ void MsgPack::Stream::writeByte2(void* _storage) {
 }
 
 void MsgPack::Stream::writeByte4(void* _storage) {
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     streamBuffer->sputc(storage[0]);
     streamBuffer->sputc(storage[1]);
@@ -115,7 +125,7 @@ void MsgPack::Stream::writeByte4(void* _storage) {
 }
 
 void MsgPack::Stream::writeByte8(void* _storage) {
-    unsigned char* storage = reinterpret_cast<unsigned char*>(_storage);
+    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
     #if LITTLE_ENDIAN
     streamBuffer->sputc(storage[0]);
     streamBuffer->sputc(storage[1]);
@@ -137,13 +147,11 @@ void MsgPack::Stream::writeByte8(void* _storage) {
     #endif
 }
 
-
-
 MsgPack::Type MsgPack::Stream::getNextType() {
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     if((data & 0x80) == 0)
-        return UINT_8;
+        return UINT;
 
     switch(data & 0xF0) {
         case 0x80:
@@ -154,9 +162,9 @@ MsgPack::Type MsgPack::Stream::getNextType() {
 
     switch(data & 0xE0) {
         case 0xA0:
-            return RAW;
+            return STRING;
         case 0xE0:
-            return INT_8;
+            return INT;
     }
     
     switch(data) {
@@ -175,25 +183,19 @@ MsgPack::Type MsgPack::Stream::getNextType() {
         case 0xC9:
             return EXTENDED;
         case 0xCA:
-            return FLOAT_32;
+            return FLOAT;
         case 0xCB:
-            return FLOAT_64;
+            return DOUBLE;
         case 0xCC:
-            return UINT_8;
         case 0xCD:
-            return UINT_16;
         case 0xCE:
-            return UINT_32;
         case 0xCF:
-            return UINT_64;
+            return UINT;
         case 0xD0:
-            return INT_8;
         case 0xD1:
-            return INT_16;
         case 0xD2:
-            return INT_32;
         case 0xD3:
-            return INT_64;
+            return INT;
         case 0xD4:
         case 0xD5:
         case 0xD6:
@@ -215,117 +217,11 @@ MsgPack::Type MsgPack::Stream::getNextType() {
     throw Exception(Exception::BAD_TYPE);
 }
 
-MsgPack::Stream& MsgPack::Stream::operator>>(unsigned char& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xCC) {
-        readByte1(&value);
-        return *this;
-    }
-    
-    if((data & 0x80) == 0) {
-        streamBuffer->sbumpc();
-        value = data;
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(unsigned short& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xCD) {
-        readByte2(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(unsigned long& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xCE) {
-        readByte4(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(unsigned long long& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xCF) {
-        readByte8(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(char& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xD0) {
-        readByte1(&value);
-        return *this;
-    }
-    
-    if((data & 0x80) == 0) {
-        streamBuffer->sbumpc();
-        value = (char)data;
-        return *this;
-    }
-    
-    if((data & 0xE0) == 0xE0) {
-        streamBuffer->sbumpc();
-        value = -((char)data & 0x1F)-1;
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(short& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xD2) {
-        readByte2(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(long& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xD2) {
-        readByte4(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(long long& value) {
-    unsigned char data = getNextByte();
-    
-    if(data == 0xD3) {
-        readByte8(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
 MsgPack::Stream& MsgPack::Stream::operator>>(const void* null) {
     if(null != NULL)
         throw Exception(Exception::EXPECTED_NULL);
     
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     if(data == 0xC0) {
         streamBuffer->sbumpc();
@@ -336,7 +232,7 @@ MsgPack::Stream& MsgPack::Stream::operator>>(const void* null) {
 }
 
 MsgPack::Stream& MsgPack::Stream::operator>>(bool& value) {
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     switch(data) {
         case 0xC2:
@@ -352,13 +248,113 @@ MsgPack::Stream& MsgPack::Stream::operator>>(bool& value) {
     throw Exception(Exception::BAD_TYPE);
 }
 
+std::unique_ptr<char[]> MsgPack::Stream::readRaw(uint32_t& size) {
+    uint8_t data = getNextByte();
+    
+    switch(data) {
+        case 0xC4: {
+            uint8_t _size;
+            readByte1(&_size);
+            size = _size;
+            checkBytesInAvail(size, 1);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        } case 0xC5: {
+            uint16_t _size;
+            readByte2(&_size);
+            size = _size;
+            checkBytesInAvail(size, 2);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        } case 0xC6: {
+            streamBuffer->sbumpc();
+            readByte4(&size);
+            checkBytesInAvail(size, 4);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        }
+    }
+    
+    throw Exception(Exception::BAD_TYPE);
+}
+
+std::unique_ptr<char[]> MsgPack::Stream::readExtended(int8_t& type, uint32_t& size) {
+    uint8_t data = getNextByte();
+    
+    switch(data) {
+        case 0xD4: {
+            checkBytesInAvail(3);
+            readByte1(&type);
+            char* data = new char[1];
+            streamBuffer->sgetn(data, 1);
+            return std::unique_ptr<char[]>(data);
+        } case 0xD5: {
+            checkBytesInAvail(4);
+            readByte1(&type);
+            char* data = new char[2];
+            streamBuffer->sgetn(data, 2);
+            return std::unique_ptr<char[]>(data);
+        } case 0xD6: {
+            checkBytesInAvail(6);
+            readByte1(&type);
+            char* data = new char[4];
+            streamBuffer->sgetn(data, 4);
+            return std::unique_ptr<char[]>(data);
+        } case 0xD7: {
+            checkBytesInAvail(10);
+            readByte1(&type);
+            char* data = new char[8];
+            streamBuffer->sgetn(data, 8);
+            return std::unique_ptr<char[]>(data);
+        } case 0xD8: {
+            checkBytesInAvail(18);
+            readByte1(&type);
+            char* data = new char[16];
+            streamBuffer->sgetn(data, 16);
+            return std::unique_ptr<char[]>(data);
+        } case 0xC7: {
+            checkBytesInAvail(3);
+            uint8_t _size;
+            readByte1(&_size);
+            size = _size;
+            type = streamBuffer->sbumpc();
+            checkBytesInAvail(size, 2);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        } case 0xC8: {
+            checkBytesInAvail(4);
+            uint16_t _size;
+            readByte2(&_size);
+            size = _size;
+            type = streamBuffer->sbumpc();
+            checkBytesInAvail(size, 3);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        } case 0xC9: {
+            checkBytesInAvail(6);
+            streamBuffer->sbumpc();
+            readByte4(&size);
+            type = streamBuffer->sbumpc();
+            checkBytesInAvail(size, 5);
+            char* data = new char[size];
+            streamBuffer->sgetn(data, size);
+            return std::unique_ptr<char[]>(data);
+        }
+    }
+    
+    throw Exception(Exception::BAD_TYPE);
+}
+
 MsgPack::Stream& MsgPack::Stream::operator>>(float& value) {
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     if(data == 0xCA) {
-        float storage;
-        readByte4(&storage);
-        value = storage;
+        readByte4(&value);
         return *this;
     }
     
@@ -366,7 +362,7 @@ MsgPack::Stream& MsgPack::Stream::operator>>(float& value) {
 }
 
 MsgPack::Stream& MsgPack::Stream::operator>>(double& value) {
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     if(data == 0xCB) {
         readByte8(&value);
@@ -377,35 +373,39 @@ MsgPack::Stream& MsgPack::Stream::operator>>(double& value) {
 }
 
 MsgPack::Stream& MsgPack::Stream::operator>>(std::string& str) {
-    unsigned char data = getNextByte();
+    uint8_t data = getNextByte();
     
     if((data & 0xE0) == 0xA0) {
-        unsigned char size = data & 0x1F;
+        uint8_t size = data & 0x1F;
         checkBytesInAvail(size);
         streamBuffer->sbumpc();
-        char buffer[size];
-        streamBuffer->sgetn(buffer, size);
-        str = std::string(buffer, size);
+        str = std::string(size, 0);
+        streamBuffer->sgetn(&*str.begin(), size);
         return *this;
     }
     
     switch(data) {
-        case 0xCD: {
-            unsigned short size;
+        case 0xD9: {
+            uint8_t size;
+            readByte1(&size);
+            checkBytesInAvail(size, 1);
+            str = std::string(size, 0);
+            streamBuffer->sgetn(&*str.begin(), size);
+            return *this;
+        } case 0xDA: {
+            uint16_t size;
             readByte2(&size);
             checkBytesInAvail(size, 2);
-            char buffer[size];
-            streamBuffer->sgetn(buffer, size);
-            str = std::string(buffer, size);
+            str = std::string(size, 0);
+            streamBuffer->sgetn(&*str.begin(), size);
             return *this;
-        } case 0xCE: {
+        } case 0xDB: {
             streamBuffer->sbumpc();
-            unsigned long size;
+            uint32_t size;
             readByte4(&size);
             checkBytesInAvail(size, 4);
-            char buffer[size];
-            streamBuffer->sgetn(buffer, size);
-            str = std::string(buffer, size);
+            str = std::string(size, 0);
+            streamBuffer->sgetn(&*str.begin(), size);
             return *this;
         }
     }
@@ -413,8 +413,8 @@ MsgPack::Stream& MsgPack::Stream::operator>>(std::string& str) {
     throw Exception(Exception::BAD_TYPE);
 }
 
-unsigned long MsgPack::Stream::readArray() {
-    unsigned char data = getNextByte();
+uint32_t MsgPack::Stream::readArray() {
+    uint8_t data = getNextByte();
     
     if((data & 0xF0) == 0x90) {
         streamBuffer->sbumpc();
@@ -423,11 +423,11 @@ unsigned long MsgPack::Stream::readArray() {
     
     switch(data) {
         case 0xDC: {
-            unsigned short size;
+            uint16_t size;
             readByte2(&size);
             return size;
         } case 0xDD: {
-            unsigned long size;
+            uint32_t size;
             readByte4(&size);
             return size;
         }
@@ -436,8 +436,8 @@ unsigned long MsgPack::Stream::readArray() {
     throw Exception(Exception::BAD_TYPE);
 }
 
-unsigned long MsgPack::Stream::readMap() {
-    unsigned char data = getNextByte();
+uint32_t MsgPack::Stream::readMap() {
+    uint8_t data = getNextByte();
     
     if((data & 0xF0) == 0x80) {
         streamBuffer->sbumpc();
@@ -446,79 +446,17 @@ unsigned long MsgPack::Stream::readMap() {
     
     switch(data) {
         case 0xDE: {
-            unsigned short size;
+            uint16_t size;
             readByte2(&size);
             return size;
         } case 0xDF: {
-            unsigned short size;
+            uint16_t size;
             readByte4(&size);
             return size;
         }
     }
     
     throw Exception(Exception::BAD_TYPE);
-}
-
-
-
-MsgPack::Stream& MsgPack::Stream::operator<<(unsigned char value) {
-    if(value < 128)
-        streamBuffer->sputc(0x80 | value);
-    else{
-        streamBuffer->sputc(0xCC);
-        streamBuffer->sputc(value);
-    }
-    
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(unsigned short value) {
-    streamBuffer->sputc(0xCD);
-    writeByte2(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(unsigned long value) {
-    streamBuffer->sputc(0xCE);
-    writeByte4(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(unsigned long long value) {
-    streamBuffer->sputc(0xCF);
-    writeByte8(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(char value) {
-    if(value >= -32 && value < 0)
-        streamBuffer->sputc(0xE0 | (-1-value));
-    else if(value >= 0)
-        streamBuffer->sputc(0x80 | value);
-    else{
-        streamBuffer->sputc(0xD0);
-        streamBuffer->sputc(value);
-    }
-    
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(short value) {
-    streamBuffer->sputc(0xD1);
-    writeByte2(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(long value) {
-    streamBuffer->sputc(0xD2);
-    writeByte4(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(long long value) {
-    streamBuffer->sputc(0xD3);
-    writeByte8(&value);
-    return *this;
 }
 
 MsgPack::Stream& MsgPack::Stream::operator<<(const void* null) {
@@ -535,6 +473,72 @@ MsgPack::Stream& MsgPack::Stream::operator<<(bool value) {
     return *this;
 }
 
+void MsgPack::Stream::writeRaw(const char* data, uint32_t size) {
+    if(size <= 0xFF) {
+        streamBuffer->sputc(0xC4);
+        streamBuffer->sputc((uint8_t)size);
+        streamBuffer->sputn(data, size);
+    }else if(size <= 0xFFFF) {
+        streamBuffer->sputc(0xC5);
+        uint16_t _size = size;
+        writeByte2(&_size);
+        streamBuffer->sputn(data, size);
+    }else{
+        streamBuffer->sputc(0xC6);
+        writeByte4(&size);
+        streamBuffer->sputn(data, size);
+    }
+}
+
+void MsgPack::Stream::writeExtended(int8_t type, const char* data, uint32_t size) {
+    switch(size) {
+        case 1:
+            streamBuffer->sputc(0xD4);
+            streamBuffer->sputc(type);
+            streamBuffer->sputc(*data);
+        break;
+        case 2:
+            streamBuffer->sputc(0xD5);
+            streamBuffer->sputc(type);
+            streamBuffer->sputn(data, 2);
+        break;
+        case 4:
+            streamBuffer->sputc(0xD6);
+            streamBuffer->sputc(type);
+            streamBuffer->sputn(data, 4);
+        break;
+        case 8:
+            streamBuffer->sputc(0xD7);
+            streamBuffer->sputc(type);
+            streamBuffer->sputn(data, 8);
+        break;
+        case 16:
+            streamBuffer->sputc(0xD8);
+            streamBuffer->sputc(type);
+            streamBuffer->sputn(data, 16);
+        break;
+        default:
+            if(size <= 0xFF) {
+                streamBuffer->sputc(0xC7);
+                streamBuffer->sputc(size);
+                streamBuffer->sputc(type);
+                streamBuffer->sputn(data, size);
+            }else if(size <= 0xFFFF) {
+                streamBuffer->sputc(0xC8);
+                uint16_t _size = size;
+                writeByte2(&_size);
+                streamBuffer->sputc(type);
+                streamBuffer->sputn(data, size);
+            }else{
+                streamBuffer->sputc(0xC9);
+                writeByte4(&size);
+                streamBuffer->sputc(type);
+                streamBuffer->sputn(data, size);
+            }
+        break;
+    }
+}
+
 MsgPack::Stream& MsgPack::Stream::operator<<(float value) {
     streamBuffer->sputc(0xCA);
     writeByte4(&value);
@@ -548,19 +552,23 @@ MsgPack::Stream& MsgPack::Stream::operator<<(double value) {
 }
 
 MsgPack::Stream& MsgPack::Stream::operator<<(const std::string& str) {
-    if(str.size() < 32) {
-        streamBuffer->sputc((unsigned char)str.size() | 0xA0);
-        streamBuffer->sputn(str.c_str(), str.size());
-    }else if(str.size() < 65536) {
+    uint32_t size = str.size();
+    if(size < 0x20) {
+        streamBuffer->sputc((uint8_t)size | 0xA0);
+        streamBuffer->sputn(str.c_str(), size);
+    }else if(size <= 0xFF) {
+        streamBuffer->sputc(0xD9);
+        streamBuffer->sputc((uint8_t)size);
+        streamBuffer->sputn(str.c_str(), size);
+    }else if(size <= 0xFFFF) {
         streamBuffer->sputc(0xDA);
-        unsigned short size = str.size();
-        writeByte2(&size);
-        streamBuffer->sputn(str.c_str(), str.size());
+        uint16_t _size = size;
+        writeByte2(&_size);
+        streamBuffer->sputn(str.c_str(), size);
     }else{
         streamBuffer->sputc(0xDB);
-        unsigned long size = str.size();
         writeByte4(&size);
-        streamBuffer->sputn(str.c_str(), str.size());
+        streamBuffer->sputn(str.c_str(), size);
     }
     
     return *this;
@@ -570,12 +578,12 @@ MsgPack::Stream& MsgPack::Stream::operator<<(const char* str) {
     return *this << std::string(str);
 }
 
-void MsgPack::Stream::writeArray(unsigned long size) {
-    if(size < 16)
-        streamBuffer->sputc((unsigned char)size | 0x90);
-    else if(size < 65536) {
+void MsgPack::Stream::writeArray(uint32_t size) {
+    if(size < 0x20)
+        streamBuffer->sputc((uint8_t)size | 0x90);
+    else if(size <= 0xFFFF) {
         streamBuffer->sputc(0xDC);
-        unsigned short _size = size;
+        uint16_t _size = size;
         writeByte2(&_size);
     }else{
         streamBuffer->sputc(0xDD);
@@ -583,12 +591,12 @@ void MsgPack::Stream::writeArray(unsigned long size) {
     }
 }
 
-void MsgPack::Stream::writeMap(unsigned long size) {
-    if(size < 16)
-        streamBuffer->sputc((unsigned char)size | 0x80);
-    else if(size < 65536) {
+void MsgPack::Stream::writeMap(uint32_t size) {
+    if(size < 0x20)
+        streamBuffer->sputc((uint8_t)size | 0x80);
+    else if(size <= 0xFFFF) {
         streamBuffer->sputc(0xDE);
-        unsigned short _size = size;
+        uint16_t _size = size;
         writeByte2(&_size);
     }else{
         streamBuffer->sputc(0xDF);
