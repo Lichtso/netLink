@@ -1,5 +1,5 @@
 CLANG := clang++ -c -Wall -std=c++11 -stdlib=libc++
-SOURCES := MsgPack.cpp MsgPackIntegers.cpp Socket.cpp SocketManager.cpp
+SOURCES := MsgPack.cpp Socket.cpp SocketManager.cpp
 OUT := out/libNetLink
 
 all: buildStatic

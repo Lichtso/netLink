@@ -13,595 +13,698 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "include/Core.h"
+#include "include/MsgPack.h"
 
-namespace netLink {
-
-uint8_t MsgPack::Stream::getNextByte() {
-    int value = streamBuffer->sgetc();
-    if(value < 0) //EOF
-        throw Exception(Exception::STREAM_UNDERFLOW);
-    return value;
+void storeUint8(uint8_t* target, uint8_t source) {
+    *reinterpret_cast<uint8_t*>(target) = source;
 }
 
-void MsgPack::Stream::checkBytesInAvail(unsigned int size) {
-    if(streamBuffer->in_avail() < size)
-        throw Exception(Exception::STREAM_UNDERFLOW);
+void storeInt8(uint8_t* target, int8_t source) {
+    *reinterpret_cast<int8_t*>(target) = source;
 }
 
-void MsgPack::Stream::checkBytesInAvail(unsigned int size, unsigned int unget) {
-    if(streamBuffer->in_avail() >= size) return;
-    for(unsigned int i = 0; i < unget; i ++)
-        if(streamBuffer->sungetc() < 0)
+void storeUint16(uint8_t* target, uint16_t source) {
+    *reinterpret_cast<uint16_t*>(target) = htons(source);
+}
+
+void storeInt16(uint8_t* target, int16_t source) {
+    *reinterpret_cast<int16_t*>(target) = htons(source);
+}
+
+void storeFloat32(uint8_t* target, float source) {
+    *reinterpret_cast<float*>(target) = htonl(source);
+}
+
+void storeUint32(uint8_t* target, uint32_t source) {
+    *reinterpret_cast<uint32_t*>(target) = htonl(source);
+}
+
+void storeInt32(uint8_t* target, int32_t source) {
+    *reinterpret_cast<int32_t*>(target) = htonl(source);
+}
+
+void storeFloat64(uint8_t* target, double source) {
+    #if BIG_ENDIAN
+    *reinterpret_cast<double*>(target) = source;
+    #else
+    *reinterpret_cast<double*>(target) = __builtin_bswap64(source);
+    #endif
+}
+
+void storeUint64(uint8_t* target, uint64_t source) {
+    #if BIG_ENDIAN
+    *reinterpret_cast<uint64_t*>(target) = source;
+    #else
+    *reinterpret_cast<uint64_t*>(target) = __builtin_bswap64(source);
+    #endif
+}
+
+void storeInt64(uint8_t* target, int64_t source) {
+    #if BIG_ENDIAN
+    *reinterpret_cast<int64_t*>(target) = source;
+    #else
+    *reinterpret_cast<int64_t*>(target) = __builtin_bswap64(source);
+    #endif
+}
+
+
+
+uint8_t readUint8(const uint8_t* source) {
+    return *reinterpret_cast<const uint8_t*>(source);
+}
+
+int8_t readInt8(const uint8_t* source) {
+    return *reinterpret_cast<const int8_t*>(source);
+}
+
+uint16_t readUint16(const uint8_t* source) {
+    return ntohs(*reinterpret_cast<const uint16_t*>(source));
+}
+
+int16_t readInt16(const uint8_t* source) {
+    return ntohs(*reinterpret_cast<const int16_t*>(source));
+}
+
+float readFloat32(const uint8_t* source) {
+    return ntohl(*reinterpret_cast<const float*>(source));
+}
+
+uint32_t readUint32(const uint8_t* source) {
+    return ntohl(*reinterpret_cast<const uint32_t*>(source));
+}
+
+int32_t readInt32(const uint8_t* source) {
+    return ntohl(*reinterpret_cast<const int32_t*>(source));
+}
+
+double readFloat64(const uint8_t* source) {
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const double*>(source);
+    #else
+    return __builtin_bswap64(*reinterpret_cast<const double*>(source));
+    #endif
+}
+
+uint64_t readUint64(const uint8_t* source) {
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const uint64_t*>(source);
+    #else
+    return __builtin_bswap64(*reinterpret_cast<const uint64_t*>(source));
+    #endif
+}
+
+int64_t readInt64(const uint8_t* source) {
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const int64_t*>(source);
+    #else
+    return __builtin_bswap64(*reinterpret_cast<const int64_t*>(source));
+    #endif
+}
+
+
+
+namespace MsgPack {
+
+    AbstractObject::AbstractObject(int64_t& pos, std::streambuf* streamBuffer) {
+        type = (uint8_t)streamBuffer->sbumpc();
+        pos = 1;
+    }
+
+    AbstractObject::AbstractObject(int64_t& pos, Type _type) : type(_type) {
+        switch(type) {
+            case Type::BOOL_FALSE:
+            case Type::BOOL_TRUE:
             break;
-    throw Exception(Exception::STREAM_UNDERFLOW);
-}
-
-void MsgPack::Stream::readByte1(void* storage) {
-    checkBytesInAvail(2);
-    streamBuffer->sbumpc();
-    *reinterpret_cast<uint8_t*>(storage) = streamBuffer->sbumpc();
-}
-
-void MsgPack::Stream::readByte2(void* _storage) {
-    checkBytesInAvail(3);
-    streamBuffer->sbumpc();
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    storage[0] = streamBuffer->sbumpc();
-    storage[1] = streamBuffer->sbumpc();
-    #else
-    storage[1] = streamBuffer->sbumpc();
-    storage[0] = streamBuffer->sbumpc();
-    #endif
-}
-
-void MsgPack::Stream::readByte4(void* _storage) {
-    checkBytesInAvail(5);
-    streamBuffer->sbumpc();
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    storage[0] = streamBuffer->sbumpc();
-    storage[1] = streamBuffer->sbumpc();
-    storage[2] = streamBuffer->sbumpc();
-    storage[3] = streamBuffer->sbumpc();
-    #else
-    storage[3] = streamBuffer->sbumpc();
-    storage[2] = streamBuffer->sbumpc();
-    storage[1] = streamBuffer->sbumpc();
-    storage[0] = streamBuffer->sbumpc();
-    #endif
-}
-
-void MsgPack::Stream::readByte8(void* _storage) {
-    checkBytesInAvail(9);
-    streamBuffer->sbumpc();
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    storage[0] = streamBuffer->sbumpc();
-    storage[1] = streamBuffer->sbumpc();
-    storage[2] = streamBuffer->sbumpc();
-    storage[3] = streamBuffer->sbumpc();
-    storage[4] = streamBuffer->sbumpc();
-    storage[5] = streamBuffer->sbumpc();
-    storage[6] = streamBuffer->sbumpc();
-    storage[7] = streamBuffer->sbumpc();
-    #else
-    storage[7] = streamBuffer->sbumpc();
-    storage[6] = streamBuffer->sbumpc();
-    storage[5] = streamBuffer->sbumpc();
-    storage[4] = streamBuffer->sbumpc();
-    storage[3] = streamBuffer->sbumpc();
-    storage[2] = streamBuffer->sbumpc();
-    storage[1] = streamBuffer->sbumpc();
-    storage[0] = streamBuffer->sbumpc();
-    #endif
-}
-
-void MsgPack::Stream::writeByte2(void* _storage) {
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    streamBuffer->sputc(storage[0]);
-    streamBuffer->sputc(storage[1]);
-    #else
-    streamBuffer->sputc(storage[1]);
-    streamBuffer->sputc(storage[0]);
-    #endif
-}
-
-void MsgPack::Stream::writeByte4(void* _storage) {
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    streamBuffer->sputc(storage[0]);
-    streamBuffer->sputc(storage[1]);
-    streamBuffer->sputc(storage[2]);
-    streamBuffer->sputc(storage[3]);
-    #else
-    streamBuffer->sputc(storage[3]);
-    streamBuffer->sputc(storage[2]);
-    streamBuffer->sputc(storage[1]);
-    streamBuffer->sputc(storage[0]);
-    #endif
-}
-
-void MsgPack::Stream::writeByte8(void* _storage) {
-    uint8_t* storage = reinterpret_cast<uint8_t*>(_storage);
-    #if LITTLE_ENDIAN
-    streamBuffer->sputc(storage[0]);
-    streamBuffer->sputc(storage[1]);
-    streamBuffer->sputc(storage[2]);
-    streamBuffer->sputc(storage[3]);
-    streamBuffer->sputc(storage[4]);
-    streamBuffer->sputc(storage[5]);
-    streamBuffer->sputc(storage[6]);
-    streamBuffer->sputc(storage[7]);
-    #else
-    streamBuffer->sputc(storage[7]);
-    streamBuffer->sputc(storage[6]);
-    streamBuffer->sputc(storage[5]);
-    streamBuffer->sputc(storage[4]);
-    streamBuffer->sputc(storage[3]);
-    streamBuffer->sputc(storage[2]);
-    streamBuffer->sputc(storage[1]);
-    streamBuffer->sputc(storage[0]);
-    #endif
-}
-
-MsgPack::Type MsgPack::Stream::getNextType() {
-    uint8_t data = getNextByte();
-    
-    if((data & 0x80) == 0)
-        return UINT;
-
-    switch(data & 0xF0) {
-        case 0x80:
-            return MAP;
-        case 0x90:
-            return ARRAY;
+            default:
+                type = Type::NIL;
+            break;
+        }
+        pos = 0;
     }
 
-    switch(data & 0xE0) {
-        case 0xA0:
-            return STRING;
-        case 0xE0:
-            return INT;
-    }
-    
-    switch(data) {
-        case 0xC0:
-            return NIL;
-        //case 0xC1: BAD_TYPE
-        case 0xC2:
-        case 0xC3:
-            return BOOLEAN;
-        case 0xC4:
-        case 0xC5:
-        case 0xC6:
-            return RAW;
-        case 0xC7:
-        case 0xC8:
-        case 0xC9:
-            return EXTENDED;
-        case 0xCA:
-            return FLOAT;
-        case 0xCB:
-            return DOUBLE;
-        case 0xCC:
-        case 0xCD:
-        case 0xCE:
-        case 0xCF:
-            return UINT;
-        case 0xD0:
-        case 0xD1:
-        case 0xD2:
-        case 0xD3:
-            return INT;
-        case 0xD4:
-        case 0xD5:
-        case 0xD6:
-        case 0xD7:
-        case 0xD8:
-            return EXTENDED;
-        case 0xD9:
-        case 0xDA:
-        case 0xDB:
-            return STRING;
-        case 0xDC:
-        case 0xDD:
-            return ARRAY;
-        case 0xDE:
-        case 0xDF:
-            return MAP;
+    AbstractObject::AbstractObject(int64_t& pos, bool value) :
+    AbstractObject(pos, (value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
+        pos = 0;
     }
 
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(const void* null) {
-    if(null != NULL)
-        throw Exception(Exception::EXPECTED_NULL);
-    
-    uint8_t data = getNextByte();
-    
-    if(data == 0xC0) {
-        streamBuffer->sbumpc();
-        return *this;
+    std::streamsize AbstractObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        if(bytes > 0 && pos == 0 && (streamBuffer->sputc(type) >= 0)) {
+            return (++ pos);
+        }else
+            return 0;
     }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-MsgPack::Stream& MsgPack::Stream::operator>>(bool& value) {
-    uint8_t data = getNextByte();
-    
-    switch(data) {
-        case 0xC2:
-            streamBuffer->sbumpc();
-            value = false;
-            return *this;
-        case 0xC3:
-            streamBuffer->sbumpc();
-            value = true;
-            return *this;
+    std::streamsize AbstractObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        return 0;
     }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-std::unique_ptr<char[]> MsgPack::Stream::readRaw(uint32_t& size) {
-    uint8_t data = getNextByte();
-    
-    switch(data) {
-        case 0xC4: {
-            uint8_t _size;
-            readByte1(&_size);
-            size = _size;
-            checkBytesInAvail(size, 1);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
-        } case 0xC5: {
-            uint16_t _size;
-            readByte2(&_size);
-            size = _size;
-            checkBytesInAvail(size, 2);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
-        } case 0xC6: {
-            streamBuffer->sbumpc();
-            readByte4(&size);
-            checkBytesInAvail(size, 4);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
+    int64_t AbstractObject::getEndPos() const {
+        return 1;
+    }
+
+    void AbstractObject::stringify(std::ostream& stream) const {
+        switch(type) {
+            case Type::NIL:
+                stream << "null";
+            return;
+            case Type::ERROR:
+                stream << "error";
+            break;
+            case Type::BOOL_FALSE:
+                stream << "false";
+            break;
+            case Type::BOOL_TRUE:
+                stream << "true";
+            break;
         }
     }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-std::unique_ptr<char[]> MsgPack::Stream::readExtended(int8_t& type, uint32_t& size) {
-    uint8_t data = getNextByte();
-    
-    switch(data) {
-        case 0xD4: {
-            checkBytesInAvail(3);
-            readByte1(&type);
-            char* data = new char[1];
-            streamBuffer->sgetn(data, 1);
-            return std::unique_ptr<char[]>(data);
-        } case 0xD5: {
-            checkBytesInAvail(4);
-            readByte1(&type);
-            char* data = new char[2];
-            streamBuffer->sgetn(data, 2);
-            return std::unique_ptr<char[]>(data);
-        } case 0xD6: {
-            checkBytesInAvail(6);
-            readByte1(&type);
-            char* data = new char[4];
-            streamBuffer->sgetn(data, 4);
-            return std::unique_ptr<char[]>(data);
-        } case 0xD7: {
-            checkBytesInAvail(10);
-            readByte1(&type);
-            char* data = new char[8];
-            streamBuffer->sgetn(data, 8);
-            return std::unique_ptr<char[]>(data);
-        } case 0xD8: {
-            checkBytesInAvail(18);
-            readByte1(&type);
-            char* data = new char[16];
-            streamBuffer->sgetn(data, 16);
-            return std::unique_ptr<char[]>(data);
-        } case 0xC7: {
-            checkBytesInAvail(3);
-            uint8_t _size;
-            readByte1(&_size);
-            size = _size;
-            type = streamBuffer->sbumpc();
-            checkBytesInAvail(size, 2);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
-        } case 0xC8: {
-            checkBytesInAvail(4);
-            uint16_t _size;
-            readByte2(&_size);
-            size = _size;
-            type = streamBuffer->sbumpc();
-            checkBytesInAvail(size, 3);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
-        } case 0xC9: {
-            checkBytesInAvail(6);
-            streamBuffer->sbumpc();
-            readByte4(&size);
-            type = streamBuffer->sbumpc();
-            checkBytesInAvail(size, 5);
-            char* data = new char[size];
-            streamBuffer->sgetn(data, size);
-            return std::unique_ptr<char[]>(data);
+    Type AbstractObject::getType() const {
+        return (Type)type;
+    }
+
+    bool AbstractObject::isNull() const {
+        return (type == Type::NIL);
+    }
+
+    bool AbstractObject::getValue() const {
+        return (type == Type::BOOL_TRUE);
+    }
+
+
+
+    std::streamsize RawObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        std::streamsize bytesDone = 0;
+
+        if(pos < 0) {
+            bytesDone = std::min(bytes, (std::streamsize)(-pos));
+            bytesDone = streamBuffer->sputn(reinterpret_cast<char*>(header+getHeaderLength()+pos), bytesDone);
+            pos += bytesDone;
         }
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-MsgPack::Stream& MsgPack::Stream::operator>>(float& value) {
-    uint8_t data = getNextByte();
-    
-    if(data == 0xCA) {
-        readByte4(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(double& value) {
-    uint8_t data = getNextByte();
-    
-    if(data == 0xCB) {
-        readByte8(&value);
-        return *this;
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
-
-MsgPack::Stream& MsgPack::Stream::operator>>(std::string& str) {
-    uint8_t data = getNextByte();
-    
-    if((data & 0xE0) == 0xA0) {
-        uint8_t size = data & 0x1F;
-        checkBytesInAvail(size);
-        streamBuffer->sbumpc();
-        str = std::string(size, 0);
-        streamBuffer->sgetn(&*str.begin(), size);
-        return *this;
-    }
-    
-    switch(data) {
-        case 0xD9: {
-            uint8_t size;
-            readByte1(&size);
-            checkBytesInAvail(size, 1);
-            str = std::string(size, 0);
-            streamBuffer->sgetn(&*str.begin(), size);
-            return *this;
-        } case 0xDA: {
-            uint16_t size;
-            readByte2(&size);
-            checkBytesInAvail(size, 2);
-            str = std::string(size, 0);
-            streamBuffer->sgetn(&*str.begin(), size);
-            return *this;
-        } case 0xDB: {
-            streamBuffer->sbumpc();
-            uint32_t size;
-            readByte4(&size);
-            checkBytesInAvail(size, 4);
-            str = std::string(size, 0);
-            streamBuffer->sgetn(&*str.begin(), size);
-            return *this;
+        if(pos >= 0 && data) {
+            bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
+            bytes = streamBuffer->sputn(reinterpret_cast<char*>(data.get()+pos), bytes);
+            pos += bytes;
+            bytesDone += bytes;
         }
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-uint32_t MsgPack::Stream::readArray() {
-    uint8_t data = getNextByte();
-    
-    if((data & 0xF0) == 0x90) {
-        streamBuffer->sbumpc();
-        return data & 0x0F;
+        return bytesDone;
     }
-    
-    switch(data) {
-        case 0xDC: {
-            uint16_t size;
-            readByte2(&size);
-            return size;
-        } case 0xDD: {
-            uint32_t size;
-            readByte4(&size);
-            return size;
+
+    std::streamsize RawObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        std::streamsize bytesDone = 0;
+
+        if(pos < 0) {
+            bytesDone = std::min(bytes, (std::streamsize)(-pos));
+            bytesDone = streamBuffer->sgetn(reinterpret_cast<char*>(header+getHeaderLength()+pos), bytesDone);
+            pos += bytesDone;
         }
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
 
-uint32_t MsgPack::Stream::readMap() {
-    uint8_t data = getNextByte();
-    
-    if((data & 0xF0) == 0x80) {
-        streamBuffer->sbumpc();
-        return data & 0x0F;
-    }
-    
-    switch(data) {
-        case 0xDE: {
-            uint16_t size;
-            readByte2(&size);
-            return size;
-        } case 0xDF: {
-            uint16_t size;
-            readByte4(&size);
-            return size;
-        }
-    }
-    
-    throw Exception(Exception::BAD_TYPE);
-}
+        if(pos >= 0) {
+            size_t dataLen = getEndPos();
+            if(dataLen > 0) {
+                if(!data)
+                    data.reset(new uint8_t[dataLen]);
 
-MsgPack::Stream& MsgPack::Stream::operator<<(const void* null) {
-    if(null != NULL)
-        throw Exception(Exception::EXPECTED_NULL);
-    
-    streamBuffer->sputc(0xC0);
-    
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(bool value) {
-    streamBuffer->sputc((value) ? 0xC3 : 0xC2);
-    return *this;
-}
-
-void MsgPack::Stream::writeRaw(const char* data, uint32_t size) {
-    if(size <= 0xFF) {
-        streamBuffer->sputc(0xC4);
-        streamBuffer->sputc((uint8_t)size);
-        streamBuffer->sputn(data, size);
-    }else if(size <= 0xFFFF) {
-        streamBuffer->sputc(0xC5);
-        uint16_t _size = size;
-        writeByte2(&_size);
-        streamBuffer->sputn(data, size);
-    }else{
-        streamBuffer->sputc(0xC6);
-        writeByte4(&size);
-        streamBuffer->sputn(data, size);
-    }
-}
-
-void MsgPack::Stream::writeExtended(int8_t type, const char* data, uint32_t size) {
-    switch(size) {
-        case 1:
-            streamBuffer->sputc(0xD4);
-            streamBuffer->sputc(type);
-            streamBuffer->sputc(*data);
-        break;
-        case 2:
-            streamBuffer->sputc(0xD5);
-            streamBuffer->sputc(type);
-            streamBuffer->sputn(data, 2);
-        break;
-        case 4:
-            streamBuffer->sputc(0xD6);
-            streamBuffer->sputc(type);
-            streamBuffer->sputn(data, 4);
-        break;
-        case 8:
-            streamBuffer->sputc(0xD7);
-            streamBuffer->sputc(type);
-            streamBuffer->sputn(data, 8);
-        break;
-        case 16:
-            streamBuffer->sputc(0xD8);
-            streamBuffer->sputc(type);
-            streamBuffer->sputn(data, 16);
-        break;
-        default:
-            if(size <= 0xFF) {
-                streamBuffer->sputc(0xC7);
-                streamBuffer->sputc(size);
-                streamBuffer->sputc(type);
-                streamBuffer->sputn(data, size);
-            }else if(size <= 0xFFFF) {
-                streamBuffer->sputc(0xC8);
-                uint16_t _size = size;
-                writeByte2(&_size);
-                streamBuffer->sputc(type);
-                streamBuffer->sputn(data, size);
-            }else{
-                streamBuffer->sputc(0xC9);
-                writeByte4(&size);
-                streamBuffer->sputc(type);
-                streamBuffer->sputn(data, size);
+                bytes = std::min(bytes, (std::streamsize)(dataLen-pos));
+                bytes = streamBuffer->sgetn(reinterpret_cast<char*>(data.get()+pos), bytes);
+                pos += bytes;
+                bytesDone += bytes;
             }
-        break;
+        }
+
+        return bytesDone;
     }
-}
 
-MsgPack::Stream& MsgPack::Stream::operator<<(float value) {
-    streamBuffer->sputc(0xCA);
-    writeByte4(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(double value) {
-    streamBuffer->sputc(0xCB);
-    writeByte8(&value);
-    return *this;
-}
-
-MsgPack::Stream& MsgPack::Stream::operator<<(const std::string& str) {
-    uint32_t size = str.size();
-    if(size < 0x20) {
-        streamBuffer->sputc((uint8_t)size | 0xA0);
-        streamBuffer->sputn(str.c_str(), size);
-    }else if(size <= 0xFF) {
-        streamBuffer->sputc(0xD9);
-        streamBuffer->sputc((uint8_t)size);
-        streamBuffer->sputn(str.c_str(), size);
-    }else if(size <= 0xFFFF) {
-        streamBuffer->sputc(0xDA);
-        uint16_t _size = size;
-        writeByte2(&_size);
-        streamBuffer->sputn(str.c_str(), size);
-    }else{
-        streamBuffer->sputc(0xDB);
-        writeByte4(&size);
-        streamBuffer->sputn(str.c_str(), size);
+    Type RawObject::getType() const {
+        return (Type)header[0];
     }
-    
-    return *this;
-}
 
-MsgPack::Stream& MsgPack::Stream::operator<<(const char* str) {
-    return *this << std::string(str);
-}
 
-void MsgPack::Stream::writeArray(uint32_t size) {
-    if(size < 0x20)
-        streamBuffer->sputc((uint8_t)size | 0x90);
-    else if(size <= 0xFFFF) {
-        streamBuffer->sputc(0xDC);
-        uint16_t _size = size;
-        writeByte2(&_size);
-    }else{
-        streamBuffer->sputc(0xDD);
-        writeByte4(&size);
+
+    BinObject::BinObject(int64_t& pos, std::streambuf* streamBuffer) {
+        header[0] = (uint8_t)streamBuffer->sbumpc();
+        pos = 1-getHeaderLength();
     }
-}
 
-void MsgPack::Stream::writeMap(uint32_t size) {
-    if(size < 0x20)
-        streamBuffer->sputc((uint8_t)size | 0x80);
-    else if(size <= 0xFFFF) {
-        streamBuffer->sputc(0xDE);
-        uint16_t _size = size;
-        writeByte2(&_size);
-    }else{
-        streamBuffer->sputc(0xDF);
-        writeByte4(&size);
+    BinObject::BinObject(int64_t& pos, size_t len, const uint8_t* _data) {
+        if(len > 0) {
+            data.reset(new uint8_t[len]);
+            memcpy(data.get(), _data, len);
+        }
+
+        if(len <= 0xFF) {
+            pos = -2;
+            header[0] = Type::BIN_8;
+            storeUint8(&header[1], len);
+        }else if(len <= 0xFFFF) {
+            pos = -3;
+            header[0] = Type::BIN_16;
+            storeUint16(&header[1], len);
+        }else{
+            pos = -5;
+            header[0] = Type::BIN_32;
+            storeUint32(&header[1], len);
+        }
     }
-}
 
+    int64_t BinObject::getEndPos() const {
+        switch(header[0]) {
+            case Type::BIN_8:
+                return readUint8(&header[1]);
+            case Type::BIN_16:
+                return readUint16(&header[1]);
+            case Type::BIN_32:
+                return readUint32(&header[1]);
+        }
+        return 0;
+    }
+
+    int64_t BinObject::getHeaderLength() const {
+        switch(header[0]) {
+            case Type::BIN_8:
+                return 2;
+            case Type::BIN_16:
+                return 3;
+            case Type::BIN_32:
+                return 5;
+        }
+        return 0;
+    }
+
+    void BinObject::stringify(std::ostream& stream) const {
+        stream << "<Buffer ";
+        stream << getEndPos();
+        stream << ">";
+    }
+
+    uint8_t* BinObject::getData() const {
+        return data.get();
+    }
+
+
+
+    ExtensionObject::ExtensionObject(int64_t& pos, std::streambuf* streamBuffer) {
+        header[0] = (uint8_t)streamBuffer->sbumpc();
+        pos = 1-getHeaderLength();
+    }
+
+    ExtensionObject::ExtensionObject(int64_t& pos, size_t len, const uint8_t* _data, uint8_t type) {
+        data.reset(new uint8_t[len+1]);
+        data[0] = type;
+        memcpy(&data[1], _data, len);
+
+        pos = -1;
+        switch(len) {
+            case 1:
+                header[0] = Type::FIXEXT_8;
+            break;
+            case 2:
+                header[0] = Type::FIXEXT_16;
+            break;
+            case 4:
+                header[0] = Type::FIXEXT_32;
+            break;
+            case 8:
+                header[0] = Type::FIXEXT_64;
+            break;
+            case 16:
+                header[0] = Type::FIXEXT_128;
+            break;
+            default:
+                if(len <= 0xFF) {
+                    pos = -2;
+                    header[0] = Type::EXT_8;
+                    storeUint8(&header[1], len);
+                }else if(len <= 0xFFFF) {
+                    pos = -3;
+                    header[0] = Type::EXT_16;
+                    storeUint16(&header[1], len);
+                }else{
+                    pos = -5;
+                    header[0] = Type::EXT_32;
+                    storeUint32(&header[1], len);
+                }
+            break;
+        }
+    }
+
+    int64_t ExtensionObject::getEndPos() const {
+        switch(header[0]) {
+            case Type::FIXEXT_8:
+                return 1;
+            case Type::FIXEXT_16:
+                return 2;
+            case Type::FIXEXT_32:
+                return 4;
+            case Type::FIXEXT_64:
+                return 8;
+            case Type::FIXEXT_128:
+                return 16;
+            case Type::EXT_8:
+                return readUint8(&header[1]);
+            case Type::EXT_16:
+                return readUint16(&header[1]);
+            case Type::EXT_32:
+                return readUint32(&header[1]);
+        }
+        return 0;
+    }
+
+    int64_t ExtensionObject::getHeaderLength() const {
+        switch(header[0]) {
+            case Type::FIXEXT_8:
+            case Type::FIXEXT_16:
+            case Type::FIXEXT_32:
+            case Type::FIXEXT_64:
+            case Type::FIXEXT_128:
+                return 1;
+            case Type::EXT_8:
+                return 2;
+            case Type::EXT_16:
+                return 3;
+            case Type::EXT_32:
+                return 5;
+        }
+        return 0;
+    }
+
+    void ExtensionObject::stringify(std::ostream& stream) const {
+        stream << "<Extension ";
+        stream << getEndPos();
+        stream << ">";
+    }
+
+    uint8_t ExtensionObject::getDataType() const {
+        return data[0];
+    }
+
+    uint8_t* ExtensionObject::getData() const {
+        return &data[1];
+    }
+
+
+
+    StringObject::StringObject(int64_t& pos, std::streambuf* streamBuffer) {
+        header[0] = (uint8_t)streamBuffer->sbumpc();
+        pos = 1-getHeaderLength();
+    }
+
+    StringObject::StringObject(int64_t& pos, const std::string& str) {
+        size_t len = str.size();
+        if(len > 0) {
+            data.reset(new uint8_t[len]);
+            memcpy(data.get(), &*str.begin(), len);
+        }
+
+        if(len < 0x20) {
+            pos = -1;
+            header[0] = Type::FIXSTR+len;
+        }else if(len <= 0xFF) {
+            pos = -2;
+            header[0] = Type::STR_8;
+            storeUint8(&header[1], len);
+        }else if(len <= 0xFFFF) {
+            pos = -3;
+            header[0] = Type::STR_16;
+            storeUint16(&header[1], len);
+        }else{
+            pos = -5;
+            header[0] = Type::STR_32;
+            storeUint32(&header[1], len);
+        }
+    }
+
+    int64_t StringObject::getEndPos() const {
+        if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
+            return header[0] - Type::FIXSTR;
+
+        switch(header[0]) {
+            case Type::STR_8:
+                return readUint8(&header[1]);
+            case Type::STR_16:
+                return readUint16(&header[1]);
+            case Type::STR_32:
+                return readUint32(&header[1]);
+        }
+        return 0;
+    }
+
+    int64_t StringObject::getHeaderLength() const {
+        if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
+            return 1;
+        switch(header[0]) {
+            case Type::STR_8:
+                return 2;
+            case Type::STR_16:
+                return 3;
+            case Type::STR_32:
+                return 5;
+        }
+        return 0;
+    }
+
+    void StringObject::stringify(std::ostream& stream) const {
+        stream << "\"";
+        stream << getStr();
+        stream << "\"";
+    }
+
+    std::string StringObject::getStr() const {
+        return std::string((const char*)data.get(), getEndPos());
+    }
+
+
+
+    NumberObject::NumberObject(int64_t& pos, std::streambuf* streamBuffer) {
+        data[0] = (uint8_t)streamBuffer->sbumpc();
+        pos = 1;
+    }
+
+    NumberObject::NumberObject(int64_t& pos, uint64_t value) {
+        pos = 0;
+        if(value < 0x80ULL)
+            data[0] = value;
+        else if(value <= 0xFFULL) {
+            data[0] = Type::UINT_8;
+            storeUint8(data+1, value);
+        }else if(value <= 0xFFFFULL) {
+            data[0] = Type::UINT_16;
+            storeUint16(data+1, value);
+        }else if(value <= 0xFFFFFFFFULL) {
+            data[0] = Type::UINT_32;
+            storeUint32(data+1, value);
+        }else{
+            data[0] = Type::UINT_64;
+            storeUint64(data+1, value);
+        }
+    }
+
+    NumberObject::NumberObject(int64_t& pos, int64_t value) {
+        pos = 0;
+        if(value >= -0x20LL && value < 0x80LL)
+            storeInt8(data, value);
+        else if(value >= -0x80LL && value < 0x80LL) {
+            data[0] = Type::INT_8;
+            storeInt8(data+1, value);
+        }else if(value >= -0x8000LL && value < 0x8000LL) {
+            data[0] = Type::INT_16;
+            storeInt16(data+1, value);
+        }else if(value >= -0x80000000LL && value < 0x80000000LL) {
+            data[0] = Type::INT_32;
+            storeInt32(data+1, value);
+        }else{
+            data[0] = Type::INT_64;
+            storeInt64(data+1, value);
+        }
+    }
+
+    NumberObject::NumberObject(int64_t& pos, float value) {
+        pos = 0;
+        data[0] = Type::FLOAT_32;
+        storeFloat32(data+1, value);
+    }
+
+    NumberObject::NumberObject(int64_t& pos, double value) {
+        pos = 0;
+        float fValue = (float)value;
+        if((double)fValue == value) {
+            data[0] = Type::FLOAT_32;
+            storeFloat32(data+1, fValue);
+        }else{
+            data[0] = Type::FLOAT_64;
+            storeFloat64(data+1, value);
+        }
+    }
+
+    std::streamsize NumberObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
+        bytes = streamBuffer->sputn(reinterpret_cast<char*>(data+pos), bytes);
+        pos += bytes;
+        return bytes;
+    }
+
+    std::streamsize NumberObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+        bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
+        bytes = streamBuffer->sgetn(reinterpret_cast<char*>(data+pos), bytes);
+        pos += bytes;
+        return bytes;
+    }
+
+    int64_t NumberObject::getEndPos() const {
+        if(data[0] < 0x80 || data[0] >= 0xE0)
+            return 1;
+        else
+            switch(data[0]) {
+                case Type::UINT_8:
+                case Type::INT_8:
+                    return 2;
+                case Type::UINT_16:
+                case Type::INT_16:
+                    return 3;
+                case Type::FLOAT_32:
+                case Type::UINT_32:
+                case Type::INT_32:
+                    return 5;
+                case Type::FLOAT_64:
+                case Type::UINT_64:
+                case Type::INT_64:
+                    return 9;
+            }
+        return 0;
+    }
+
+    void NumberObject::stringify(std::ostream& stream) const {
+            if(data[0] < 0x80 || data[0] >= 0xE0)
+                stream << reinterpret_cast<const int8_t&>(data[0]);
+            else
+                switch(data[0]) {
+                    case Type::FLOAT_32:
+                        stream << readFloat32(data+1);
+                    break;
+                    case Type::FLOAT_64:
+                        stream << readFloat64(data+1);
+                    break;
+                    case Type::UINT_8:
+                        stream << readUint8(data+1);
+                    break;
+                    case Type::UINT_16:
+                        stream << readUint16(data+1);
+                    break;
+                    case Type::UINT_32:
+                        stream << readUint32(data+1);
+                    break;
+                    case Type::UINT_64:
+                        stream << readUint64(data+1);
+                    break;
+                    case Type::INT_8:
+                        stream << readInt8(data+1);
+                    break;
+                    case Type::INT_16:
+                        stream << readInt16(data+1);
+                    break;
+                    case Type::INT_32:
+                        stream << readInt32(data+1);
+                    break;
+                    case Type::INT_64:
+                        stream << readInt64(data+1);
+                    break;
+                }
+    }
+
+    Type NumberObject::getType() const {
+        return (Type)data[0];
+    }
+
+
+
+    std::ostream& operator<<(std::ostream& ostream, const Object& obj) {
+        obj.stringify(ostream);
+        return ostream;
+    }
+
+    std::streamsize Parser::parse(std::streamsize bytesLeft) {
+        //bool parseAll = (bytes == 0);
+
+        std::streamsize prevBytes = bytesLeft;
+
+        while(bytesLeft > 0) {
+            if(currentObject) {
+                std::streamsize bytesRead = currentObject->deserialize(currentPosition, streamBuffer, bytesLeft);
+                bytesLeft -= bytesRead;
+
+                if(currentPosition == currentObject->getEndPos()) {
+                    onObjectParsed(std::move(currentObject));
+                    currentObject.reset();
+                }else if(bytesRead == 0) break;
+            }else{
+                int read = streamBuffer->sgetc();
+                if(read < 0) break;
+                uint8_t nextByte = (uint8_t)read;
+                bytesLeft --;
+
+                if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT) {
+                    currentObject.reset(new NumberObject(currentPosition, streamBuffer));
+                }else if(nextByte < Type::FIXARRAY) {
+                    //currentObject.reset(new MapObject(streamBuffer));
+                }else if(nextByte < Type::FIXSTR) {
+                    //currentObject.reset(new ArrayObject(streamBuffer));
+                }else if(nextByte < Type::NIL) {
+                    currentObject.reset(new StringObject(currentPosition, streamBuffer));
+                }else
+                    switch(nextByte) {
+                        case Type::NIL:
+                        case Type::ERROR:
+                        case Type::BOOL_FALSE:
+                        case Type::BOOL_TRUE:
+                            currentObject.reset(new AbstractObject(currentPosition, streamBuffer));
+                        break;
+                        case Type::BIN_8:
+                        case Type::BIN_16:
+                        case Type::BIN_32:
+                            currentObject.reset(new BinObject(currentPosition, streamBuffer));
+                        break;
+                        case Type::EXT_8:
+                        case Type::EXT_16:
+                        case Type::EXT_32:
+                        case Type::FIXEXT_8:
+                        case Type::FIXEXT_16:
+                        case Type::FIXEXT_32:
+                        case Type::FIXEXT_64:
+                        case Type::FIXEXT_128:
+                            currentObject.reset(new ExtensionObject(currentPosition, streamBuffer));
+                        break;
+                        case Type::STR_8:
+                        case Type::STR_16:
+                        case Type::STR_32:
+                            currentObject.reset(new StringObject(currentPosition, streamBuffer));
+                        break;
+                        case Type::ARRAY_16:
+                        case Type::ARRAY_32:
+                            //currentObject.reset(new ArrayObject(streamBuffer));
+                        break;
+                        case Type::MAP_16:
+                        case Type::MAP_32:
+                            //currentObject.reset(new MapObject(streamBuffer));
+                        break;
+                        /*case Type::FLOAT_32:
+                        case Type::FLOAT_64:
+                        case Type::UINT_8:
+                        case Type::UINT_16:
+                        case Type::UINT_32:
+                        case Type::UINT_64:
+                        case Type::INT_8:
+                        case Type::INT_16:
+                        case Type::INT_32:
+                        case Type::INT_64:*/
+                        default:
+                            currentObject.reset(new NumberObject(currentPosition, streamBuffer));
+                        break;
+                    }
+            }
+        }
+
+        return prevBytes-bytesLeft;
+    }
 };

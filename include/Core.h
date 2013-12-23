@@ -80,17 +80,15 @@ namespace netLink {
             ERROR_READ,
             ERROR_SEND,
             ERROR_INIT,
-            STREAM_UNDERFLOW,
             
             //Wrong parameters
             BAD_PROTOCOL,
-            BAD_TYPE,
-            EXPECTED_NULL
+            BAD_TYPE
         } code; //!< netLinks error code
         
         Exception(CODE _code): code(_code) { }
     };
-
+    
 };
 
 #endif

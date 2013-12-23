@@ -407,7 +407,7 @@ void Socket::setBlockingMode(bool blocking) {
 
 void Socket::setBroadcast(bool active) {
     if(type != UDP_PEER || ipVer != IPv4)
-        throw Exception(Exception::BAD_TYPE);
+        throw Exception(Exception::BAD_PROTOCOL);
 
     int flag = 1;
     if(setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &flag, sizeof(flag)) == -1)
@@ -416,7 +416,7 @@ void Socket::setBroadcast(bool active) {
 
 void Socket::setMulticastGroup(const std::string& address, bool join) {
     if(type != UDP_PEER)
-        throw Exception(Exception::BAD_TYPE);
+        throw Exception(Exception::BAD_PROTOCOL);
     
     struct sockaddr_storage addr;
     if(ipVer == IPv4) {
