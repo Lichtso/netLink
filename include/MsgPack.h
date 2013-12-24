@@ -89,13 +89,18 @@ namespace MsgPack {
     class Parser;
 
     class Object {
+        friend Parser;
         protected:
         Object() { }
+        virtual int64_t startDeserialize(std::streambuf* streamBuffer) = 0;
+        virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) { return 0; };
+        virtual bool containerInsertObject(std::unique_ptr<Object>&& element) { return true; };
+        virtual bool isContainer() { return false; };
+        virtual int64_t getEndPos() const = 0;
         public:
         virtual ~Object() { }
+        virtual int64_t startSerialize() { return 0; };
         virtual std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
-        virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
-        virtual int64_t getEndPos() const = 0;
         virtual void stringify(std::ostream& stream) const = 0;
         virtual Type getType() const = 0;
     };
@@ -104,65 +109,77 @@ namespace MsgPack {
         friend Parser;
         protected:
         uint8_t type;
-        AbstractObject(int64_t& pos, std::streambuf* streamBuffer);
-        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
-        public:
-        AbstractObject(int64_t& pos, Type type);
-        AbstractObject(int64_t& pos, bool value);
-        AbstractObject(int64_t& pos) :AbstractObject(pos, Type::NIL) { }
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        AbstractObject(Type type);
+        int64_t startDeserialize(std::streambuf* streamBuffer);
         int64_t getEndPos() const;
+        public:
+        AbstractObject(bool value);
+        AbstractObject() :AbstractObject(Type::NIL) { }
+        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         void stringify(std::ostream& stream) const;
         Type getType() const;
         bool isNull() const;
         bool getValue() const;
     };
-    
-    class RawObject : public Object {
+
+    class HeaderObject : public Object {
         friend Parser;
         protected:
         uint8_t header[5];
-        std::unique_ptr<uint8_t[]> data;
+        int64_t startDeserialize(std::streambuf* streamBuffer);
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        int64_t getEndPos() const;
         virtual int64_t getHeaderLength() const = 0;
         public:
+        int64_t startSerialize();
         std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         Type getType() const;
+        virtual uint32_t getLength() const;
     };
-
-    class BinObject : public RawObject {
+    
+    class DataObject : public HeaderObject {
         friend Parser;
         protected:
-        BinObject(int64_t& pos, std::streambuf* streamBuffer);
+        std::unique_ptr<uint8_t[]> data;
+        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        public:
+        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+    };
+
+    class BinObject : public DataObject {
+        friend Parser;
+        protected:
+        BinObject() { }
         int64_t getEndPos() const;
         int64_t getHeaderLength() const;
         public:
-        BinObject(int64_t& pos, size_t len, const uint8_t* data);
+        BinObject(uint32_t len, const uint8_t* data);
         void stringify(std::ostream& stream) const;
         uint8_t* getData() const;
     };
     
-    class ExtensionObject : public RawObject {
+    class ExtendedObject : public DataObject {
         friend Parser;
         protected:
-        ExtensionObject(int64_t& pos, std::streambuf* streamBuffer);
+        ExtendedObject() { }
         int64_t getEndPos() const;
         int64_t getHeaderLength() const;
         public:
-        ExtensionObject(int64_t& pos, size_t len, const uint8_t* data, uint8_t type);
+        ExtendedObject(uint8_t type, uint32_t len, const uint8_t* data);
         void stringify(std::ostream& stream) const;
         uint8_t getDataType() const;
         uint8_t* getData() const;
+        uint32_t getLength() const;
     };
 
-    class StringObject : public RawObject {
+    class StringObject : public DataObject {
         friend Parser;
         protected:
-        StringObject(int64_t& pos, std::streambuf* streamBuffer);
+        StringObject() { }
         int64_t getEndPos() const;
         int64_t getHeaderLength() const;
         public:
-        StringObject(int64_t& pos, const std::string& str);
+        StringObject(const std::string& str);
         void stringify(std::ostream& stream) const;
         std::string getStr() const;
     };
@@ -171,14 +188,15 @@ namespace MsgPack {
         friend Parser;
         protected:
         uint8_t data[9];
-        NumberObject(int64_t& pos, std::streambuf* streamBuffer);
+        NumberObject() { }
+        int64_t startDeserialize(std::streambuf* streamBuffer);
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
-        NumberObject(int64_t& pos, uint64_t value);
-        NumberObject(int64_t& pos, int64_t value);
-        NumberObject(int64_t& pos, float value);
-        NumberObject(int64_t& pos, double value);
+        NumberObject(uint64_t value);
+        NumberObject(int64_t value);
+        NumberObject(float value);
+        NumberObject(double value);
         std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         void stringify(std::ostream& stream) const;
         Type getType() const;
@@ -212,10 +230,58 @@ namespace MsgPack {
         }
     };
 
-    class Parser {
-        int64_t currentPosition;
-        std::unique_ptr<Object> currentObject;
+    class ArrayHeaderObject : public HeaderObject {
+        friend Parser;
+        protected:
+        ArrayHeaderObject() { }
+        uint32_t getLength() const;
+        int64_t getHeaderLength() const;
         public:
+        ArrayHeaderObject(uint32_t len);
+        void stringify(std::ostream& stream) const;
+    };
+
+    class MapHeaderObject : public HeaderObject {
+        friend Parser;
+        protected:
+        MapHeaderObject() { }
+        uint32_t getLength() const;
+        int64_t getHeaderLength() const;
+        public:
+        MapHeaderObject(uint32_t len);
+        void stringify(std::ostream& stream) const;
+    };
+
+    class ArrayObject : public ArrayHeaderObject {
+        friend Parser;
+        protected:
+        std::vector<std::unique_ptr<Object>> elements;
+        ArrayObject() { }
+        bool containerInsertObject(std::unique_ptr<Object>&& element);
+        bool isContainer() { return true; };
+        public:
+        ArrayObject(std::vector<std::unique_ptr<Object>>&& elements);
+        void stringify(std::ostream& stream) const;
+    };
+
+    class MapObject : public MapHeaderObject {
+        friend Parser;
+        protected:
+        std::vector<std::unique_ptr<Object>> elements;
+        MapObject() { }
+        bool containerInsertObject(std::unique_ptr<Object>&& element);
+        bool isContainer() { return true; };
+        public:
+        MapObject(std::vector<std::unique_ptr<Object>>&& elements);
+        void stringify(std::ostream& stream) const;
+    };
+
+    class Parser {
+        typedef std::pair<int64_t, std::unique_ptr<Object>> stackElement;
+        std::vector<stackElement> stack;
+        bool checkParsedObject();
+        public:
+        bool flat = true;
         std::streambuf* streamBuffer;
         std::function<void(std::unique_ptr<Object> parsedObject)> onObjectParsed;
         std::streamsize parse(std::streamsize bytes = 0);
