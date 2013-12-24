@@ -86,14 +86,17 @@ namespace MsgPack {
         FIXINT = 0xE0
     };
 
-    class Parser;
+    class Serializer;
+    class Deserializer;
 
     class Object {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         Object() { }
         virtual int64_t startDeserialize(std::streambuf* streamBuffer) = 0;
         virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) { return 0; };
+        virtual Object* containerGetObject(int64_t& pos) { return NULL; };
         virtual bool containerInsertObject(std::unique_ptr<Object>&& element) { return true; };
         virtual bool isContainer() { return false; };
         virtual int64_t getEndPos() const = 0;
@@ -106,7 +109,8 @@ namespace MsgPack {
     };
 
     class AbstractObject : public Object {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         uint8_t type;
         AbstractObject(Type type);
@@ -123,7 +127,8 @@ namespace MsgPack {
     };
 
     class HeaderObject : public Object {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         uint8_t header[5];
         int64_t startDeserialize(std::streambuf* streamBuffer);
@@ -138,7 +143,8 @@ namespace MsgPack {
     };
     
     class DataObject : public HeaderObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         std::unique_ptr<uint8_t[]> data;
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
@@ -147,7 +153,8 @@ namespace MsgPack {
     };
 
     class BinObject : public DataObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         BinObject() { }
         int64_t getEndPos() const;
@@ -159,7 +166,8 @@ namespace MsgPack {
     };
     
     class ExtendedObject : public DataObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         ExtendedObject() { }
         int64_t getEndPos() const;
@@ -173,7 +181,8 @@ namespace MsgPack {
     };
 
     class StringObject : public DataObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         StringObject() { }
         int64_t getEndPos() const;
@@ -185,7 +194,8 @@ namespace MsgPack {
     };
 
     class NumberObject : public Object {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         uint8_t data[9];
         NumberObject() { }
@@ -231,7 +241,8 @@ namespace MsgPack {
     };
 
     class ArrayHeaderObject : public HeaderObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         ArrayHeaderObject() { }
         uint32_t getLength() const;
@@ -242,7 +253,8 @@ namespace MsgPack {
     };
 
     class MapHeaderObject : public HeaderObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         MapHeaderObject() { }
         uint32_t getLength() const;
@@ -253,10 +265,12 @@ namespace MsgPack {
     };
 
     class ArrayObject : public ArrayHeaderObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         ArrayObject() { }
+        Object* containerGetObject(int64_t& pos);
         bool containerInsertObject(std::unique_ptr<Object>&& element);
         bool isContainer() { return true; };
         public:
@@ -265,10 +279,12 @@ namespace MsgPack {
     };
 
     class MapObject : public MapHeaderObject {
-        friend Parser;
+        friend Serializer;
+        friend Deserializer;
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         MapObject() { }
+        Object* containerGetObject(int64_t& pos);
         bool containerInsertObject(std::unique_ptr<Object>&& element);
         bool isContainer() { return true; };
         public:
@@ -276,15 +292,26 @@ namespace MsgPack {
         void stringify(std::ostream& stream) const;
     };
 
-    class Parser {
+    class StreamManager {
+        public:
+        bool tokenStream = true;
+        std::streambuf* streamBuffer;
+    };
+
+    class Serializer : public StreamManager {
+        std::unique_ptr<Object> rootObject;
+        std::vector<int64_t> stack;
+        public:
+        std::streamsize serialize(std::streamsize bytes = 0);
+    };
+
+    class Deserializer : public StreamManager {
         typedef std::pair<int64_t, std::unique_ptr<Object>> stackElement;
         std::vector<stackElement> stack;
-        bool checkParsedObject();
+        bool checkObject();
         public:
-        bool flat = true;
-        std::streambuf* streamBuffer;
-        std::function<void(std::unique_ptr<Object> parsedObject)> onObjectParsed;
-        std::streamsize parse(std::streamsize bytes = 0);
+        std::function<void(std::unique_ptr<Object> parsedObject)> objectDeserialized;
+        std::streamsize deserialize(bool onlyOne = false, std::streamsize bytes = 0);
     };
 
     std::ostream& operator<<(std::ostream& ostream, const Object& obj);

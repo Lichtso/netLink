@@ -718,6 +718,10 @@ namespace MsgPack {
 
     }
 
+    Object* ArrayObject::containerGetObject(int64_t& pos) {
+        return (pos >= 0 && pos < getLength()) ? elements[pos].get() : NULL;
+    }
+
     bool ArrayObject::containerInsertObject(std::unique_ptr<Object>&& element) {
         elements.push_back(std::move(element));
         return elements.size() == getLength();
@@ -744,6 +748,10 @@ namespace MsgPack {
             elements.erase(elements.end()-1);
     }
 
+    Object* MapObject::containerGetObject(int64_t& pos) {
+        return (pos >= 0 && pos < getLength()*2) ? elements[pos].get() : NULL;
+    }
+
     bool MapObject::containerInsertObject(std::unique_ptr<Object>&& element) {
         elements.push_back(std::move(element));
         return elements.size() == getLength()*2;
@@ -768,49 +776,72 @@ namespace MsgPack {
 
 
 
-    std::ostream& operator<<(std::ostream& ostream, const Object& obj) {
-        obj.stringify(ostream);
-        return ostream;
-    }
+    /*std::streamsize Serializer::serialize(std::streamsize bytesLeft) {
+        bool deserializeAll = (bytesLeft == 0);
+        std::streamsize bytesDone = 0;
 
-    bool Parser::checkParsedObject() {
+        while(rootObject && (bytesLeft > 0 || deserializeAll)) {
+            if(deserializeAll) bytesLeft = LONG_MAX;
+            
+            uint32_t index = 0;
+            Object* object = rootObject.get();
+            while(object->isContainer())
+                object = object->containerGetObject(stack[index ++]);
+
+            std::streamsize bytesWritten = object->serialize(stack[index], streamBuffer, bytesLeft);
+            bytesLeft -= bytesWritten;
+            bytesDone += bytesWritten;
+    
+            if(bytesWritten == 0)
+                break;
+            else if(stack[index] == object->getEndPos()) {
+                
+            }
+        }
+
+        return bytesDone;
+    }*/
+
+
+
+    bool Deserializer::checkObject() {
         auto iterator = stack.end()-1;
         if((*iterator).first < (*iterator).second->getEndPos() || (*iterator).second->isContainer()) return false;
 
-        //Push parsed objects into parent container
+        //Push deserialized objects into parent container
         while(iterator > stack.begin() &&
               (*(iterator-1)).second->containerInsertObject(std::move((*iterator).second)))
             iterator --;
 
         //Trigger event for finished object
         if(iterator == stack.begin())
-            onObjectParsed(std::move((*iterator).second));
+            objectDeserialized(std::move((*iterator).second));
 
-        //Pop all parsed objects from stack
+        //Pop all deserialized objects from stack
         stack.erase(iterator, stack.end());
 
         return true;
     }
 
-    std::streamsize Parser::parse(std::streamsize bytesLeft) {
-        flat = false;
-        bool parseAll = (bytesLeft == 0);
-        std::streamsize prevBytes = bytesLeft;
+    std::streamsize Deserializer::deserialize(bool onlyOne, std::streamsize bytesLeft) {
+        bool deserializeAll = (bytesLeft == 0);
+        std::streamsize bytesDone = 0;
 
-        while(bytesLeft > 0 || parseAll) {
-            if(parseAll) bytesLeft = 1024;
+        while(bytesLeft > 0 || deserializeAll) {
+            if(deserializeAll) bytesLeft = LONG_MAX;
 
             auto iterator = stack.end()-1;
             if(stack.size() > 0 && (*iterator).first < (*iterator).second->getEndPos()) {
                 std::streamsize bytesRead = (*iterator).second->deserialize((*iterator).first, streamBuffer, bytesLeft);
                 bytesLeft -= bytesRead;
-                
-                if(bytesRead > 0)
-                    checkParsedObject();
-                else
+                bytesDone += bytesRead;
+
+                if(bytesRead == 0)
                     break;
+                else if(checkObject() && onlyOne)
+                    return bytesDone;
             }else{
-                //Parse next object
+                //Deserialize next object
                 int read = streamBuffer->sgetc();
                 if(read < 0) break;
                 uint8_t nextByte = (uint8_t)read;
@@ -820,9 +851,9 @@ namespace MsgPack {
                 if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT)
                     nextObject = new NumberObject();
                 else if(nextByte < Type::FIXARRAY)
-                    nextObject = (flat) ? new MapHeaderObject() : new MapObject();
+                    nextObject = (tokenStream) ? new MapHeaderObject() : new MapObject();
                 else if(nextByte < Type::FIXSTR)
-                    nextObject = (flat) ? new ArrayHeaderObject() : new ArrayObject();
+                    nextObject = (tokenStream) ? new ArrayHeaderObject() : new ArrayObject();
                 else if(nextByte < Type::NIL)
                     nextObject = new StringObject();
                 else
@@ -855,22 +886,31 @@ namespace MsgPack {
                         break;
                         case Type::ARRAY_16:
                         case Type::ARRAY_32:
-                            nextObject = (flat) ? new ArrayHeaderObject() : new ArrayObject();
+                            nextObject = (tokenStream) ? new ArrayHeaderObject() : new ArrayObject();
                         break;
                         case Type::MAP_16:
                         case Type::MAP_32:
-                            nextObject = (flat) ? new MapHeaderObject() : new MapObject();
+                            nextObject = (tokenStream) ? new MapHeaderObject() : new MapObject();
                         break;
                         default:
                             nextObject = new NumberObject();
                         break;
                     }
+
                 stack.push_back(stackElement(nextObject->startDeserialize(streamBuffer),
                                              std::unique_ptr<Object>(nextObject)));
-                checkParsedObject();
+                if(checkObject() && onlyOne)
+                    return bytesDone;
             }
         }
 
-        return prevBytes-bytesLeft;
+        return bytesDone;
+    }
+
+
+
+    std::ostream& operator<<(std::ostream& ostream, const Object& obj) {
+        obj.stringify(ostream);
+        return ostream;
     }
 };
