@@ -94,16 +94,16 @@ namespace MsgPack {
         friend Deserializer;
         protected:
         Object() { }
+        virtual int64_t startSerialize() { return 0; };
         virtual int64_t startDeserialize(std::streambuf* streamBuffer) = 0;
+        virtual std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
         virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) { return 0; };
-        virtual Object* containerGetObject(int64_t& pos) { return NULL; };
-        virtual bool containerInsertObject(std::unique_ptr<Object>&& element) { return true; };
-        virtual bool isContainer() { return false; };
+        virtual bool containerSerialized() { return false; };
+        virtual bool containerDeserialized() { return false; };
+        virtual std::vector<std::unique_ptr<Object>>* getContainer() { return NULL; };
         virtual int64_t getEndPos() const = 0;
         public:
         virtual ~Object() { }
-        virtual int64_t startSerialize() { return 0; };
-        virtual std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
         virtual void stringify(std::ostream& stream) const = 0;
         virtual Type getType() const = 0;
     };
@@ -115,11 +115,11 @@ namespace MsgPack {
         uint8_t type;
         AbstractObject(Type type);
         int64_t startDeserialize(std::streambuf* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
         AbstractObject(bool value);
         AbstractObject() :AbstractObject(Type::NIL) { }
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         void stringify(std::ostream& stream) const;
         Type getType() const;
         bool isNull() const;
@@ -131,13 +131,13 @@ namespace MsgPack {
         friend Deserializer;
         protected:
         uint8_t header[5];
+        int64_t startSerialize();
         int64_t startDeserialize(std::streambuf* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         virtual int64_t getHeaderLength() const = 0;
         public:
-        int64_t startSerialize();
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         Type getType() const;
         virtual uint32_t getLength() const;
     };
@@ -147,9 +147,8 @@ namespace MsgPack {
         friend Deserializer;
         protected:
         std::unique_ptr<uint8_t[]> data;
-        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
-        public:
         std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
     };
 
     class BinObject : public DataObject {
@@ -200,6 +199,7 @@ namespace MsgPack {
         uint8_t data[9];
         NumberObject() { }
         int64_t startDeserialize(std::streambuf* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
@@ -207,7 +207,6 @@ namespace MsgPack {
         NumberObject(int64_t value);
         NumberObject(float value);
         NumberObject(double value);
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         void stringify(std::ostream& stream) const;
         Type getType() const;
         bool isDone(int64_t pos) const;
@@ -270,9 +269,9 @@ namespace MsgPack {
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         ArrayObject() { }
-        Object* containerGetObject(int64_t& pos);
-        bool containerInsertObject(std::unique_ptr<Object>&& element);
-        bool isContainer() { return true; };
+        bool containerSerialized();
+        bool containerDeserialized();
+        std::vector<std::unique_ptr<Object>>* getContainer();
         public:
         ArrayObject(std::vector<std::unique_ptr<Object>>&& elements);
         void stringify(std::ostream& stream) const;
@@ -284,34 +283,38 @@ namespace MsgPack {
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         MapObject() { }
-        Object* containerGetObject(int64_t& pos);
-        bool containerInsertObject(std::unique_ptr<Object>&& element);
-        bool isContainer() { return true; };
+        bool containerSerialized();
+        bool containerDeserialized();
+        std::vector<std::unique_ptr<Object>>* getContainer();
         public:
         MapObject(std::vector<std::unique_ptr<Object>>&& elements);
         void stringify(std::ostream& stream) const;
     };
 
     class StreamManager {
-        public:
-        bool tokenStream = true;
+        protected:
         std::streambuf* streamBuffer;
+        std::unique_ptr<Object> rootObject;
+        std::vector<int64_t> stack;
+        StreamManager(std::streambuf* _streamBuffer) : streamBuffer(_streamBuffer) { }
     };
 
     class Serializer : public StreamManager {
-        std::unique_ptr<Object> rootObject;
-        std::vector<int64_t> stack;
+        typedef std::function<std::unique_ptr<Object>()> PullCallback;
         public:
-        std::streamsize serialize(std::streamsize bytes = 0);
+        Serializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
+        std::streamsize serialize(PullCallback pullObject, std::streamsize bytes = 0);
+        void pushObject(std::unique_ptr<Object> object);
+        void pushObject(Object* object);
     };
 
     class Deserializer : public StreamManager {
-        typedef std::pair<int64_t, std::unique_ptr<Object>> stackElement;
-        std::vector<stackElement> stack;
-        bool checkObject();
+        typedef std::function<void(std::unique_ptr<Object> parsedObject)> PushCallback;
+        bool tokenStream = false;
         public:
-        std::function<void(std::unique_ptr<Object> parsedObject)> objectDeserialized;
-        std::streamsize deserialize(bool onlyOne = false, std::streamsize bytes = 0);
+        Deserializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
+        std::streamsize deserialize(PushCallback pushObject, bool onlyOne = false, std::streamsize bytes = 0);
+        std::unique_ptr<Object> pullObject();
     };
 
     std::ostream& operator<<(std::ostream& ostream, const Object& obj);
