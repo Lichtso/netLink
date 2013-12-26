@@ -24,23 +24,43 @@ void storeInt8(uint8_t* target, int8_t source) {
 }
 
 void storeUint16(uint8_t* target, uint16_t source) {
-    *reinterpret_cast<uint16_t*>(target) = htons(source);
+    #if BIG_ENDIAN
+    *reinterpret_cast<uint16_t*>(target) = source;
+    #else
+    *reinterpret_cast<uint16_t*>(target) = __builtin_bswap16(source);
+    #endif
 }
 
 void storeInt16(uint8_t* target, int16_t source) {
-    *reinterpret_cast<int16_t*>(target) = htons(source);
+    #if BIG_ENDIAN
+    *reinterpret_cast<int16_t*>(target) = source;
+    #else
+    *reinterpret_cast<int16_t*>(target) = __builtin_bswap16(source);
+    #endif
 }
 
 void storeFloat32(uint8_t* target, float source) {
-    *reinterpret_cast<float*>(target) = htonl(source);
+    #if BIG_ENDIAN
+    *reinterpret_cast<float*>(target) = source;
+    #else
+    *reinterpret_cast<float*>(target) = __builtin_bswap32(source);
+    #endif
 }
 
 void storeUint32(uint8_t* target, uint32_t source) {
-    *reinterpret_cast<uint32_t*>(target) = htonl(source);
+    #if BIG_ENDIAN
+    *reinterpret_cast<uint32_t*>(target) = source;
+    #else
+    *reinterpret_cast<uint32_t*>(target) = __builtin_bswap32(source);
+    #endif
 }
 
 void storeInt32(uint8_t* target, int32_t source) {
-    *reinterpret_cast<int32_t*>(target) = htonl(source);
+    #if BIG_ENDIAN
+    *reinterpret_cast<int32_t*>(target) = source;
+    #else
+    *reinterpret_cast<int32_t*>(target) = __builtin_bswap32(source);
+    #endif
 }
 
 void storeFloat64(uint8_t* target, double source) {
@@ -78,23 +98,43 @@ int8_t readInt8(const uint8_t* source) {
 }
 
 uint16_t readUint16(const uint8_t* source) {
-    return ntohs(*reinterpret_cast<const uint16_t*>(source));
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const uint8_t*>(source);
+    #else
+    return __builtin_bswap16(*reinterpret_cast<const uint8_t*>(source));
+    #endif
 }
 
 int16_t readInt16(const uint8_t* source) {
-    return ntohs(*reinterpret_cast<const int16_t*>(source));
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const int16_t*>(source);
+    #else
+    return __builtin_bswap16(*reinterpret_cast<const int16_t*>(source));
+    #endif
 }
 
 float readFloat32(const uint8_t* source) {
-    return ntohl(*reinterpret_cast<const float*>(source));
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const float*>(source);
+    #else
+    return __builtin_bswap32(*reinterpret_cast<const float*>(source));
+    #endif
 }
 
 uint32_t readUint32(const uint8_t* source) {
-    return ntohl(*reinterpret_cast<const uint32_t*>(source));
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const uint32_t*>(source);
+    #else
+    return __builtin_bswap32(*reinterpret_cast<const uint32_t*>(source));
+    #endif
 }
 
 int32_t readInt32(const uint8_t* source) {
-    return ntohl(*reinterpret_cast<const int32_t*>(source));
+    #if BIG_ENDIAN
+    return *reinterpret_cast<const int32_t*>(source);
+    #else
+    return __builtin_bswap32(*reinterpret_cast<const int32_t*>(source));
+    #endif
 }
 
 double readFloat64(const uint8_t* source) {
@@ -524,14 +564,8 @@ namespace MsgPack {
     }
 
     NumberObject::NumberObject(double value) {
-        float fValue = (float)value;
-        if((double)fValue == value) {
-            data[0] = Type::FLOAT_32;
-            storeFloat32(data+1, fValue);
-        }else{
-            data[0] = Type::FLOAT_64;
-            storeFloat64(data+1, value);
-        }
+        data[0] = Type::FLOAT_64;
+        storeFloat64(data+1, value);
     }
 
     int64_t NumberObject::startDeserialize(std::streambuf* streamBuffer) {
@@ -713,13 +747,9 @@ namespace MsgPack {
 
 
 
-    ArrayObject::ArrayObject(std::vector<std::unique_ptr<Object>>&& _elements)
+    ArrayObject::ArrayObject(std::vector<std::unique_ptr<Object>> _elements)
         : ArrayHeaderObject(_elements.size()), elements(std::move(_elements)) {
 
-    }
-
-    bool ArrayObject::containerSerialized() {
-        return elements.size() > 0;
     }
 
     bool ArrayObject::containerDeserialized() {
@@ -750,14 +780,10 @@ namespace MsgPack {
 
 
 
-    MapObject::MapObject(std::vector<std::unique_ptr<Object>>&& _elements)
+    MapObject::MapObject(std::vector<std::unique_ptr<Object>> _elements)
         : MapHeaderObject(_elements.size()/2), elements(std::move(_elements)) {
         if(elements.size()%2 == 1)
             elements.erase(elements.end()-1);
-    }
-
-    bool MapObject::containerSerialized() {
-        return elements.size() > 0;
     }
 
     bool MapObject::containerDeserialized() {
@@ -800,85 +826,94 @@ namespace MsgPack {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
             //Try to pull next object if necessary
-            if(!rootObject) {
-                rootObject = pullObject();
-                if(rootObject)
-                    stack.push_back(rootObject->startSerialize());
-                else
+            if(stack.size() == 0) {
+                if(queue.size() > 0) {
+                    rootObject = std::move(queue[0]);
+                    queue.erase(queue.begin());
+                }else if(pullObject)
+                    rootObject = pullObject();
+
+                if(!rootObject)
                     break; //Got no object: quit
+
+                stack.push_back(StackElement(rootObject.get(), rootObject->startSerialize()));
             }
 
             //Find highest object in stack
-            Object* object = rootObject.get();
-            uint32_t stackIndex = 0;
-
-            std::vector<std::unique_ptr<Object>>* container;
-            while(object && (container = object->getContainer()) && stack[stackIndex] >= 0)
-                object = (*container)[stack[stackIndex ++]].get();
-
-            //Serialize object
-            std::streamsize bytesRead = object->serialize(stack[stackIndex], streamBuffer, bytesLeft);
-            bytesLeft -= bytesRead;
-            bytesDone += bytesRead;
-
-            if(bytesRead == 0)
-                break; //Stream underflow: quit
-
-            if(stack[stackIndex] == object->getEndPos()) {
-                //Finish object
-                if(object->containerSerialized())
-                    stack.push_back((*container)[0]->startSerialize());
-                else{
-                    stackIndex = 0;
-                    object = rootObject.get();
-
-                    //Pop all done containers from stack
-                    std::vector<Object*> objectStack(stack.size());
-                    objectStack[0] = object;
-                    
-                    while((container = object->getContainer())) {
-                        objectStack[stackIndex+1] = object = (*container)[stack[stackIndex]].get();
-                        stackIndex ++;
-                    }
-
-                    while(true) {
-                        container = objectStack[stackIndex]->getContainer();
-                        if(container && stack[stackIndex]+1 < container->size()) {
-                            stack[stackIndex ++] ++;
-                            stack[stackIndex ++] = (*container)[stack[stackIndex]]->startSerialize();
-                            break;
-                        }
-                        if(stackIndex == 0) break;
-                        stackIndex --;
-                    }
+            StackElement* stackPointer = &stack[stack.size()-1];
             
-                    stack.erase(stack.begin()+stackIndex, stack.end());
+            //Serialize object
+            std::streamsize bytesWritten = stackPointer->first->serialize(stackPointer->second, streamBuffer, bytesLeft);
+            bytesLeft -= bytesWritten;
+            bytesDone += bytesWritten;
 
-                    if(stack.size() == 0)
-                        rootObject.reset();
-                }
+            if(bytesWritten == 0)
+                break; //Stream overflow: quit
+
+            if(stackPointer->second < stackPointer->first->getEndPos())
+                continue; //Not done yet
+
+            //Finish object
+            std::vector<std::unique_ptr<Object>>* container = stackPointer->first->getContainer();
+            if(container && container->size() > 0) {
+                //Serialized header, begin with first child
+                Object* childObject = container->begin()->get();
+                stack.push_back(StackElement(childObject, childObject->startSerialize()));
+                continue;
             }
+
+            //Find lowest done container in stack
+            uint32_t stackIndex = stack.size()-1;
+            while(true) {
+                stackPointer = &stack[stackIndex];
+                container = stackPointer->first->getContainer();
+                if(container && stackPointer->second+1 < container->size()) {
+                    //Container is not done yet. move to next object
+                    int64_t pos = ++ stackPointer->second;
+                    stackPointer = &stack[++ stackIndex];
+                    stackPointer->first = (container->begin()+pos)->get();
+                    stackPointer->second = stackPointer->first->startSerialize();
+                    stackIndex ++;
+                    break;
+                }
+                //Don't drop below stackIndex = 0
+                if(stackIndex == 0) break;
+                stackIndex --;
+            }
+            
+            //Pop all done containers from stack
+            stack.erase(stack.begin()+stackIndex, stack.end());
+
+            //Check if root object is done
+            if(stackIndex == 0)
+                rootObject.reset();
         }
 
         return bytesDone;
     }
 
-    void Serializer::pushObject(std::unique_ptr<Object> object) {
-        serialize([&object]() {
-            return std::move(object);
-        });
+    uint32_t Serializer::getQueueLength() {
+        if(rootObject)
+            return 1 + queue.size();
+        else
+            return queue.size();
     }
 
-    void Serializer::pushObject(Object* _object) {
-        std::unique_ptr<Object> object(_object);
-        serialize([&object]() {
-            return std::move(object);
-        });
+    Serializer& Serializer::operator<<(std::unique_ptr<Object>& object) {
+        if(object)
+            queue.push_back(std::move(object));
+        return *this;
+    }
+
+    Serializer& Serializer::operator<<(Object* object) {
+        if(object)
+            queue.push_back(std::move(std::unique_ptr<Object>(object)));
+        return *this;
     }
 
 
 
-    std::streamsize Deserializer::deserialize(PushCallback pushObject, bool onlyOne, std::streamsize bytesLeft) {
+    std::streamsize Deserializer::deserialize(PushCallback pushObject, std::streamsize bytesLeft) {
         bool deserializeAll = (bytesLeft == 0);
         std::streamsize bytesDone = 0;
 
@@ -886,37 +921,36 @@ namespace MsgPack {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
             //Find highest object in stack
-            Object* object = rootObject.get();
-            uint32_t stackIndex = 0;
+            StackElement* stackPointer = (stack.size() > 0) ? &stack[stack.size()-1] : NULL;
 
-            std::vector<std::unique_ptr<Object>>* container;
-            while(object && (container = object->getContainer()) && stack[stackIndex] >= 0)
-                object = (*container)[stack[stackIndex ++]].get();
-
-            if(object && stack[stackIndex] < object->getEndPos()) {
+            if(stackPointer && stackPointer->second < stackPointer->first->getEndPos()) {
                 //Deserialize object
-                std::streamsize bytesRead = object->deserialize(stack[stackIndex], streamBuffer, bytesLeft);
+                std::streamsize bytesRead = stackPointer->first->deserialize(stackPointer->second, streamBuffer, bytesLeft);
                 bytesLeft -= bytesRead;
                 bytesDone += bytesRead;
 
                 if(bytesRead == 0)
                     break; //Stream underflow: quit
 
-                if(stack[stackIndex] < object->getEndPos() || object->containerDeserialized())
+                if(stackPointer->second < stackPointer->first->getEndPos())
+                    continue; //Not done yet
+
+                if(stackPointer->first->containerDeserialized())
                     continue;
             }else{
                 //Deserialize next object
                 int read = streamBuffer->sgetc();
                 if(read < 0) break;
+                Object* object;
                 uint8_t nextByte = (uint8_t)read;
                 bytesLeft --;
 
                 if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT)
                     object = new NumberObject();
                 else if(nextByte < Type::FIXARRAY)
-                    object = (tokenStream) ? new MapHeaderObject() : new MapObject();
+                    object = (hierarchy) ? new MapObject() : new MapHeaderObject();
                 else if(nextByte < Type::FIXSTR)
-                    object = (tokenStream) ? new ArrayHeaderObject() : new ArrayObject();
+                    object = (hierarchy) ? new ArrayObject() : new ArrayHeaderObject();
                 else if(nextByte < Type::NIL)
                     object = new StringObject();
                 else
@@ -949,76 +983,64 @@ namespace MsgPack {
                         break;
                         case Type::ARRAY_16:
                         case Type::ARRAY_32:
-                            object = (tokenStream) ? new ArrayHeaderObject() : new ArrayObject();
+                            object = (hierarchy) ? new ArrayObject() : new ArrayHeaderObject();
                         break;
                         case Type::MAP_16:
                         case Type::MAP_32:
-                            object = (tokenStream) ? new MapHeaderObject() : new MapObject();
+                            object = (hierarchy) ? new MapObject() : new MapHeaderObject();
                         break;
                         default:
                             object = new NumberObject();
                         break;
                     }
 
-                //Push object on stack
-                if(stackIndex > 0)
-                    (*container)[stack[stackIndex-1]] = std::move(std::unique_ptr<Object>(object));
-                else
+                //Put object in parent container
+                if(stack.size() > 0) {
+                    std::vector<std::unique_ptr<Object>>* container = stackPointer->first->getContainer();
+                    *(container->begin()+stackPointer->second) = std::move(std::unique_ptr<Object>(object));
+                }else
                     rootObject.reset(object);
 
                 //Check if object is done
                 int64_t pos = object->startDeserialize(streamBuffer);
                 if(pos < object->getEndPos() || object->containerDeserialized()) {
-                    stack.push_back(pos);
+                    stack.push_back(StackElement(object, pos));
                     continue;
                 }
             }
 
             //Object done
             if(stack.size() > 0) {
-                Object* object = rootObject.get();
-    
                 //Pop all done containers from stack
-                std::vector<Object*> objectStack(stack.size());
-                objectStack[0] = object;
-            
-                uint32_t stackIndex = 0;
+                uint32_t stackIndex = stack.size()-1;
                 std::vector<std::unique_ptr<Object>>* container;
-                while((container = object->getContainer())) {
-                    objectStack[stackIndex+1] = object = (*container)[stack[stackIndex]].get();
-                    stackIndex ++;
-                }
-
                 while(true) {
-                    container = objectStack[stackIndex]->getContainer();
-                    if(container && stack[stackIndex]+1 < container->size()) {
-                        stack[stackIndex ++] ++;
+                    container = stack[stackIndex].first->getContainer();
+                    if(container && stack[stackIndex].second+1 < container->size()) {
+                        stack[stackIndex ++].second ++;
                         break;
                     }
                     if(stackIndex == 0) break;
                     stackIndex --;
                 }
-    
+                
                 stack.erase(stack.begin()+stackIndex, stack.end());
             }
     
             //Trigger event for done object
-            if(stack.size() == 0)
-                pushObject(std::move(rootObject));
-
-            if(onlyOne)
+            if(stack.size() == 0 && pushObject(std::move(rootObject)))
                 break; //One object done: quit
         }
 
         return bytesDone;
     }
 
-    std::unique_ptr<Object> Deserializer::pullObject() {
-        std::unique_ptr<Object> object;
+    Deserializer& Deserializer::operator>>(std::unique_ptr<Object>& object) {
         deserialize([&object](std::unique_ptr<Object> _object) {
             object = std::move(_object);
+            return true;
         }, true);
-        return object;
+        return *this;
     }
 
 

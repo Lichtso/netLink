@@ -22,27 +22,27 @@
 #ifndef netLink_MsgPack
 #define netLink_MsgPack
 
-void storeUint8(uint8_t* target, uint8_t source);
-void storeInt8(uint8_t* target, int8_t source);
-void storeUint16(uint8_t* target, uint16_t source);
-void storeInt16(uint8_t* target, int16_t source);
-void storeFloat32(uint8_t* target, float source);
-void storeUint32(uint8_t* target, uint32_t source);
-void storeInt32(uint8_t* target, int32_t source);
-void storeFloat64(uint8_t* target, double source);
-void storeUint64(uint8_t* target, uint64_t source);
-void storeInt64(uint8_t* target, int64_t source);
+inline void storeUint8(uint8_t* target, uint8_t source);
+inline void storeInt8(uint8_t* target, int8_t source);
+inline void storeUint16(uint8_t* target, uint16_t source);
+inline void storeInt16(uint8_t* target, int16_t source);
+inline void storeFloat32(uint8_t* target, float source);
+inline void storeUint32(uint8_t* target, uint32_t source);
+inline void storeInt32(uint8_t* target, int32_t source);
+inline void storeFloat64(uint8_t* target, double source);
+inline void storeUint64(uint8_t* target, uint64_t source);
+inline void storeInt64(uint8_t* target, int64_t source);
 
-uint8_t readUint8(const uint8_t* source);
-int8_t readInt8(const uint8_t* source);
-uint16_t readUint16(const uint8_t* source);
-int16_t readInt16(const uint8_t* source);
-float readFloat32(const uint8_t* source);
-uint32_t readUint32(const uint8_t* source);
-int32_t readInt32(const uint8_t* source);
-double readFloat64(const uint8_t* source);
-uint64_t readUint64(const uint8_t* source);
-int64_t readInt64(const uint8_t* source);
+inline uint8_t readUint8(const uint8_t* source);
+inline int8_t readInt8(const uint8_t* source);
+inline uint16_t readUint16(const uint8_t* source);
+inline int16_t readInt16(const uint8_t* source);
+inline float readFloat32(const uint8_t* source);
+inline uint32_t readUint32(const uint8_t* source);
+inline int32_t readInt32(const uint8_t* source);
+inline double readFloat64(const uint8_t* source);
+inline uint64_t readUint64(const uint8_t* source);
+inline int64_t readInt64(const uint8_t* source);
 
 namespace MsgPack {
 
@@ -98,7 +98,6 @@ namespace MsgPack {
         virtual int64_t startDeserialize(std::streambuf* streamBuffer) = 0;
         virtual std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
         virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) { return 0; };
-        virtual bool containerSerialized() { return false; };
         virtual bool containerDeserialized() { return false; };
         virtual std::vector<std::unique_ptr<Object>>* getContainer() { return NULL; };
         virtual int64_t getEndPos() const = 0;
@@ -236,6 +235,7 @@ namespace MsgPack {
                     case Type::INT_64:
                         return (T)readInt64(data+1);
                 }
+            return (T)0;
         }
     };
 
@@ -269,11 +269,10 @@ namespace MsgPack {
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         ArrayObject() { }
-        bool containerSerialized();
         bool containerDeserialized();
         std::vector<std::unique_ptr<Object>>* getContainer();
         public:
-        ArrayObject(std::vector<std::unique_ptr<Object>>&& elements);
+        ArrayObject(std::vector<std::unique_ptr<Object>> elements);
         void stringify(std::ostream& stream) const;
     };
 
@@ -283,38 +282,87 @@ namespace MsgPack {
         protected:
         std::vector<std::unique_ptr<Object>> elements;
         MapObject() { }
-        bool containerSerialized();
         bool containerDeserialized();
         std::vector<std::unique_ptr<Object>>* getContainer();
         public:
-        MapObject(std::vector<std::unique_ptr<Object>>&& elements);
+        MapObject(std::vector<std::unique_ptr<Object>> elements);
         void stringify(std::ostream& stream) const;
     };
 
     class StreamManager {
         protected:
-        std::streambuf* streamBuffer;
+        typedef std::pair<Object*, int64_t> StackElement;
         std::unique_ptr<Object> rootObject;
-        std::vector<int64_t> stack;
+        std::vector<StackElement> stack;
+        std::streambuf* streamBuffer;
         StreamManager(std::streambuf* _streamBuffer) : streamBuffer(_streamBuffer) { }
     };
 
     class Serializer : public StreamManager {
+        std::vector<std::unique_ptr<Object>> queue;
         typedef std::function<std::unique_ptr<Object>()> PullCallback;
         public:
         Serializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
-        std::streamsize serialize(PullCallback pullObject, std::streamsize bytes = 0);
-        void pushObject(std::unique_ptr<Object> object);
-        void pushObject(Object* object);
+        /*! Serializes the objects in the queue and writes them into the streamBuffer
+         @param pullObject Optional callback which will be called to get the next object if the queue is empty
+         @param bytes Limit of bytes to write or 0 to write as much as possible
+         */
+        std::streamsize serialize(PullCallback pullObject = nullptr, std::streamsize bytes = 0);
+        //! Returns the number of objects not serialized yet or 0 if awaiting the next object to be serialized
+        uint32_t getQueueLength();
+        /*! Pushes one MsgPack::Object in the queue.
+            Call serialize() after you pushed some objects.
+         @param object std::unique_ptr containing the object
+         */
+        Serializer& operator<<(std::unique_ptr<Object>& object);
+        /*! Pushes one MsgPack::Object in the queue.
+            Call serialize() after you pushed some objects.
+         @param object pointer to the object
+         @waring object will be deleted, don't push stack associated references
+         */
+        Serializer& operator<<(Object* object);
+        Serializer& operator<<(const char* str) {
+            return *this << new StringObject(str);
+        }
+        Serializer& operator<<(const std::string& str) {
+            return *this << new StringObject(str);
+        }
+        Serializer& operator<<(bool value) {
+            return *this << new AbstractObject(value);
+        }
+        Serializer& operator<<(uint64_t value) {
+            return *this << new NumberObject(value);
+        }
+        Serializer& operator<<(int64_t value) {
+            return *this << new NumberObject(value);
+        }
+        Serializer& operator<<(float value) {
+            return *this << new NumberObject(value);
+        }
+        Serializer& operator<<(double value) {
+            return *this << new NumberObject(value);
+        }
+        Serializer& operator<<(std::vector<std::unique_ptr<Object>> elements) {
+            return *this << new ArrayObject(std::move(elements));
+        }
     };
 
     class Deserializer : public StreamManager {
-        typedef std::function<void(std::unique_ptr<Object> parsedObject)> PushCallback;
-        bool tokenStream = false;
+        typedef std::function<bool(std::unique_ptr<Object> parsedObject)> PushCallback;
+        bool hierarchy;
         public:
-        Deserializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
-        std::streamsize deserialize(PushCallback pushObject, bool onlyOne = false, std::streamsize bytes = 0);
-        std::unique_ptr<Object> pullObject();
+        Deserializer(std::streambuf* _streamBuffer, bool _hierarchy = true)
+            : StreamManager(_streamBuffer), hierarchy(_hierarchy) { }
+        /*! Deserializes objects from the streamBuffer
+         @param pullObject Callback which will be called when the next object has
+                           been deserialized and can return true to stop the deserializing
+         @param bytes Limit of bytes to read or 0 to read as much as possible
+         */
+        std::streamsize deserialize(PushCallback pushObject, std::streamsize bytes = 0);
+        /*! Tries to deserialize one MsgPack::Object from the streamBuffer
+         @param object std::unique_ptr in which the object will be stored
+         */
+        Deserializer& operator>>(std::unique_ptr<Object>& object);
     };
 
     std::ostream& operator<<(std::ostream& ostream, const Object& obj);

@@ -13,4 +13,7 @@ Features:
 * Protocols: TCP, UDP
 * Socket can be used as std::streambuf 
 * SocketManager calls events for connecting, disconnecting, receiving data and write buffer overflow
-* MsgPack streams: http://msgpack.org
+* MsgPack support: http://msgpack.org
+	* std::streambuf serializer and deserializer
+	* hierarchy or token stream
+	* push and pull parser
