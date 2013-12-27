@@ -68,27 +68,67 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
     return AddrinfoContainer(res);
 }
 
-void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
-    if(ipVer == IPv4) {
-        auto sin = reinterpret_cast<const struct sockaddr_in*>(addr)->sin_addr;
-        if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
-            struct ip_mreq mreq;
-            mreq.imr_multiaddr = sin;
-            mreq.imr_interface.s_addr = 0;
+Socket::pos_type Socket::seekoff(Socket::off_type off, std::ios_base::seekdir way, std::ios_base::openmode which) {
+    switch(way) {
+        case std::ios_base::beg:
+            if(off < 0) return EOF;
 
-            if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, &mreq, sizeof(mreq)) == -1)
-                throw Exception(Exception::ERROR_SET_SOCK_OPT);
-        }
-    }else{
-        auto sin = reinterpret_cast<const struct sockaddr_in6*>(addr)->sin6_addr;
-        if(sin.s6_addr[0] == 0xFF) {
-            struct ipv6_mreq mreq;
-            mreq.ipv6mr_multiaddr = sin;
-            mreq.ipv6mr_interface = 0;
-            
-            if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, &mreq, sizeof(ipv6_mreq)) == -1)
-                throw Exception(Exception::ERROR_SET_SOCK_OPT);
-        }
+            if(which & std::ios_base::in) {
+                if(eback()+off >= egptr()) return EOF;
+                setg(eback(), eback()+off, egptr());
+            }
+
+            if(which & std::ios_base::out) {
+                if(pbase()+off >= epptr()) return EOF;
+                setp(pbase(), epptr());
+                pbump(off);
+            }
+        return off;
+        case std::ios_base::cur:
+            if(which == std::ios_base::in) {
+                if(eback()+off >= egptr() || egptr()+off < eback()) return EOF;
+                setg(eback(), gptr()+off, egptr());
+                return gptr()-eback();
+            }else if(which == std::ios_base::out) {
+                if(pbase()+off >= epptr() || epptr()+off < pbase()) return EOF;
+                pbump(off);
+                return pptr()-pbase();
+            }else
+                return EOF;
+        case std::ios_base::end:
+            if(off > 0) return EOF;
+
+            if(which == std::ios_base::in) {
+                if(egptr()+off < eback()) return EOF;
+                setg(eback(), egptr()+off, egptr());
+                return gptr()-eback();
+            }else if(which == std::ios_base::out) {
+                if(epptr()+off < pbase()) return EOF;
+                setp(pbase(), epptr());
+                pbump(off);
+                return pptr()-pbase();
+            }else
+                return EOF;
+    }
+}
+
+Socket::pos_type Socket::seekpos(Socket::pos_type sp, std::ios_base::openmode which) {
+    return Socket::seekoff(sp, std::ios_base::beg, which);
+}
+
+Socket::int_type Socket::sync() {
+    if(getOutputBufferSize() == 0) //No output buffer
+        return EOF;
+
+    if(pptr() == pbase()) //Allready in sync
+        return 0;
+
+    try {
+        send(pbase(), pptr()-pbase());
+        setp(pbase(), epptr());
+        return 0;
+    } catch(Exception err) {
+        return EOF;
     }
 }
 
@@ -103,6 +143,13 @@ std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
     }
 }
 
+Socket::int_type Socket::underflow() {
+    if(type == UDP_PEER)
+        return EOF;
+    advanceInputBuffer();
+    return *eback();
+}
+
 std::streamsize Socket::xsputn(const char_type* buffer, std::streamsize size) {
     if(getOutputBufferSize()) //Write into buffer
         return std::streambuf::xsputn(buffer, size);
@@ -114,32 +161,9 @@ std::streamsize Socket::xsputn(const char_type* buffer, std::streamsize size) {
     }
 }
 
-Socket::int_type Socket::sync() {
-    if(getOutputBufferSize() == 0) //No output buffer
-        return -1;
-
-    if(pptr() == pbase()) //Allready in sync
-        return 0;
-
-    try {
-        send(pbase(), pptr()-pbase());
-        setp(pbase(), epptr());
-        return 0;
-    } catch(Exception err) {
-        return -1;
-    }
-}
-
-Socket::int_type Socket::underflow() {
-    if(type == UDP_PEER)
-        return -1;
-    advanceInputBuffer();
-    return *eback();
-}
-
 Socket::int_type Socket::overflow(int_type c) {
-    if(sync() == -1)
-        return -1;
+    if(sync() == EOF)
+        return EOF;
     *pbase() = c;
     pbump(1);
     return c;
@@ -230,6 +254,30 @@ void Socket::initSocket(bool blockingConnect) {
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
     
     readSockaddr(nextAddr->ai_addr, hostLocal, portLocal);
+}
+
+void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
+    if(ipVer == IPv4) {
+        auto sin = reinterpret_cast<const struct sockaddr_in*>(addr)->sin_addr;
+        if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
+            struct ip_mreq mreq;
+            mreq.imr_multiaddr = sin;
+            mreq.imr_interface.s_addr = 0;
+
+            if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, &mreq, sizeof(mreq)) == -1)
+                throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
+    }else{
+        auto sin = reinterpret_cast<const struct sockaddr_in6*>(addr)->sin6_addr;
+        if(sin.s6_addr[0] == 0xFF) {
+            struct ipv6_mreq mreq;
+            mreq.ipv6mr_multiaddr = sin;
+            mreq.ipv6mr_interface = 0;
+            
+            if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, &mreq, sizeof(ipv6_mreq)) == -1)
+                throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
+    }
 }
 
 Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
@@ -432,7 +480,7 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
     setMulticastGroup(reinterpret_cast<struct sockaddr*>(&addr), join);
 }
 
-Socket* Socket::accept() {
+std::unique_ptr<Socket> Socket::accept() {
     if(type != TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
     
@@ -440,9 +488,9 @@ Socket* Socket::accept() {
     unsigned int addrSize = sizeof(remoteAddr);
     
     int newHandler = ::accept(handle, &remoteAddr, &addrSize);
-    if(newHandler == -1) return NULL;
+    if(newHandler == -1) return nullptr;
     
-    return new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVer);
+    return std::unique_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVer));
 }
 
 void Socket::disconnect() {

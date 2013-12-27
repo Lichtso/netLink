@@ -33,14 +33,21 @@ namespace netLink {
         typedef std::unique_ptr<struct addrinfo, AddrinfoDestructor> AddrinfoContainer;
         AddrinfoContainer getSocketInfoFor(const char* host, unsigned int port, bool wildcardAddress);
 
-        void setMulticastGroup(const struct sockaddr* addr, bool join);
-        std::streamsize xsgetn(char_type* buffer, std::streamsize size);
-        std::streamsize xsputn(const char_type* buffer, std::streamsize size);
+        //Buffer management and positioning
+        pos_type seekoff(off_type off, std::ios_base::seekdir way, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
+        pos_type seekpos(pos_type sp, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
         int_type sync();
+
+        //Input functions (get)
+        std::streamsize xsgetn(char_type* buffer, std::streamsize size);
         int_type underflow();
+
+        //Output functions (put)
+        std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
         
         void initSocket(bool blocking);
+        void setMulticastGroup(const struct sockaddr* addr, bool join);
         Socket(int handle, const std::string& hostLocal, unsigned portLocal,
                struct sockaddr* remoteAddr, IPVer ipVer);
         
@@ -129,7 +136,7 @@ namespace netLink {
          @return The new accepted socket (type will be TCP_SERVERS_CLIENT)
          @pre Type needs to be TCP_SERVER
          */
-        Socket* accept();
+        std::unique_ptr<Socket> accept();
         //! Disconnects the socket, deletes the intermediate buffers and sets the handle to -1
         void disconnect();
     };

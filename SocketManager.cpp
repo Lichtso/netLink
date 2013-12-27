@@ -17,11 +17,6 @@
 
 namespace netLink {
 
-SocketManager::~SocketManager() {
-    for(Socket* socket : sockets)
-        delete socket;
-}
-
 void SocketManager::listen(double secLeft) {
     fd_set readfds, writefds, exceptfds;
     FD_ZERO(&readfds);
@@ -29,7 +24,8 @@ void SocketManager::listen(double secLeft) {
     FD_ZERO(&exceptfds);
     
     int maxHandle = 0;
-    for(Socket* socket : sockets) {
+    foreach_e(sockets, iterator) {
+        Socket* socket = (*iterator).get();
         maxHandle = std::max(maxHandle, socket->handle);
         FD_SET(socket->handle, &readfds);
         if(socket->type != TCP_SERVER)
@@ -47,42 +43,39 @@ void SocketManager::listen(double secLeft) {
         throw Exception(Exception::ERROR_SELECT);
     
     foreach_e(sockets, iterator) {
-        bool isInReadfds = FD_ISSET((*iterator)->handle, &readfds);
+        Socket* socket = (*iterator).get();
+        bool isInReadfds = FD_ISSET(socket->handle, &readfds);
         
-        switch((*iterator)->type) {
+        switch(socket->type) {
             case NONE:
                 throw Exception(Exception::BAD_TYPE);
             case TCP_SERVER:
                 if(isInReadfds && onAcceptRequest) {
-                    Socket* newSocket = (*iterator)->accept();
-                    if(onAcceptRequest(this, *iterator, newSocket))
-                        sockets.insert(newSocket);
-                    else
-                        delete newSocket;
+                    std::unique_ptr<Socket> newSocket = socket->accept();
+                    if(onAcceptRequest(this, socket, newSocket.get()))
+                        sockets.insert(std::move(newSocket));
                 }
             continue;
             case TCP_CLIENT:
-                if(FD_ISSET((*iterator)->handle, &exceptfds)) {
-                    if(onDisconnect) onDisconnect(this, *iterator);
-                    delete *iterator;
+                if(FD_ISSET(socket->handle, &exceptfds)) {
+                    if(onDisconnect) onDisconnect(this, socket);
                     sockets.erase(iterator);
                     continue;
                 }
             case TCP_SERVERS_CLIENT:
-                if(isInReadfds && (*iterator)->showmanyc() <= 0) {
-                    if(onDisconnect) onDisconnect(this, *iterator);
-                    delete *iterator;
+                if(isInReadfds && socket->showmanyc() <= 0) {
+                    if(onDisconnect) onDisconnect(this, socket);
                     sockets.erase(iterator);
                     continue;
                 }
             case UDP_PEER:
                 if(isInReadfds && onReceive)
-                    onReceive(this, *iterator);
+                    onReceive(this, socket);
                 
-                SocketSendStatus prev = (SocketSendStatus) (*iterator)->recvStatus;
-                (*iterator)->recvStatus = (FD_ISSET((*iterator)->handle, &writefds)) ? SOCKET_STATUS_OPEN : SOCKET_STATUS_BUSY;
-                if(onStateChanged && (*iterator)->recvStatus != prev)
-                    onStateChanged(this, *iterator, prev);
+                SocketSendStatus prev = (SocketSendStatus) socket->recvStatus;
+                socket->recvStatus = (FD_ISSET(socket->handle, &writefds)) ? SOCKET_STATUS_OPEN : SOCKET_STATUS_BUSY;
+                if(onStateChanged && socket->recvStatus != prev)
+                    onStateChanged(this, socket, prev);
         }
     }
 }

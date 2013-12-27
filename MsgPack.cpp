@@ -166,31 +166,31 @@ int64_t readInt64(const uint8_t* source) {
 namespace MsgPack {
 
 
-    AbstractObject::AbstractObject(Type _type) : type(_type) {
+    PrimitiveObject::PrimitiveObject(Type _type) : type(_type) {
 
     }
 
-    AbstractObject::AbstractObject(bool value) : AbstractObject((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
+    PrimitiveObject::PrimitiveObject(bool value) : PrimitiveObject((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
 
     }
 
-    int64_t AbstractObject::startDeserialize(std::streambuf* streamBuffer) {
+    int64_t PrimitiveObject::startDeserialize(std::streambuf* streamBuffer) {
         type = (uint8_t)streamBuffer->sbumpc();
         return 1;
     }
 
-    std::streamsize AbstractObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize PrimitiveObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
         if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) >= 0)
             return (++ pos);
         else
             return 0;
     }
 
-    int64_t AbstractObject::getEndPos() const {
+    int64_t PrimitiveObject::getEndPos() const {
         return 1;
     }
 
-    void AbstractObject::stringify(std::ostream& stream) const {
+    void PrimitiveObject::stringify(std::ostream& stream) const {
         switch(type) {
             case Type::NIL:
                 stream << "null";
@@ -207,15 +207,15 @@ namespace MsgPack {
         }
     }
 
-    Type AbstractObject::getType() const {
+    Type PrimitiveObject::getType() const {
         return (Type)type;
     }
 
-    bool AbstractObject::isNull() const {
+    bool PrimitiveObject::isNull() const {
         return (type == Type::NIL);
     }
 
-    bool AbstractObject::getValue() const {
+    bool PrimitiveObject::getValue() const {
         return (type == Type::BOOL_TRUE);
     }
 
@@ -298,7 +298,7 @@ namespace MsgPack {
 
 
 
-    BinObject::BinObject(uint32_t len, const uint8_t* _data) {
+    BinaryObject::BinaryObject(uint32_t len, const uint8_t* _data) {
         if(len > 0) {
             data.reset(new uint8_t[len]);
             memcpy(data.get(), _data, len);
@@ -316,7 +316,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t BinObject::getEndPos() const {
+    int64_t BinaryObject::getEndPos() const {
         switch(header[0]) {
             case Type::BIN_8:
                 return readUint8(&header[1]);
@@ -329,7 +329,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t BinObject::getHeaderLength() const {
+    int64_t BinaryObject::getHeaderLength() const {
         switch(header[0]) {
             case Type::BIN_8:
                 return 2;
@@ -342,7 +342,7 @@ namespace MsgPack {
         }
     }
 
-    void BinObject::stringify(std::ostream& stream) const {
+    void BinaryObject::stringify(std::ostream& stream) const {
         uint32_t len = getEndPos();
         stream << "< Buffer length=" << len << " data: ";
         for(uint32_t i = 0; i < len; i ++)
@@ -350,7 +350,7 @@ namespace MsgPack {
         stream << ">";
     }
 
-    uint8_t* BinObject::getData() const {
+    uint8_t* BinaryObject::getData() const {
         return data.get();
     }
 
@@ -959,12 +959,12 @@ namespace MsgPack {
                         case Type::ERROR:
                         case Type::BOOL_FALSE:
                         case Type::BOOL_TRUE:
-                            object = new AbstractObject();
+                            object = new PrimitiveObject();
                         break;
                         case Type::BIN_8:
                         case Type::BIN_16:
                         case Type::BIN_32:
-                            object = new BinObject();
+                            object = new BinaryObject();
                         break;
                         case Type::EXT_8:
                         case Type::EXT_16:

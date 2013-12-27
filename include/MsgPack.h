@@ -22,6 +22,7 @@
 #ifndef netLink_MsgPack
 #define netLink_MsgPack
 
+//Store numbers in network endian (big endian)
 inline void storeUint8(uint8_t* target, uint8_t source);
 inline void storeInt8(uint8_t* target, int8_t source);
 inline void storeUint16(uint8_t* target, uint16_t source);
@@ -33,6 +34,7 @@ inline void storeFloat64(uint8_t* target, double source);
 inline void storeUint64(uint8_t* target, uint64_t source);
 inline void storeInt64(uint8_t* target, int64_t source);
 
+//Read numbers from network endian (big endian)
 inline uint8_t readUint8(const uint8_t* source);
 inline int8_t readInt8(const uint8_t* source);
 inline uint16_t readUint16(const uint8_t* source);
@@ -89,6 +91,7 @@ namespace MsgPack {
     class Serializer;
     class Deserializer;
 
+    //! Abstract class to represent one element in a MsgPack stream
     class Object {
         friend Serializer;
         friend Deserializer;
@@ -107,24 +110,26 @@ namespace MsgPack {
         virtual Type getType() const = 0;
     };
 
-    class AbstractObject : public Object {
+    //! MsgPack::Object to represent one byte primitives like booleans and null
+    class PrimitiveObject : public Object {
         friend Serializer;
         friend Deserializer;
         protected:
         uint8_t type;
-        AbstractObject(Type type);
+        PrimitiveObject(Type type);
         int64_t startDeserialize(std::streambuf* streamBuffer);
         std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
-        AbstractObject(bool value);
-        AbstractObject() :AbstractObject(Type::NIL) { }
+        PrimitiveObject(bool value);
+        PrimitiveObject() :PrimitiveObject(Type::NIL) { }
         void stringify(std::ostream& stream) const;
         Type getType() const;
         bool isNull() const;
         bool getValue() const;
     };
 
+    //! MsgPack::Object to represent the header of a dynamical length object
     class HeaderObject : public Object {
         friend Serializer;
         friend Deserializer;
@@ -141,6 +146,7 @@ namespace MsgPack {
         virtual uint32_t getLength() const;
     };
     
+    //! MsgPack::HeaderObject with a additional buffer used as body
     class DataObject : public HeaderObject {
         friend Serializer;
         friend Deserializer;
@@ -150,19 +156,21 @@ namespace MsgPack {
         std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
     };
 
-    class BinObject : public DataObject {
+    //! MsgPack::DataObject to represent binary/raw data elements
+    class BinaryObject : public DataObject {
         friend Serializer;
         friend Deserializer;
         protected:
-        BinObject() { }
+        BinaryObject() { }
         int64_t getEndPos() const;
         int64_t getHeaderLength() const;
         public:
-        BinObject(uint32_t len, const uint8_t* data);
+        BinaryObject(uint32_t len, const uint8_t* data);
         void stringify(std::ostream& stream) const;
         uint8_t* getData() const;
     };
     
+    //! MsgPack::DataObject to represent extended elements
     class ExtendedObject : public DataObject {
         friend Serializer;
         friend Deserializer;
@@ -178,6 +186,7 @@ namespace MsgPack {
         uint32_t getLength() const;
     };
 
+    //! MsgPack::DataObject to represent strings
     class StringObject : public DataObject {
         friend Serializer;
         friend Deserializer;
@@ -191,6 +200,7 @@ namespace MsgPack {
         std::string getStr() const;
     };
 
+    //! MsgPack::Object for all types of numbers
     class NumberObject : public Object {
         friend Serializer;
         friend Deserializer;
@@ -239,6 +249,7 @@ namespace MsgPack {
         }
     };
 
+    //! MsgPack::HeaderObject representing only the header of a array
     class ArrayHeaderObject : public HeaderObject {
         friend Serializer;
         friend Deserializer;
@@ -251,6 +262,7 @@ namespace MsgPack {
         void stringify(std::ostream& stream) const;
     };
 
+    //! MsgPack::HeaderObject representing only the header of a map
     class MapHeaderObject : public HeaderObject {
         friend Serializer;
         friend Deserializer;
@@ -263,6 +275,7 @@ namespace MsgPack {
         void stringify(std::ostream& stream) const;
     };
 
+    //! MsgPack::ArrayHeaderObject representing the header and the content of a array
     class ArrayObject : public ArrayHeaderObject {
         friend Serializer;
         friend Deserializer;
@@ -276,6 +289,7 @@ namespace MsgPack {
         void stringify(std::ostream& stream) const;
     };
 
+    //! MsgPack::MapHeaderObject representing the header and the content of a map
     class MapObject : public MapHeaderObject {
         friend Serializer;
         friend Deserializer;
@@ -289,6 +303,7 @@ namespace MsgPack {
         void stringify(std::ostream& stream) const;
     };
 
+    //! Abstract parent class of Serializer and Deserializer
     class StreamManager {
         protected:
         typedef std::pair<Object*, int64_t> StackElement;
@@ -298,10 +313,14 @@ namespace MsgPack {
         StreamManager(std::streambuf* _streamBuffer) : streamBuffer(_streamBuffer) { }
     };
 
+    //! Used to serialize elements into a std::streambuf
     class Serializer : public StreamManager {
         std::vector<std::unique_ptr<Object>> queue;
         typedef std::function<std::unique_ptr<Object>()> PullCallback;
         public:
+        /*! Constructs the Serializer
+         @param _streamBuffer A std::streambuf to be used as target for read operations
+         */
         Serializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
         /*! Serializes the objects in the queue and writes them into the streamBuffer
          @param pullObject Optional callback which will be called to get the next object if the queue is empty
@@ -328,7 +347,7 @@ namespace MsgPack {
             return *this << new StringObject(str);
         }
         Serializer& operator<<(bool value) {
-            return *this << new AbstractObject(value);
+            return *this << new PrimitiveObject(value);
         }
         Serializer& operator<<(uint64_t value) {
             return *this << new NumberObject(value);
@@ -347,10 +366,15 @@ namespace MsgPack {
         }
     };
 
+    //! Used to deserialize elements from a std::streambuf
     class Deserializer : public StreamManager {
         typedef std::function<bool(std::unique_ptr<Object> parsedObject)> PushCallback;
         bool hierarchy;
         public:
+        /*! Constructs the Deserializer
+         @param _streamBuffer A std::streambuf to be used as target for write operations
+         @param _hierarchy If false arrays and maps will be deserialized as a flat stream of elements
+         */
         Deserializer(std::streambuf* _streamBuffer, bool _hierarchy = true)
             : StreamManager(_streamBuffer), hierarchy(_hierarchy) { }
         /*! Deserializes objects from the streamBuffer

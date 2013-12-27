@@ -23,7 +23,7 @@ namespace netLink {
     //! Manages a group of Sockets
     class SocketManager {
         public:
-        std::set<Socket*> sockets; //!< Sockets which are managed
+        std::set<std::unique_ptr<Socket>> sockets; //!< Sockets which are managed
         
         //! Event which is called if a TCP_SERVER accepts a new connection (if false is returned the connection will be closed immediately)
         std::function<bool(SocketManager* manager, Socket* serverSocket, Socket* newSocket)> onAcceptRequest;
@@ -33,8 +33,6 @@ namespace netLink {
         std::function<void(SocketManager* manager, Socket* socket)> onDisconnect;
         //! Event which is called if a socket receives new data
         std::function<void(SocketManager* manager, Socket* socket)> onReceive;
-        
-        virtual ~SocketManager();
         
         /*! Listens a periode time
          @param sec Time to wait in seconds
