@@ -23,7 +23,7 @@ namespace netLink {
     //! Manages a group of Sockets
     class SocketManager {
         public:
-        std::set<std::unique_ptr<Socket>> sockets; //!< Sockets which are managed
+        std::set<std::shared_ptr<Socket>> sockets; //!< Sockets which are managed
         
         //! Event which is called if a TCP_SERVER accepts a new connection (if false is returned the connection will be closed immediately)
         std::function<bool(SocketManager* manager, Socket* serverSocket, Socket* newSocket)> onAcceptRequest;

@@ -828,8 +828,8 @@ namespace MsgPack {
             //Try to pull next object if necessary
             if(stack.size() == 0) {
                 if(queue.size() > 0) {
-                    rootObject = std::move(queue[0]);
-                    queue.erase(queue.begin());
+                    rootObject = std::move(queue.front());
+                    queue.pop();
                 }else if(pullObject)
                     rootObject = pullObject();
 
@@ -901,13 +901,13 @@ namespace MsgPack {
 
     Serializer& Serializer::operator<<(std::unique_ptr<Object>& object) {
         if(object)
-            queue.push_back(std::move(object));
+            queue.push(std::move(object));
         return *this;
     }
 
     Serializer& Serializer::operator<<(Object* object) {
         if(object)
-            queue.push_back(std::move(std::unique_ptr<Object>(object)));
+            queue.push(std::move(std::unique_ptr<Object>(object)));
         return *this;
     }
 

@@ -15,6 +15,7 @@
 
 #include <set>
 #include <vector>
+#include <queue>
 #include <string>
 #include <sstream>
 #include <functional>
@@ -315,7 +316,7 @@ namespace MsgPack {
 
     //! Used to serialize elements into a std::streambuf
     class Serializer : public StreamManager {
-        std::vector<std::unique_ptr<Object>> queue;
+        std::queue<std::unique_ptr<Object>> queue;
         typedef std::function<std::unique_ptr<Object>()> PullCallback;
         public:
         /*! Constructs the Serializer
