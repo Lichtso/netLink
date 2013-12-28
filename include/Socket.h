@@ -20,9 +20,12 @@
 
 namespace netLink {
 
+    class SocketManager;
+
     //! Socket and stream buffer
-    class Socket : public std::streambuf {
-        std::streamsize inputIntermediateSize = 0;
+    class Socket : public std::basic_streambuf<uint8_t> {
+        typedef std::basic_streambuf<uint8_t> super;
+        friend SocketManager;
 
         struct AddrinfoDestructor {
             AddrinfoDestructor() { };
@@ -39,6 +42,7 @@ namespace netLink {
         int_type sync();
 
         //Input functions (get)
+        std::streamsize inputIntermediateSize = 0;
         std::streamsize xsgetn(char_type* buffer, std::streamsize size);
         int_type underflow();
 
@@ -46,20 +50,21 @@ namespace netLink {
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
         
+        IPVersion ipVersion = ANY;
+        SocketType type = NONE;
+        unsigned int status = NOT_INITIALIZED; //!< Or listen queue size if socket is TCP_SERVER
+        int handle = -1; //!< Handle used for the system interface
+
         void initSocket(bool blocking);
         void setMulticastGroup(const struct sockaddr* addr, bool join);
         Socket(int handle, const std::string& hostLocal, unsigned portLocal,
-               struct sockaddr* remoteAddr, IPVer ipVer);
+               struct sockaddr* remoteAddr, IPVersion ipVersion);
         
         public:
-        int handle = -1; //!< Handle used for the system interface
         std::string hostLocal, //!< Host string of local
                     hostRemote; //!< Host string of remote
         unsigned int portLocal = 0, //!< Port of local
-                     portRemote = 0, //!< Port of remote
-                     recvStatus = SOCKET_STATUS_NOT_CONNECTED; //!< Or listen queue size if socket is TCP_SERVER
-        IPVer ipVer = ANY;
-        SocketType type = NONE;
+                     portRemote = 0; //!< Port of remote
         
         /*! Setup socket as TCP client
          @param hostRemote The remote host to connect to
@@ -71,9 +76,9 @@ namespace netLink {
         /*! Setup socket as TCP server
          @param hostLocal The host to be listening to:
          
-         "" or "*" to listen to any incoming data (ipVer will be choosen by system)
-         "0.0.0.0" to listen to any incoming data (ipVer will be IPv4)
-         "::0" to listen to any incoming data (ipVer will be IPv6)
+         "" or "*" to listen to any incoming data (IPVersion will be choosen by system)
+         "0.0.0.0" to listen to any incoming data (IPVersion will be IPv4)
+         "::0" to listen to any incoming data (IPVersion will be IPv6)
          @param portLocal The local port
          @param listenQueue Queue size for outstanding sockets to accept
          */
@@ -82,9 +87,9 @@ namespace netLink {
         /*! Setup socket as UDP server
          @param hostLocal The host to be listening to:
          
-         "" or "*" to listen to any incoming data (ipVer will be choosen by system)
-         "0.0.0.0" to listen to any incoming data (ipVer will be IPv4)
-         "::0" to listen to any incoming data (ipVer will be IPv6)
+         "" or "*" to listen to any incoming data (IPVersion will be choosen by system)
+         "0.0.0.0" to listen to any incoming data (IPVersion will be IPv4)
+         "::0" to listen to any incoming data (IPVersion will be IPv6)
          A multicast address of the multicast group to listen to
          @param portLocal The local port
          */
@@ -92,6 +97,15 @@ namespace netLink {
         
         Socket() { };
         virtual ~Socket();
+
+        //! Returns the IPVersion of the socket
+        IPVersion getIPVersion() const;
+
+        //! Returns the SocketType of the socket
+        SocketType getType() const;
+
+        //! Returns the SocketStatus of the socket
+        SocketStatus getStatus() const;
 
         //! Returns the outstanding bytes in system cache to read
         std::streamsize showmanyc();

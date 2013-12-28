@@ -134,7 +134,7 @@ Socket::int_type Socket::sync() {
 
 std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
     if(inputIntermediateSize > 0) //Read from input buffer
-        return std::streambuf::xsgetn(buffer, size);
+        return super::xsgetn(buffer, size);
     
     try {
         return receive(buffer, size);
@@ -144,15 +144,14 @@ std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
 }
 
 Socket::int_type Socket::underflow() {
-    if(type == UDP_PEER)
+    if(type == UDP_PEER || advanceInputBuffer() == 0)
         return EOF;
-    advanceInputBuffer();
     return *eback();
 }
 
 std::streamsize Socket::xsputn(const char_type* buffer, std::streamsize size) {
     if(getOutputBufferSize()) //Write into buffer
-        return std::streambuf::xsputn(buffer, size);
+        return super::xsputn(buffer, size);
     
     try {
         return send(buffer, size);
@@ -200,10 +199,10 @@ void Socket::initSocket(bool blockingConnect) {
         
         switch(nextAddr->ai_family) {
             case AF_INET:
-                ipVer = IPv4;
+                ipVersion = IPv4;
             break;
             case AF_INET6:
-                ipVer = IPv6;
+                ipVersion = IPv6;
             break;
         }
         
@@ -216,7 +215,9 @@ void Socket::initSocket(bool blockingConnect) {
                     close(handle);
                     handle = -1;
                 }else if(blockingConnect)
-                    recvStatus = SOCKET_STATUS_OPEN;
+                    status = READY;
+                else
+                    status = NOT_CONNECTED;
             break;
             case TCP_SERVER: {
                 if(bind(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1) {
@@ -224,7 +225,7 @@ void Socket::initSocket(bool blockingConnect) {
                     handle = -1;
                 }
                 
-                if(listen(handle, recvStatus) == -1)
+                if(listen(handle, status) == -1)
                     throw Exception(Exception::ERROR_INIT);
             } break;
             case UDP_PEER: {
@@ -233,7 +234,7 @@ void Socket::initSocket(bool blockingConnect) {
                     handle = -1;
                 }
                 
-                recvStatus = SOCKET_STATUS_OPEN;
+                status = READY;
             } break;
         }
         if(handle == -1) {
@@ -257,7 +258,7 @@ void Socket::initSocket(bool blockingConnect) {
 }
 
 void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
-    if(ipVer == IPv4) {
+    if(ipVersion == IPv4) {
         auto sin = reinterpret_cast<const struct sockaddr_in*>(addr)->sin_addr;
         if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
             struct ip_mreq mreq;
@@ -281,9 +282,9 @@ void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
 }
 
 Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
-               struct sockaddr* remoteAddr, IPVer _ipVer)
-                :handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal),
-                recvStatus(SOCKET_STATUS_OPEN), ipVer(_ipVer), type(TCP_SERVERS_CLIENT) {
+               struct sockaddr* remoteAddr, IPVersion _ipVersion)
+                :ipVersion(_ipVersion), type(TCP_SERVERS_CLIENT), status(READY),
+                handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal) {
     readSockaddr(remoteAddr, hostRemote, portRemote);
     setBlockingMode(false);
 }
@@ -299,7 +300,7 @@ void Socket::initAsTcpServer(const std::string& _hostLocal, unsigned _portLocal,
     type = TCP_SERVER;
     hostLocal = _hostLocal;
     portLocal = _portLocal;
-    recvStatus = _listenQueue;
+    status = _listenQueue;
     initSocket(false);
 }
 
@@ -314,7 +315,20 @@ Socket::~Socket() {
     disconnect();
 }
 
+SocketType Socket::getType() const {
+    return type;
+}
 
+IPVersion Socket::getIPVersion() const {
+    return ipVersion;
+}
+
+SocketStatus Socket::getStatus() const {
+    if(type == TCP_SERVER)
+        return LISTENING;
+    else
+        return (SocketStatus)status;
+}
 
 std::streamsize Socket::showmanyc() {
     int result = -1;
@@ -428,7 +442,7 @@ void Socket::setInputBufferSize(std::streamsize n) {
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
     
-    char* readBuffer = new char[n];
+    char_type* readBuffer = new char_type[n];
     setg(readBuffer, readBuffer, readBuffer);
     inputIntermediateSize = n;
 }
@@ -439,7 +453,7 @@ void Socket::setOutputBufferSize(std::streamsize n) {
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
     
-    char* writeBuffer = new char[n];
+    char_type* writeBuffer = new char_type[n];
     setp(writeBuffer, writeBuffer+n);
 }
 
@@ -454,7 +468,7 @@ void Socket::setBlockingMode(bool blocking) {
 }
 
 void Socket::setBroadcast(bool active) {
-    if(type != UDP_PEER || ipVer != IPv4)
+    if(type != UDP_PEER || ipVersion != IPv4)
         throw Exception(Exception::BAD_PROTOCOL);
 
     int flag = 1;
@@ -467,7 +481,7 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
         throw Exception(Exception::BAD_PROTOCOL);
     
     struct sockaddr_storage addr;
-    if(ipVer == IPv4) {
+    if(ipVersion == IPv4) {
         auto sin = reinterpret_cast<struct sockaddr_in*>(&addr);
         if(inet_pton(AF_INET, address.c_str(), &sin->sin_addr) == -1)
             throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
@@ -490,7 +504,7 @@ std::unique_ptr<Socket> Socket::accept() {
     int newHandler = ::accept(handle, &remoteAddr, &addrSize);
     if(newHandler == -1) return nullptr;
     
-    return std::unique_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVer));
+    return std::unique_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVersion));
 }
 
 void Socket::disconnect() {
@@ -499,7 +513,7 @@ void Socket::disconnect() {
     if(handle == -1) return;
     close(handle);
     handle = -1;
-    recvStatus = SOCKET_STATUS_NOT_CONNECTED;
+    status = NOT_CONNECTED;
 }
 
 };

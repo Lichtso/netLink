@@ -37,9 +37,9 @@ i = (next##i==end##i)?end##i:next##i++)
 namespace netLink {
 
     /*! Defines the version of IP.
-     @enum IPVer
+     @enum IPVersion
      */
-    enum IPVer {
+    enum IPVersion {
         IPv4,
         IPv6,
         ANY
@@ -57,12 +57,14 @@ namespace netLink {
     };
     
     /*! Defines the send status of a socket.
-     @enum SocketSendStatus
+     @enum SocketStatus
      */
-    enum SocketSendStatus {
-        SOCKET_STATUS_NOT_CONNECTED, //!< Socket is not even connected and can not send data
-        SOCKET_STATUS_OPEN, //!< Socket is connected and can send data
-        SOCKET_STATUS_BUSY //!< Socket is connected but can not send data (at the moment)
+    enum SocketStatus {
+        NOT_INITIALIZED, //!< Socket is not even initialized
+        NOT_CONNECTED, //!< Socket is initialized but not connected yet and can not send or receive data
+        LISTENING, //!< Socket is a server and can neither send nor receive data
+        READY, //!< Socket is connected and can send and receive data
+        BUSY //!< Socket is connected but can not send but receive data (at the moment)
     };
     
     //! netLink Exceptions

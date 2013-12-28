@@ -44,15 +44,15 @@ void SocketManager::listen(double secLeft) {
     
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
-        bool isInReadfds = FD_ISSET(socket->handle, &readfds);
+        bool isInReadFDS = FD_ISSET(socket->handle, &readfds);
         
         switch(socket->type) {
             case NONE:
                 throw Exception(Exception::BAD_TYPE);
             case TCP_SERVER:
-                if(isInReadfds && onAcceptRequest) {
+                if(isInReadFDS && onConnectRequest) {
                     std::unique_ptr<Socket> newSocket = socket->accept();
-                    if(onAcceptRequest(this, socket, newSocket.get()))
+                    if(onConnectRequest(this, socket, newSocket.get()))
                         sockets.insert(std::move(newSocket));
                 }
             continue;
@@ -63,18 +63,23 @@ void SocketManager::listen(double secLeft) {
                     continue;
                 }
             case TCP_SERVERS_CLIENT:
-                if(isInReadfds && socket->showmanyc() <= 0) {
+                if(isInReadFDS && socket->showmanyc() <= 0) {
                     if(onDisconnect) onDisconnect(this, socket);
                     sockets.erase(iterator);
                     continue;
                 }
             case UDP_PEER:
-                if(isInReadfds && onReceive)
+                if(isInReadFDS && onReceive)
                     onReceive(this, socket);
                 
-                SocketSendStatus prev = (SocketSendStatus) socket->recvStatus;
-                socket->recvStatus = (FD_ISSET(socket->handle, &writefds)) ? SOCKET_STATUS_OPEN : SOCKET_STATUS_BUSY;
-                if(onStateChanged && socket->recvStatus != prev)
+                SocketStatus prev = (SocketStatus) socket->status;
+                
+                if(FD_ISSET(socket->handle, &writefds))
+                    socket->status = READY;
+                else
+                    socket->status = (prev == NOT_CONNECTED) ? NOT_CONNECTED : BUSY;
+
+                if(onStateChanged && socket->status != prev)
                     onStateChanged(this, socket, prev);
         }
     }

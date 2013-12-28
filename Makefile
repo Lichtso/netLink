@@ -1,11 +1,11 @@
-CLANG := clang++ -c -Wall -std=c++11 -stdlib=libc++
+CLANG := clang++ -Wall -std=c++11 -stdlib=libc++
 SOURCES := MsgPack.cpp Socket.cpp SocketManager.cpp
 OUT := out/libNetLink
 
 all: buildStatic
 
 .cpp.o:
-	$(CLANG) $<
+	$(CLANG) -c $<
 
 OBJS_O := $(SOURCES:.cpp=.o)
 buildStatic: $(OBJS_O)
@@ -23,6 +23,10 @@ buildLLVM: $(OBJS_BC)
 	llvm-link-3.4 -o $(OUT).bc $(OBJS_BC)
 	rm -f *.bc
 
-clean: 
+examples: buildStatic
+	$(CLANG) -o out/udp.o $(OUT).a examples/udp.cpp
+	$(CLANG) -o out/tcp.o $(OUT).a examples/tcp.cpp
+
+clean:
 	rm -f *.o *.bc
 	rm -rf out/

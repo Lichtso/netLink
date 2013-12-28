@@ -99,15 +99,17 @@ namespace MsgPack {
         protected:
         Object() { }
         virtual int64_t startSerialize() { return 0; };
-        virtual int64_t startDeserialize(std::streambuf* streamBuffer) = 0;
-        virtual std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) = 0;
-        virtual std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) { return 0; };
+        virtual int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) = 0;
+        virtual std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) = 0;
+        virtual std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) { return 0; };
         virtual bool containerDeserialized() { return false; };
         virtual std::vector<std::unique_ptr<Object>>* getContainer() { return NULL; };
         virtual int64_t getEndPos() const = 0;
         public:
         virtual ~Object() { }
+        //! Writes a human readable JSON-like string into the given stream
         virtual void stringify(std::ostream& stream) const = 0;
+        //! Returns the MsgPack::Type
         virtual Type getType() const = 0;
     };
 
@@ -118,15 +120,17 @@ namespace MsgPack {
         protected:
         uint8_t type;
         PrimitiveObject(Type type);
-        int64_t startDeserialize(std::streambuf* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
         PrimitiveObject(bool value);
         PrimitiveObject() :PrimitiveObject(Type::NIL) { }
         void stringify(std::ostream& stream) const;
         Type getType() const;
+        //! Returns true if getType() == MsgPack::Type::NIL
         bool isNull() const;
+        //! Returns true if getType() == MsgPack::Type::BOOL_TRUE
         bool getValue() const;
     };
 
@@ -137,13 +141,14 @@ namespace MsgPack {
         protected:
         uint8_t header[5];
         int64_t startSerialize();
-        int64_t startDeserialize(std::streambuf* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         virtual int64_t getHeaderLength() const = 0;
         public:
         Type getType() const;
+        //! Returns the content length in bytes
         virtual uint32_t getLength() const;
     };
     
@@ -153,8 +158,8 @@ namespace MsgPack {
         friend Deserializer;
         protected:
         std::unique_ptr<uint8_t[]> data;
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
     };
 
     //! MsgPack::DataObject to represent binary/raw data elements
@@ -168,6 +173,7 @@ namespace MsgPack {
         public:
         BinaryObject(uint32_t len, const uint8_t* data);
         void stringify(std::ostream& stream) const;
+        //! Returns a pointer to the binary data
         uint8_t* getData() const;
     };
     
@@ -182,7 +188,9 @@ namespace MsgPack {
         public:
         ExtendedObject(uint8_t type, uint32_t len, const uint8_t* data);
         void stringify(std::ostream& stream) const;
+        //! Returns the user defined data type
         uint8_t getDataType() const;
+        //! Returns a pointer to the binary data
         uint8_t* getData() const;
         uint32_t getLength() const;
     };
@@ -198,6 +206,7 @@ namespace MsgPack {
         public:
         StringObject(const std::string& str);
         void stringify(std::ostream& stream) const;
+        //! Returns a std::string represenation of the content
         std::string getStr() const;
     };
 
@@ -208,9 +217,9 @@ namespace MsgPack {
         protected:
         uint8_t data[9];
         NumberObject() { }
-        int64_t startDeserialize(std::streambuf* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
         NumberObject(uint64_t value);
@@ -219,7 +228,7 @@ namespace MsgPack {
         NumberObject(double value);
         void stringify(std::ostream& stream) const;
         Type getType() const;
-        bool isDone(int64_t pos) const;
+        //! Returns the value as given data type T
         template<class T> T getValue() const {
             if(data[0] < 0x80 || data[0] >= 0xE0)
                 return (T)reinterpret_cast<const int8_t&>(data[0]);
@@ -310,8 +319,8 @@ namespace MsgPack {
         typedef std::pair<Object*, int64_t> StackElement;
         std::unique_ptr<Object> rootObject;
         std::vector<StackElement> stack;
-        std::streambuf* streamBuffer;
-        StreamManager(std::streambuf* _streamBuffer) : streamBuffer(_streamBuffer) { }
+        std::basic_streambuf<uint8_t>* streamBuffer;
+        StreamManager(std::basic_streambuf<uint8_t>* _streamBuffer) : streamBuffer(_streamBuffer) { }
     };
 
     //! Used to serialize elements into a std::streambuf
@@ -320,9 +329,15 @@ namespace MsgPack {
         typedef std::function<std::unique_ptr<Object>()> PullCallback;
         public:
         /*! Constructs the Serializer
+         @param _streamBuffer A std::basic_streambuf<uint8_t> to be used as target for read operations
+         */
+        Serializer(std::basic_streambuf<uint8_t>* _streamBuffer)
+            : StreamManager(_streamBuffer) { }
+        /*! Constructs the Serializer
          @param _streamBuffer A std::streambuf to be used as target for read operations
          */
-        Serializer(std::streambuf* _streamBuffer) : StreamManager(_streamBuffer) { }
+        Serializer(std::streambuf* _streamBuffer)
+            : Serializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer)) { }
         /*! Serializes the objects in the queue and writes them into the streamBuffer
          @param pullObject Optional callback which will be called to get the next object if the queue is empty
          @param bytes Limit of bytes to write or 0 to write as much as possible
@@ -373,11 +388,17 @@ namespace MsgPack {
         bool hierarchy;
         public:
         /*! Constructs the Deserializer
+         @param _streamBuffer A std::basic_streambuf<uint8_t> to be used as target for write operations
+         @param _hierarchy If false arrays and maps will be deserialized as a flat stream of elements
+         */
+        Deserializer(std::basic_streambuf<uint8_t>* _streamBuffer, bool _hierarchy = true)
+            : StreamManager(_streamBuffer), hierarchy(_hierarchy) { }
+        /*! Constructs the Deserializer
          @param _streamBuffer A std::streambuf to be used as target for write operations
          @param _hierarchy If false arrays and maps will be deserialized as a flat stream of elements
          */
         Deserializer(std::streambuf* _streamBuffer, bool _hierarchy = true)
-            : StreamManager(_streamBuffer), hierarchy(_hierarchy) { }
+            : Deserializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer), _hierarchy) { }
         /*! Deserializes objects from the streamBuffer
          @param pullObject Callback which will be called when the next object has
                            been deserialized and can return true to stop the deserializing

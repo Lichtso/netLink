@@ -174,12 +174,12 @@ namespace MsgPack {
 
     }
 
-    int64_t PrimitiveObject::startDeserialize(std::streambuf* streamBuffer) {
+    int64_t PrimitiveObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         type = (uint8_t)streamBuffer->sbumpc();
         return 1;
     }
 
-    std::streamsize PrimitiveObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize PrimitiveObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) >= 0)
             return (++ pos);
         else
@@ -225,25 +225,25 @@ namespace MsgPack {
         return -getHeaderLength();
     }
 
-    int64_t HeaderObject::startDeserialize(std::streambuf* streamBuffer) {
+    int64_t HeaderObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         header[0] = (uint8_t)streamBuffer->sbumpc();
         return 1-getHeaderLength();
     }
 
-    std::streamsize HeaderObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize HeaderObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
-            bytes = streamBuffer->sputn(reinterpret_cast<char*>(header+getHeaderLength()+pos), bytes);
+            bytes = streamBuffer->sputn(header+getHeaderLength()+pos, bytes);
             pos += bytes;
             return bytes;
         }else
             return 0;
     }
 
-    std::streamsize HeaderObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize HeaderObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
-            bytes = streamBuffer->sgetn(reinterpret_cast<char*>(header+getHeaderLength()+pos), bytes);
+            bytes = streamBuffer->sgetn(header+getHeaderLength()+pos, bytes);
             pos += bytes;
             return bytes;
         }else
@@ -264,12 +264,12 @@ namespace MsgPack {
 
 
 
-    std::streamsize DataObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize DataObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         std::streamsize bytesDone = HeaderObject::serialize(pos, streamBuffer, bytes);
 
         if(pos >= 0 && data) {
             bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
-            bytes = streamBuffer->sputn(reinterpret_cast<char*>(data.get()+pos), bytes);
+            bytes = streamBuffer->sputn(data.get()+pos, bytes);
             pos += bytes;
             bytesDone += bytes;
         }
@@ -277,7 +277,7 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    std::streamsize DataObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize DataObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         std::streamsize bytesDone = HeaderObject::deserialize(pos, streamBuffer, bytes);
 
         if(pos >= 0) {
@@ -287,7 +287,7 @@ namespace MsgPack {
                     data.reset(new uint8_t[dataLen]);
 
                 bytes = std::min(bytes, (std::streamsize)(dataLen-pos));
-                bytes = streamBuffer->sgetn(reinterpret_cast<char*>(data.get()+pos), bytes);
+                bytes = streamBuffer->sgetn(data.get()+pos, bytes);
                 pos += bytes;
                 bytesDone += bytes;
             }
@@ -568,21 +568,21 @@ namespace MsgPack {
         storeFloat64(data+1, value);
     }
 
-    int64_t NumberObject::startDeserialize(std::streambuf* streamBuffer) {
+    int64_t NumberObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         data[0] = (uint8_t)streamBuffer->sbumpc();
         return 1;
     }
 
-    std::streamsize NumberObject::serialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize NumberObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
-        bytes = streamBuffer->sputn(reinterpret_cast<char*>(data+pos), bytes);
+        bytes = streamBuffer->sputn(data+pos, bytes);
         pos += bytes;
         return bytes;
     }
 
-    std::streamsize NumberObject::deserialize(int64_t& pos, std::streambuf* streamBuffer, std::streamsize bytes) {
+    std::streamsize NumberObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
-        bytes = streamBuffer->sgetn(reinterpret_cast<char*>(data+pos), bytes);
+        bytes = streamBuffer->sgetn(data+pos, bytes);
         pos += bytes;
         return bytes;
     }
@@ -944,6 +944,7 @@ namespace MsgPack {
                 Object* object;
                 uint8_t nextByte = (uint8_t)read;
                 bytesLeft --;
+                bytesDone ++;
 
                 if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT)
                     object = new NumberObject();
