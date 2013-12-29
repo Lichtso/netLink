@@ -1,0 +1,57 @@
+MsgPack Tutorial
+================
+
+
+Serialization
+-------------
+
+There are two ways you can put elements into the serializer. The first one is hierarchical using MsgPack::Array or MsgPack::Map. You just have to put all the elements into their container first and then you can push the entire container into the serializer.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Serializer serializer(socket);
+std::vector<std::unique_ptr<MsgPack::Element>> arrayElements;
+std::unique_ptr<MsgPack::Element> abstract(new MsgPack::Primitive(true));
+std::unique_ptr<MsgPack::Element> string(new MsgPack::String("Hello World!"));
+std::unique_ptr<MsgPack::Element> emptyArray(new MsgPack::Array(std::move(arrayElements)));
+
+arrayElements.push_back(std::move(abstract));
+arrayElements.push_back(std::move(emptyArray));
+arrayElements.push_back(std::move(string));
+
+serializer << new MsgPack::Array(std::move(arrayElements));
+serializer.serialize();
+---------------------------------------------------------------------
+
+The second one is to push only hints of how many of the next elements belong into containers. Use MsgPack::ArrayHeader or MsgPack::MapHeader for this approach.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Serializer serializer(socket);
+
+serializer << new MsgPack::ArrayHeader(3);
+serializer << true;
+serializer << new MsgPack::ArrayHeader(0);
+serializer << "Hello World!";
+serializer.serialize();
+---------------------------------------------------------------------
+
+The above two examples generate the same output. In some situations one or the other might be a better match for your needs. You can even mix the two ways of serialization.
+
+
+Deserialization
+---------------
+
+The same goes for deserialization. Except that you can't mix them, but have to define which one to use in the constructor of the Deserializer.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Deserializer deserializer(socket, true);
+
+deserializer.deserialize([](std::unique_ptr<MsgPack::Element> parsed) {
+    std::cout << "Parsed: " << *parsed << "\n";
+    return false;
+});
+---------------------------------------------------------------------
+
+If the second parameter is true, the deserializer will generate a hierarchy of MsgPack::Array and MsgPack::Map else it will just generate a stream of elements sometimes containing a MsgPack::ArrayHeader or MsgPack::MapHeader. If you don't pass a second parameter then it is true by default.

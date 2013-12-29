@@ -166,31 +166,31 @@ int64_t readInt64(const uint8_t* source) {
 namespace MsgPack {
 
 
-    PrimitiveObject::PrimitiveObject(Type _type) : type(_type) {
+    Primitive::Primitive(Type _type) : type(_type) {
 
     }
 
-    PrimitiveObject::PrimitiveObject(bool value) : PrimitiveObject((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
+    Primitive::Primitive(bool value) : Primitive((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
 
     }
 
-    int64_t PrimitiveObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
+    int64_t Primitive::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         type = (uint8_t)streamBuffer->sbumpc();
         return 1;
     }
 
-    std::streamsize PrimitiveObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Primitive::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) >= 0)
             return (++ pos);
         else
             return 0;
     }
 
-    int64_t PrimitiveObject::getEndPos() const {
+    int64_t Primitive::getEndPos() const {
         return 1;
     }
 
-    void PrimitiveObject::stringify(std::ostream& stream) const {
+    void Primitive::stringify(std::ostream& stream) const {
         switch(type) {
             case Type::NIL:
                 stream << "null";
@@ -207,30 +207,30 @@ namespace MsgPack {
         }
     }
 
-    Type PrimitiveObject::getType() const {
+    Type Primitive::getType() const {
         return (Type)type;
     }
 
-    bool PrimitiveObject::isNull() const {
+    bool Primitive::isNull() const {
         return (type == Type::NIL);
     }
 
-    bool PrimitiveObject::getValue() const {
+    bool Primitive::getValue() const {
         return (type == Type::BOOL_TRUE);
     }
 
 
 
-    int64_t HeaderObject::startSerialize() {
+    int64_t Header::startSerialize() {
         return -getHeaderLength();
     }
 
-    int64_t HeaderObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
+    int64_t Header::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         header[0] = (uint8_t)streamBuffer->sbumpc();
         return 1-getHeaderLength();
     }
 
-    std::streamsize HeaderObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Header::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
             bytes = streamBuffer->sputn(header+getHeaderLength()+pos, bytes);
@@ -240,7 +240,7 @@ namespace MsgPack {
             return 0;
     }
 
-    std::streamsize HeaderObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Header::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
             bytes = streamBuffer->sgetn(header+getHeaderLength()+pos, bytes);
@@ -250,22 +250,22 @@ namespace MsgPack {
             return 0;
     }
 
-    int64_t HeaderObject::getEndPos() const {
+    int64_t Header::getEndPos() const {
         return 0;
     }
 
-    Type HeaderObject::getType() const {
+    Type Header::getType() const {
         return (Type)header[0];
     }
 
-    uint32_t HeaderObject::getLength() const {
+    uint32_t Header::getLength() const {
         return getEndPos();
     }
 
 
 
-    std::streamsize DataObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
-        std::streamsize bytesDone = HeaderObject::serialize(pos, streamBuffer, bytes);
+    std::streamsize Data::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+        std::streamsize bytesDone = Header::serialize(pos, streamBuffer, bytes);
 
         if(pos >= 0 && data) {
             bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
@@ -277,8 +277,8 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    std::streamsize DataObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
-        std::streamsize bytesDone = HeaderObject::deserialize(pos, streamBuffer, bytes);
+    std::streamsize Data::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+        std::streamsize bytesDone = Header::deserialize(pos, streamBuffer, bytes);
 
         if(pos >= 0) {
             int64_t dataLen = getEndPos();
@@ -298,7 +298,7 @@ namespace MsgPack {
 
 
 
-    BinaryObject::BinaryObject(uint32_t len, const uint8_t* _data) {
+    Binary::Binary(uint32_t len, const uint8_t* _data) {
         if(len > 0) {
             data.reset(new uint8_t[len]);
             memcpy(data.get(), _data, len);
@@ -316,7 +316,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t BinaryObject::getEndPos() const {
+    int64_t Binary::getEndPos() const {
         switch(header[0]) {
             case Type::BIN_8:
                 return readUint8(&header[1]);
@@ -329,7 +329,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t BinaryObject::getHeaderLength() const {
+    int64_t Binary::getHeaderLength() const {
         switch(header[0]) {
             case Type::BIN_8:
                 return 2;
@@ -342,7 +342,7 @@ namespace MsgPack {
         }
     }
 
-    void BinaryObject::stringify(std::ostream& stream) const {
+    void Binary::stringify(std::ostream& stream) const {
         uint32_t len = getEndPos();
         stream << "< Buffer length=" << len << " data: ";
         for(uint32_t i = 0; i < len; i ++)
@@ -350,13 +350,13 @@ namespace MsgPack {
         stream << ">";
     }
 
-    uint8_t* BinaryObject::getData() const {
+    uint8_t* Binary::getData() const {
         return data.get();
     }
 
 
 
-    ExtendedObject::ExtendedObject(uint8_t type, uint32_t len, const uint8_t* _data) {
+    Extended::Extended(uint8_t type, uint32_t len, const uint8_t* _data) {
         data.reset(new uint8_t[len+1]);
         data[0] = type;
         memcpy(&data[1], _data, len);
@@ -392,7 +392,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t ExtendedObject::getEndPos() const {
+    int64_t Extended::getEndPos() const {
         switch(header[0]) {
             case Type::FIXEXT_8:
                 return 2;
@@ -415,7 +415,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t ExtendedObject::getHeaderLength() const {
+    int64_t Extended::getHeaderLength() const {
         switch(header[0]) {
             case Type::FIXEXT_8:
             case Type::FIXEXT_16:
@@ -434,7 +434,7 @@ namespace MsgPack {
         }
     }
 
-    void ExtendedObject::stringify(std::ostream& stream) const {
+    void Extended::stringify(std::ostream& stream) const {
         uint32_t len = getEndPos();
         stream << "< Extended type=" << (uint16_t)data[0];
         stream << " length=" << (len-1) << " data: ";
@@ -443,21 +443,21 @@ namespace MsgPack {
         stream << ">";
     }
 
-    uint8_t ExtendedObject::getDataType() const {
+    uint8_t Extended::getDataType() const {
         return data[0];
     }
 
-    uint8_t* ExtendedObject::getData() const {
+    uint8_t* Extended::getData() const {
         return &data[1];
     }
 
-    uint32_t ExtendedObject::getLength() const {
+    uint32_t Extended::getLength() const {
         return getEndPos()-1;
     }
 
 
 
-    StringObject::StringObject(const std::string& str) {
+    String::String(const std::string& str) {
         uint32_t len = str.size();
         if(len > 0) {
             data.reset(new uint8_t[len]);
@@ -478,7 +478,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t StringObject::getEndPos() const {
+    int64_t String::getEndPos() const {
         if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
             return header[0] - Type::FIXSTR;
 
@@ -494,7 +494,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t StringObject::getHeaderLength() const {
+    int64_t String::getHeaderLength() const {
         if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
             return 1;
 
@@ -510,19 +510,19 @@ namespace MsgPack {
         }
     }
 
-    void StringObject::stringify(std::ostream& stream) const {
+    void String::stringify(std::ostream& stream) const {
         stream << "\"";
         stream << getStr();
         stream << "\"";
     }
 
-    std::string StringObject::getStr() const {
+    std::string String::getStr() const {
         return std::string((const char*)data.get(), getEndPos());
     }
 
 
 
-    NumberObject::NumberObject(uint64_t value) {
+    Number::Number(uint64_t value) {
         if(value < 0x80ULL)
             data[0] = value;
         else if(value <= 0xFFULL) {
@@ -540,7 +540,7 @@ namespace MsgPack {
         }
     }
 
-    NumberObject::NumberObject(int64_t value) {
+    Number::Number(int64_t value) {
         if(value >= -0x20LL && value < 0x80LL)
             storeInt8(data, value);
         else if(value >= -0x80LL && value < 0x80LL) {
@@ -558,36 +558,36 @@ namespace MsgPack {
         }
     }
 
-    NumberObject::NumberObject(float value) {
+    Number::Number(float value) {
         data[0] = Type::FLOAT_32;
         storeFloat32(data+1, value);
     }
 
-    NumberObject::NumberObject(double value) {
+    Number::Number(double value) {
         data[0] = Type::FLOAT_64;
         storeFloat64(data+1, value);
     }
 
-    int64_t NumberObject::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
+    int64_t Number::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
         data[0] = (uint8_t)streamBuffer->sbumpc();
         return 1;
     }
 
-    std::streamsize NumberObject::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Number::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
         bytes = streamBuffer->sputn(data+pos, bytes);
         pos += bytes;
         return bytes;
     }
 
-    std::streamsize NumberObject::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Number::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
         bytes = streamBuffer->sgetn(data+pos, bytes);
         pos += bytes;
         return bytes;
     }
 
-    int64_t NumberObject::getEndPos() const {
+    int64_t Number::getEndPos() const {
         if(data[0] < 0x80 || data[0] >= 0xE0)
             return 1;
         
@@ -611,7 +611,7 @@ namespace MsgPack {
         }
     }
 
-    void NumberObject::stringify(std::ostream& stream) const {
+    void Number::stringify(std::ostream& stream) const {
             if(data[0] < 0x80 || data[0] >= 0xE0)
                 stream << (int16_t)reinterpret_cast<const int8_t&>(data[0]);
             else
@@ -649,13 +649,13 @@ namespace MsgPack {
                 }
     }
 
-    Type NumberObject::getType() const {
+    Type Number::getType() const {
         return (Type)data[0];
     }
 
 
 
-    ArrayHeaderObject::ArrayHeaderObject(uint32_t len) {
+    ArrayHeader::ArrayHeader(uint32_t len) {
         if(len < 0x10)
             header[0] = Type::FIXARRAY+len;
         else if(len <= 0xFFFF) {
@@ -667,7 +667,7 @@ namespace MsgPack {
         }
     }
 
-    uint32_t ArrayHeaderObject::getLength() const {
+    uint32_t ArrayHeader::getLength() const {
         if(header[0] >= Type::FIXARRAY && header[0] < Type::FIXSTR)
             return header[0] - Type::FIXARRAY;
 
@@ -681,7 +681,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t ArrayHeaderObject::getHeaderLength() const {
+    int64_t ArrayHeader::getHeaderLength() const {
         if(header[0] >= Type::FIXARRAY && header[0] < Type::FIXSTR)
             return 1;
 
@@ -695,13 +695,13 @@ namespace MsgPack {
         }
     }
 
-    void ArrayHeaderObject::stringify(std::ostream& stream) const {
+    void ArrayHeader::stringify(std::ostream& stream) const {
         stream << "< Array length=" << getLength() << " >";
     }
 
 
 
-    MapHeaderObject::MapHeaderObject(uint32_t len) {
+    MapHeader::MapHeader(uint32_t len) {
         if(len < 0x10)
             header[0] = Type::FIXMAP+len;
         else if(len <= 0xFFFF) {
@@ -713,7 +713,7 @@ namespace MsgPack {
         }
     }
 
-    uint32_t MapHeaderObject::getLength() const {
+    uint32_t MapHeader::getLength() const {
         if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
             return header[0] - Type::FIXMAP;
 
@@ -727,7 +727,7 @@ namespace MsgPack {
         }
     }
 
-    int64_t MapHeaderObject::getHeaderLength() const {
+    int64_t MapHeader::getHeaderLength() const {
         if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
             return 1;
 
@@ -741,31 +741,31 @@ namespace MsgPack {
         }
     }
 
-    void MapHeaderObject::stringify(std::ostream& stream) const {
+    void MapHeader::stringify(std::ostream& stream) const {
         stream << "< Map length=" << getLength() << " >";
     }
 
 
 
-    ArrayObject::ArrayObject(std::vector<std::unique_ptr<Object>> _elements)
-        : ArrayHeaderObject(_elements.size()), elements(std::move(_elements)) {
+    Array::Array(std::vector<std::unique_ptr<Element>> _elements)
+        : ArrayHeader(_elements.size()), elements(std::move(_elements)) {
 
     }
 
-    bool ArrayObject::containerDeserialized() {
+    bool Array::containerDeserialized() {
         uint32_t len = getLength();
         if(len > 0) {
-            elements = std::vector<std::unique_ptr<Object>>(len);
+            elements = std::vector<std::unique_ptr<Element>>(len);
             return true;
         }else
             return false;
     }
 
-    std::vector<std::unique_ptr<Object>>* ArrayObject::getContainer() {
+    std::vector<std::unique_ptr<Element>>* Array::getContainer() {
         return &elements;
     }
 
-    void ArrayObject::stringify(std::ostream& stream) const {
+    void Array::stringify(std::ostream& stream) const {
         uint32_t len = elements.size();
         stream << "[";
         if(len > 0) {
@@ -780,26 +780,26 @@ namespace MsgPack {
 
 
 
-    MapObject::MapObject(std::vector<std::unique_ptr<Object>> _elements)
-        : MapHeaderObject(_elements.size()/2), elements(std::move(_elements)) {
+    Map::Map(std::vector<std::unique_ptr<Element>> _elements)
+        : MapHeader(_elements.size()/2), elements(std::move(_elements)) {
         if(elements.size()%2 == 1)
             elements.erase(elements.end()-1);
     }
 
-    bool MapObject::containerDeserialized() {
+    bool Map::containerDeserialized() {
         uint32_t len = getLength();
         if(len > 0) {
-            elements = std::vector<std::unique_ptr<Object>>(len*2);
+            elements = std::vector<std::unique_ptr<Element>>(len*2);
             return true;
         }else
             return false;
     }
 
-    std::vector<std::unique_ptr<Object>>* MapObject::getContainer() {
+    std::vector<std::unique_ptr<Element>>* Map::getContainer() {
         return &elements;
     }
 
-    void MapObject::stringify(std::ostream& stream) const {
+    void Map::stringify(std::ostream& stream) const {
         uint64_t len = elements.size();
         stream << "{";
         if(len > 0) {
@@ -818,31 +818,31 @@ namespace MsgPack {
 
 
 
-    std::streamsize Serializer::serialize(PullCallback pullObject, std::streamsize bytesLeft) {
+    std::streamsize Serializer::serialize(PullCallback pullElement, std::streamsize bytesLeft) {
         bool deserializeAll = (bytesLeft == 0);
         std::streamsize bytesDone = 0;
 
         while(bytesLeft > 0 || deserializeAll) {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
-            //Try to pull next object if necessary
+            //Try to pull next element if necessary
             if(stack.size() == 0) {
                 if(queue.size() > 0) {
-                    rootObject = std::move(queue.front());
+                    rootElement = std::move(queue.front());
                     queue.pop();
-                }else if(pullObject)
-                    rootObject = pullObject();
+                }else if(pullElement)
+                    rootElement = pullElement();
 
-                if(!rootObject)
-                    break; //Got no object: quit
+                if(!rootElement)
+                    break; //Got no element: quit
 
-                stack.push_back(StackElement(rootObject.get(), rootObject->startSerialize()));
+                stack.push_back(StackElement(rootElement.get(), rootElement->startSerialize()));
             }
 
-            //Find highest object in stack
+            //Find highest element in stack
             StackElement* stackPointer = &stack[stack.size()-1];
             
-            //Serialize object
+            //Serialize element
             std::streamsize bytesWritten = stackPointer->first->serialize(stackPointer->second, streamBuffer, bytesLeft);
             bytesLeft -= bytesWritten;
             bytesDone += bytesWritten;
@@ -853,12 +853,12 @@ namespace MsgPack {
             if(stackPointer->second < stackPointer->first->getEndPos())
                 continue; //Not done yet
 
-            //Finish object
-            std::vector<std::unique_ptr<Object>>* container = stackPointer->first->getContainer();
+            //Finish element
+            std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getContainer();
             if(container && container->size() > 0) {
                 //Serialized header, begin with first child
-                Object* childObject = container->begin()->get();
-                stack.push_back(StackElement(childObject, childObject->startSerialize()));
+                Element* childElement = container->begin()->get();
+                stack.push_back(StackElement(childElement, childElement->startSerialize()));
                 continue;
             }
 
@@ -868,7 +868,7 @@ namespace MsgPack {
                 stackPointer = &stack[stackIndex];
                 container = stackPointer->first->getContainer();
                 if(container && stackPointer->second+1 < container->size()) {
-                    //Container is not done yet. move to next object
+                    //Container is not done yet. move to next element
                     int64_t pos = ++ stackPointer->second;
                     stackPointer = &stack[++ stackIndex];
                     stackPointer->first = (container->begin()+pos)->get();
@@ -884,47 +884,47 @@ namespace MsgPack {
             //Pop all done containers from stack
             stack.erase(stack.begin()+stackIndex, stack.end());
 
-            //Check if root object is done
+            //Check if root element is done
             if(stackIndex == 0)
-                rootObject.reset();
+                rootElement.reset();
         }
 
         return bytesDone;
     }
 
     uint32_t Serializer::getQueueLength() {
-        if(rootObject)
+        if(rootElement)
             return 1 + queue.size();
         else
             return queue.size();
     }
 
-    Serializer& Serializer::operator<<(std::unique_ptr<Object>& object) {
-        if(object)
-            queue.push(std::move(object));
+    Serializer& Serializer::operator<<(std::unique_ptr<Element>& element) {
+        if(element)
+            queue.push(std::move(element));
         return *this;
     }
 
-    Serializer& Serializer::operator<<(Object* object) {
-        if(object)
-            queue.push(std::move(std::unique_ptr<Object>(object)));
+    Serializer& Serializer::operator<<(Element* element) {
+        if(element)
+            queue.push(std::move(std::unique_ptr<Element>(element)));
         return *this;
     }
 
 
 
-    std::streamsize Deserializer::deserialize(PushCallback pushObject, std::streamsize bytesLeft) {
+    std::streamsize Deserializer::deserialize(PushCallback pushElement, std::streamsize bytesLeft) {
         bool deserializeAll = (bytesLeft == 0);
         std::streamsize bytesDone = 0;
 
         while(bytesLeft > 0 || deserializeAll) {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
-            //Find highest object in stack
+            //Find highest element in stack
             StackElement* stackPointer = (stack.size() > 0) ? &stack[stack.size()-1] : NULL;
 
             if(stackPointer && stackPointer->second < stackPointer->first->getEndPos()) {
-                //Deserialize object
+                //Deserialize element
                 std::streamsize bytesRead = stackPointer->first->deserialize(stackPointer->second, streamBuffer, bytesLeft);
                 bytesLeft -= bytesRead;
                 bytesDone += bytesRead;
@@ -938,34 +938,34 @@ namespace MsgPack {
                 if(stackPointer->first->containerDeserialized())
                     continue;
             }else{
-                //Deserialize next object
+                //Deserialize next element
                 int read = streamBuffer->sgetc();
                 if(read < 0) break;
-                Object* object;
+                Element* element;
                 uint8_t nextByte = (uint8_t)read;
                 bytesLeft --;
                 bytesDone ++;
 
                 if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT)
-                    object = new NumberObject();
+                    element = new Number();
                 else if(nextByte < Type::FIXARRAY)
-                    object = (hierarchy) ? new MapObject() : new MapHeaderObject();
+                    element = (hierarchy) ? new Map() : new MapHeader();
                 else if(nextByte < Type::FIXSTR)
-                    object = (hierarchy) ? new ArrayObject() : new ArrayHeaderObject();
+                    element = (hierarchy) ? new Array() : new ArrayHeader();
                 else if(nextByte < Type::NIL)
-                    object = new StringObject();
+                    element = new String();
                 else
                     switch(nextByte) {
                         case Type::NIL:
                         case Type::ERROR:
                         case Type::BOOL_FALSE:
                         case Type::BOOL_TRUE:
-                            object = new PrimitiveObject();
+                            element = new Primitive();
                         break;
                         case Type::BIN_8:
                         case Type::BIN_16:
                         case Type::BIN_32:
-                            object = new BinaryObject();
+                            element = new Binary();
                         break;
                         case Type::EXT_8:
                         case Type::EXT_16:
@@ -975,46 +975,46 @@ namespace MsgPack {
                         case Type::FIXEXT_32:
                         case Type::FIXEXT_64:
                         case Type::FIXEXT_128:
-                            object = new ExtendedObject();
+                            element = new Extended();
                         break;
                         case Type::STR_8:
                         case Type::STR_16:
                         case Type::STR_32:
-                            object = new StringObject();
+                            element = new String();
                         break;
                         case Type::ARRAY_16:
                         case Type::ARRAY_32:
-                            object = (hierarchy) ? new ArrayObject() : new ArrayHeaderObject();
+                            element = (hierarchy) ? new Array() : new ArrayHeader();
                         break;
                         case Type::MAP_16:
                         case Type::MAP_32:
-                            object = (hierarchy) ? new MapObject() : new MapHeaderObject();
+                            element = (hierarchy) ? new Map() : new MapHeader();
                         break;
                         default:
-                            object = new NumberObject();
+                            element = new Number();
                         break;
                     }
 
-                //Put object in parent container
+                //Put element in parent container
                 if(stack.size() > 0) {
-                    std::vector<std::unique_ptr<Object>>* container = stackPointer->first->getContainer();
-                    *(container->begin()+stackPointer->second) = std::move(std::unique_ptr<Object>(object));
+                    std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getContainer();
+                    *(container->begin()+stackPointer->second) = std::move(std::unique_ptr<Element>(element));
                 }else
-                    rootObject.reset(object);
+                    rootElement.reset(element);
 
-                //Check if object is done
-                int64_t pos = object->startDeserialize(streamBuffer);
-                if(pos < object->getEndPos() || object->containerDeserialized()) {
-                    stack.push_back(StackElement(object, pos));
+                //Check if element is done
+                int64_t pos = element->startDeserialize(streamBuffer);
+                if(pos < element->getEndPos() || element->containerDeserialized()) {
+                    stack.push_back(StackElement(element, pos));
                     continue;
                 }
             }
 
-            //Object done
+            //Element done
             if(stack.size() > 0) {
                 //Pop all done containers from stack
                 uint32_t stackIndex = stack.size()-1;
-                std::vector<std::unique_ptr<Object>>* container;
+                std::vector<std::unique_ptr<Element>>* container;
                 while(true) {
                     container = stack[stackIndex].first->getContainer();
                     if(container && stack[stackIndex].second+1 < container->size()) {
@@ -1028,17 +1028,17 @@ namespace MsgPack {
                 stack.erase(stack.begin()+stackIndex, stack.end());
             }
     
-            //Trigger event for done object
-            if(stack.size() == 0 && pushObject(std::move(rootObject)))
-                break; //One object done: quit
+            //Trigger event for done element
+            if(stack.size() == 0 && pushElement(std::move(rootElement)))
+                break; //One element done: quit
         }
 
         return bytesDone;
     }
 
-    Deserializer& Deserializer::operator>>(std::unique_ptr<Object>& object) {
-        deserialize([&object](std::unique_ptr<Object> _object) {
-            object = std::move(_object);
+    Deserializer& Deserializer::operator>>(std::unique_ptr<Element>& element) {
+        deserialize([&element](std::unique_ptr<Element> _element) {
+            element = std::move(_element);
             return true;
         }, true);
         return *this;
@@ -1046,7 +1046,7 @@ namespace MsgPack {
 
 
 
-    std::ostream& operator<<(std::ostream& ostream, const Object& obj) {
+    std::ostream& operator<<(std::ostream& ostream, const Element& obj) {
         obj.stringify(ostream);
         return ostream;
     }

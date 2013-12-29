@@ -325,7 +325,7 @@ IPVersion Socket::getIPVersion() const {
 
 SocketStatus Socket::getStatus() const {
     if(type == TCP_SERVER)
-        return LISTENING;
+        return (status == NOT_INITIALIZED) ? NOT_INITIALIZED : LISTENING;
     else
         return (SocketStatus)status;
 }

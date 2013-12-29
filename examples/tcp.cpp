@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
             //Prepare a MsgPack encoded message
             MsgPack::Serializer serializer(socket);
-            serializer << new MsgPack::MapHeaderObject(2);
+            serializer << new MsgPack::MapHeader(2);
             serializer << "name";
             serializer << hostname;
             serializer << "message";
@@ -84,8 +84,8 @@ int main(int argc, char** argv) {
             std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Let a MsgPack::Deserializer parse all data at once
-            deserializer->deserialize([](std::unique_ptr<MsgPack::Object> parsedObject) {
-                std::cout << *parsedObject << "\n";
+            deserializer->deserialize([](std::unique_ptr<MsgPack::Element> element) {
+                std::cout << *element << "\n";
 
                 //Don't stop yet, try to parse more data
                 return false;
