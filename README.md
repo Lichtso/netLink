@@ -3,6 +3,8 @@ netLink
 
 C++ 11 Networking Library
 
+[![Build Status](https://travis-ci.org/Lichtso/netLink.png)](https://travis-ci.org/Lichtso/netLink)
+
 Features:
 * C++ 11
 * IPv4, IPv6

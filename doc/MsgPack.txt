@@ -55,3 +55,81 @@ deserializer.deserialize([](std::unique_ptr<MsgPack::Element> parsed) {
 ---------------------------------------------------------------------
 
 If the second parameter is true, the deserializer will generate a hierarchy of MsgPack::Array and MsgPack::Map else it will just generate a stream of elements sometimes containing a MsgPack::ArrayHeader or MsgPack::MapHeader. If you don't pass a second parameter then it is true by default.
+
+
+Push vs. Pull
+-------------
+
+Until here we only have had examples of a push serializer and deserializer, where the program has to push elements into the serializer and the deserializer pushes back deserialized elements. But the pull approach is also supported. This way you have to define a callback and deliver the next element to be serialized. The serializer will then pull the next element when it is needed.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Serializer serializer(socket);
+
+serializer.serialize([]() {
+    Element* nextElement = new MsgPack:: [...] ;
+    return std::unique_ptr<Element>(nextElement);
+});
+---------------------------------------------------------------------
+
+The same goes for deserialization again.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Deserializer deserializer(socket);
+
+std::unique_ptr<Element> element;
+deserializer >> element;
+if(element)
+    [...]
+---------------------------------------------------------------------
+
+or you can use a callback but return true to cancel the deserializion of further elements, which is nearly the same as a pull parser:
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Deserializer deserializer(socket);
+
+std::unique_ptr<Element> element;
+deserializer.deserialize([&element](std::unique_ptr<MsgPack::Element> parsed) {
+    element = std::move(parsed);
+    return true;
+});
+if(element)
+    [...]
+---------------------------------------------------------------------
+
+But be careful, all of the MsgPack streams are non blocking which means that they don't wait until a element hast been serialized or deserialized. When you use push serialization the elements will be pushed into a queue and a call to serialize() will try to serialize as much as possible and when you use pull serialization then the callback won't be called until the last element is serialized. It is simular at the deserialization. A push deserializer won't call the callback until a element is completly deserialized and a pull deserializer might return a empty pointer if there is nothing to pull.
+
+Because of this you might have to call serialize() or deserialize() multiple times to do the rest of the last element which might be only partially done. But both methods will try to process as many bytes as possible. Therefore you should call serialize() again, when there is new space in your stream buffer to be written in and deserialize() when there is new data available in your stream buffer. And you will have to call them with the same MsgPack::Serializer or MsgPack::Deserializer again, else the intermediate state of the last time will be lost.
+
+
+Data flow control
+-----------------
+
+A nice feature is, that you can control the flow of data exactly and decide how many bytes will be processed. Just add a second parameter to the serialize() or deserialize() call.
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Serializer serializer(socket);
+
+serializer << new MsgPack::ArrayHeader(3);
+serializer << true;
+serializer << new MsgPack::ArrayHeader(0);
+serializer << "Hello World!";
+std::cout << "Processed " << serializer.serialize(nullptr, 16) << " bytes\n";
+---------------------------------------------------------------------
+
+to seralize only 16 bytes or
+
+[source, cpp]
+---------------------------------------------------------------------
+MsgPack::Deserializer deserializer(socket);
+
+std::cout << "Processed " << deserializer.deserialize([](std::unique_ptr<MsgPack::Element> parsed) {
+    std::cout << "Parsed: " << *parsed << "\n";
+    return false;
+}, 16) << " bytes\n";
+---------------------------------------------------------------------
+
+to deseralize only 16 bytes. Both methods return how many bytes they actually processed.

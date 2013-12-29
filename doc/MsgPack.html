@@ -789,11 +789,88 @@ deserializer<span style="color: #990000">.</span><span style="font-weight: bold"
 <div class="paragraph"><p>If the second parameter is true, the deserializer will generate a hierarchy of MsgPack::Array and MsgPack::Map else it will just generate a stream of elements sometimes containing a MsgPack::ArrayHeader or MsgPack::MapHeader. If you don&#8217;t pass a second parameter then it is true by default.</p></div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_push_vs_pull">Push vs. Pull</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Until here we only have had examples of a push serializer and deserializer, where the program has to push elements into the serializer and the deserializer pushes back deserialized elements. But the pull approach is also supported. This way you have to define a callback and deliver the next element to be serialized. The serializer will then pull the next element when it is needed.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>MsgPack<span style="color: #990000">::</span><span style="color: #008080">Serializer</span> <span style="font-weight: bold"><span style="color: #000000">serializer</span></span><span style="color: #990000">(</span>socket<span style="color: #990000">);</span>
+
+serializer<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">serialize</span></span><span style="color: #990000">([]()</span> <span style="color: #FF0000">{</span>
+    Element<span style="color: #990000">*</span> nextElement <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> MsgPack<span style="color: #990000">::</span> <span style="color: #990000">[...]</span> <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> std<span style="color: #990000">::</span>unique_ptr<span style="color: #990000">&lt;</span>Element<span style="color: #990000">&gt;(</span>nextElement<span style="color: #990000">);</span>
+<span style="color: #FF0000">}</span><span style="color: #990000">);</span></tt></pre></div></div>
+<div class="paragraph"><p>The same goes for deserialization again.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>MsgPack<span style="color: #990000">::</span><span style="color: #008080">Deserializer</span> <span style="font-weight: bold"><span style="color: #000000">deserializer</span></span><span style="color: #990000">(</span>socket<span style="color: #990000">);</span>
+
+std<span style="color: #990000">::</span><span style="color: #008080">unique_ptr&lt;Element&gt;</span> element<span style="color: #990000">;</span>
+deserializer <span style="color: #990000">&gt;&gt;</span> element<span style="color: #990000">;</span>
+<span style="font-weight: bold"><span style="color: #0000FF">if</span></span><span style="color: #990000">(</span>element<span style="color: #990000">)</span>
+    <span style="color: #990000">[...]</span></tt></pre></div></div>
+<div class="paragraph"><p>or you can use a callback but return true to cancel the deserializion of further elements, which is nearly the same as a pull parser:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>MsgPack<span style="color: #990000">::</span><span style="color: #008080">Deserializer</span> <span style="font-weight: bold"><span style="color: #000000">deserializer</span></span><span style="color: #990000">(</span>socket<span style="color: #990000">);</span>
+
+std<span style="color: #990000">::</span><span style="color: #008080">unique_ptr&lt;Element&gt;</span> element<span style="color: #990000">;</span>
+deserializer<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">deserialize</span></span><span style="color: #990000">([&amp;</span>element<span style="color: #990000">](</span>std<span style="color: #990000">::</span><span style="color: #008080">unique_ptr&lt;MsgPack::Element&gt;</span> parsed<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+    element <span style="color: #990000">=</span> std<span style="color: #990000">::</span><span style="font-weight: bold"><span style="color: #000000">move</span></span><span style="color: #990000">(</span>parsed<span style="color: #990000">);</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span><span style="color: #990000">);</span>
+<span style="font-weight: bold"><span style="color: #0000FF">if</span></span><span style="color: #990000">(</span>element<span style="color: #990000">)</span>
+    <span style="color: #990000">[...]</span></tt></pre></div></div>
+<div class="paragraph"><p>But be careful, all of the MsgPack streams are non blocking which means that they don&#8217;t wait until a element hast been serialized or deserialized. When you use push serialization the elements will be pushed into a queue and a call to serialize() will try to serialize as much as possible and when you use pull serialization then the callback won&#8217;t be called until the last element is serialized. It is simular at the deserialization. A push deserializer won&#8217;t call the callback until a element is completly deserialized and a pull deserializer might return a empty pointer if there is nothing to pull.</p></div>
+<div class="paragraph"><p>Because of this you might have to call serialize() or deserialize() multiple times to do the rest of the last element which might be only partially done. But both methods will try to process as many bytes as possible. Therefore you should call serialize() again, when there is new space in your stream buffer to be written in and deserialize() when there is new data available in your stream buffer. And you will have to call them with the same MsgPack::Serializer or MsgPack::Deserializer again, else the intermediate state of the last time will be lost.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_data_flow_control">Data flow control</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>A nice feature is, that you can control the flow of data exactly and decide how many bytes will be processed. Just add a second parameter to the serialize() or deserialize() call.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>MsgPack<span style="color: #990000">::</span><span style="color: #008080">Serializer</span> <span style="font-weight: bold"><span style="color: #000000">serializer</span></span><span style="color: #990000">(</span>socket<span style="color: #990000">);</span>
+
+serializer <span style="color: #990000">&lt;&lt;</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> MsgPack<span style="color: #990000">::</span><span style="font-weight: bold"><span style="color: #000000">ArrayHeader</span></span><span style="color: #990000">(</span><span style="color: #993399">3</span><span style="color: #990000">);</span>
+serializer <span style="color: #990000">&lt;&lt;</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">;</span>
+serializer <span style="color: #990000">&lt;&lt;</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> MsgPack<span style="color: #990000">::</span><span style="font-weight: bold"><span style="color: #000000">ArrayHeader</span></span><span style="color: #990000">(</span><span style="color: #993399">0</span><span style="color: #990000">);</span>
+serializer <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">"Hello World!"</span><span style="color: #990000">;</span>
+std<span style="color: #990000">::</span>cout <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">"Processed "</span> <span style="color: #990000">&lt;&lt;</span> serializer<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">serialize</span></span><span style="color: #990000">(</span>nullptr<span style="color: #990000">,</span> <span style="color: #993399">16</span><span style="color: #990000">)</span> <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">" bytes</span><span style="color: #CC33CC">\n</span><span style="color: #FF0000">"</span><span style="color: #990000">;</span></tt></pre></div></div>
+<div class="paragraph"><p>to seralize only 16 bytes or</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>MsgPack<span style="color: #990000">::</span><span style="color: #008080">Deserializer</span> <span style="font-weight: bold"><span style="color: #000000">deserializer</span></span><span style="color: #990000">(</span>socket<span style="color: #990000">);</span>
+
+std<span style="color: #990000">::</span>cout <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">"Processed "</span> <span style="color: #990000">&lt;&lt;</span> deserializer<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">deserialize</span></span><span style="color: #990000">([](</span>std<span style="color: #990000">::</span><span style="color: #008080">unique_ptr&lt;MsgPack::Element&gt;</span> parsed<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+    std<span style="color: #990000">::</span>cout <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">"Parsed: "</span> <span style="color: #990000">&lt;&lt;</span> <span style="color: #990000">*</span>parsed <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">"</span><span style="color: #CC33CC">\n</span><span style="color: #FF0000">"</span><span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span><span style="color: #990000">,</span> <span style="color: #993399">16</span><span style="color: #990000">)</span> <span style="color: #990000">&lt;&lt;</span> <span style="color: #FF0000">" bytes</span><span style="color: #CC33CC">\n</span><span style="color: #FF0000">"</span><span style="color: #990000">;</span></tt></pre></div></div>
+<div class="paragraph"><p>to deseralize only 16 bytes. Both methods return how many bytes they actually processed.</p></div>
+</div>
+</div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2013-12-29 14:57:31 CET
+Last updated 2013-12-29 18:55:19 CET
 </div>
 </div>
 </body>
