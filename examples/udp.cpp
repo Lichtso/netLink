@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
 
             //Let a MsgPack::Deserializer parse all data at once
             MsgPack::Deserializer deserializer(socket);
-            deserializer.deserialize([](std::unique_ptr<MsgPack::Object> parsedObject) {
-                std::cout << *parsedObject << "\n";
+            deserializer.deserialize([](std::unique_ptr<MsgPack::Element> element) {
+                std::cout << *element << "\n";
 
                 //Don't stop yet, try to parse more data
                 return false;
@@ -62,14 +62,14 @@ int main(int argc, char** argv) {
     //Prepare a MsgPack encoded message
     MsgPack::Serializer serializer(socket.get());
     serializer << "Test message";
-    serializer << new MsgPack::ArrayHeaderObject(3);
-    serializer << new MsgPack::MapHeaderObject(2);
+    serializer << new MsgPack::ArrayHeader(3);
+    serializer << new MsgPack::MapHeader(2);
     serializer << "Boolean";
     serializer << true;
     serializer << "Number";
     serializer << 2487.348;
-    serializer << new MsgPack::ArrayHeaderObject(0);
-    serializer << new MsgPack::PrimitiveObject();
+    serializer << new MsgPack::ArrayHeader(0);
+    serializer << new MsgPack::Primitive();
 
     //Write all elements of the queue into the output buffer of the socket and flush it
     serializer.serialize();
