@@ -32,11 +32,6 @@ static void readSockaddr(const struct sockaddr* addr, std::string& host, unsigne
     host = buffer;
 }
 
-static void checkReadError() {
-    if(errno != EAGAIN && errno != EWOULDBLOCK)
-        throw Exception(Exception::ERROR_READ);
-}
-
 Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned int port, bool wildcardAddress) {
     struct addrinfo conf, *res;
     memset(&conf, 0, sizeof(conf));
@@ -61,8 +56,8 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
     char portStr[10];
     snprintf(portStr, 10, "%u", port);
 
-    int status = getaddrinfo(host, portStr, &conf, &res);
-    if(status != 0)
+    int result = getaddrinfo(host, portStr, &conf, &res);
+    if(result != 0)
         throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
 
     return AddrinfoContainer(res);
@@ -117,7 +112,7 @@ Socket::pos_type Socket::seekpos(Socket::pos_type sp, std::ios_base::openmode wh
 }
 
 Socket::int_type Socket::sync() {
-    if(getOutputBufferSize() == 0) //No output buffer
+    if(getOutputBufferSize() <= 0) //No output buffer
         return EOF;
 
     if(pptr() == pbase()) //Allready in sync
@@ -144,7 +139,7 @@ std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
 }
 
 Socket::int_type Socket::underflow() {
-    if(type == UDP_PEER || advanceInputBuffer() == 0)
+    if(type == UDP_PEER || advanceInputBuffer() <= 0)
         return EOF;
     return *eback();
 }
@@ -353,7 +348,7 @@ std::streamsize Socket::advanceInputBuffer() {
     try {
         inAvail += receive(eback()+inAvail, inputIntermediateSize-inAvail);
     } catch(Exception err) {
-        
+
     }
 
     setg(eback(), eback(), eback()+inAvail);
@@ -362,29 +357,30 @@ std::streamsize Socket::advanceInputBuffer() {
 
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
     size = std::min(size, showmanyc());
+    if(size == 0) return 0;
     
     switch(type) {
         case UDP_PEER: {
             struct sockaddr remoteAddr;
             unsigned int addrSize = sizeof(remoteAddr);
-            int status = recvfrom(handle, buffer, size, 0, &remoteAddr, &addrSize);
+            int result = recvfrom(handle, buffer, size, 0, &remoteAddr, &addrSize);
             
-            if(status == -1) {
+            if(result == -1) {
                 portRemote = 0;
                 hostRemote = "";
-                checkReadError();
+                throw Exception(Exception::ERROR_READ);
             }else
                 readSockaddr(&remoteAddr, hostRemote, portRemote);
             
-            return status;
+            return result;
         }
         case TCP_CLIENT:
         case TCP_SERVERS_CLIENT: {
-            int status = recv(handle, buffer, size, 0);
-            if(status == -1)
-                checkReadError();
+            int result = recv(handle, buffer, size, 0);
+            if(result == -1)
+                throw Exception(Exception::ERROR_READ);
             
-            return status;
+            return result;
         }
         case NONE:
         case TCP_SERVER:
@@ -393,18 +389,20 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
 }
 
 std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
+    if(size == 0) return 0;
+
     switch(type) {
         case UDP_PEER: {
             AddrinfoContainer info = getSocketInfoFor(hostRemote.c_str(), portRemote, false);
             
             size_t sentBytes = 0;
             while(sentBytes < size) {
-                int status = ::sendto(handle, (const char*)buffer + sentBytes, size - sentBytes, 0, info->ai_addr, info->ai_addrlen);
+                int result = ::sendto(handle, (const char*)buffer + sentBytes, size - sentBytes, 0, info->ai_addr, info->ai_addrlen);
                 
-                if(status == -1)
+                if(result == -1)
                     throw Exception(Exception::ERROR_SEND);
                 
-                sentBytes += status;
+                sentBytes += result;
             }
 
             return sentBytes;
@@ -413,12 +411,12 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
         case TCP_SERVERS_CLIENT: {
             size_t sentBytes = 0;
             while(sentBytes < size) {
-                int status = ::send(handle, (const char*)buffer + sentBytes, size - sentBytes, 0);
+                int result = ::send(handle, (const char*)buffer + sentBytes, size - sentBytes, 0);
                 
-                if(status == -1)
+                if(result == -1)
                     throw Exception(Exception::ERROR_SEND);
                 
-                sentBytes += status;
+                sentBytes += result;
             }
             return sentBytes;
         }

@@ -37,9 +37,7 @@ void SocketManager::listen(double secLeft) {
     struct timeval timeout;
     timeout.tv_sec = secLeft;
     timeout.tv_usec = secLeft * 1000000.0;
-    int status = select(maxHandle + 1, &readfds, &writefds, &exceptfds, &timeout);
-    
-    if(status == -1)
+    if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, &timeout) == -1)
         throw Exception(Exception::ERROR_SELECT);
     
     foreach_e(sockets, iterator) {
