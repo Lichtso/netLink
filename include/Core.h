@@ -20,14 +20,11 @@
 
 #include <arpa/inet.h>
 #include <sys/fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/unistd.h>
-#include <sys/time.h>
 #include <netdb.h>
 #include <sys/ioctl.h>
-#include <errno.h>
 #include <unistd.h>
+#include <set>
+#include <cmath>
 
 #define foreach_e(c,i) for(auto end##i = (c).end(), next##i = (c).begin(), \
 i = (next##i==end##i)?end##i:next##i++; \

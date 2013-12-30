@@ -42,8 +42,7 @@ int main(int argc, char** argv) {
     };
 
     //Alloc a new socket and insert it into the SocketManager
-    std::shared_ptr<netLink::Socket> socket(new netLink::Socket());
-    socketManager.sockets.insert(socket);
+    std::shared_ptr<netLink::Socket> socket = socketManager.generateSocket();
 
     //Init socket as UDP listening to all incoming adresses (let the system choose IPv4 or IPv6) on port 3824
     socket->initAsUdpPeer("*", 3824);

@@ -20,8 +20,7 @@ int main(int argc, char** argv) {
     netLink::SocketManager socketManager;
 
     //Alloc a new socket, insert it into the SocketManager
-    std::shared_ptr<netLink::Socket> socket(new netLink::Socket());
-    socketManager.sockets.insert(socket);
+    std::shared_ptr<netLink::Socket> socket = socketManager.generateSocket();
 
     //Prepare a Deserializer which has to be persistent over serval 'onReceive' calls
     std::unique_ptr<MsgPack::Deserializer> deserializer;

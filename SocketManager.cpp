@@ -17,6 +17,12 @@
 
 namespace netLink {
 
+std::shared_ptr<Socket> SocketManager::generateSocket() {
+    std::shared_ptr<Socket> socket(new Socket());
+    sockets.insert(socket);
+    return socket;
+}
+
 void SocketManager::listen(double secLeft) {
     fd_set readfds, writefds, exceptfds;
     FD_ZERO(&readfds);
@@ -36,7 +42,7 @@ void SocketManager::listen(double secLeft) {
     
     struct timeval timeout;
     timeout.tv_sec = secLeft;
-    timeout.tv_usec = secLeft * 1000000.0;
+    timeout.tv_usec = fmod(secLeft, 1.0) * 1000000.0;
     if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, &timeout) == -1)
         throw Exception(Exception::ERROR_SELECT);
     
