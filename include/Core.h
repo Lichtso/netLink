@@ -13,16 +13,22 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef netLink_Core
-#define netLink_Core
+#pragma once
 
 #include "MsgPack.h"
 
+#ifdef WIN32
+#include <SDKDDKVer.h>
+#include <Ws2tcpip.h>
+#else
 #include <arpa/inet.h>
 #include <sys/fcntl.h>
 #include <netdb.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#define min std::min
+#define max std::max
+#endif
 #include <set>
 #include <cmath>
 
@@ -89,5 +95,3 @@ namespace netLink {
     };
     
 };
-
-#endif

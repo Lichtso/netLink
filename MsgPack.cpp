@@ -15,6 +15,12 @@
 
 #include "include/MsgPack.h"
 
+#ifdef WIN32
+#define __builtin_bswap16 _byteswap_ushort
+#define __builtin_bswap32 _byteswap_ulong
+#define __builtin_bswap64 _byteswap_uint64
+#endif
+
 void storeUint8(uint8_t* target, uint8_t source) {
     *reinterpret_cast<uint8_t*>(target) = source;
 }
@@ -195,8 +201,8 @@ namespace MsgPack {
             case Type::NIL:
                 stream << "null";
             return;
-            case Type::ERROR:
-                stream << "error";
+            case Type::UNDEFINED:
+                stream << "undefined";
             break;
             case Type::BOOL_FALSE:
                 stream << "false";
@@ -957,7 +963,7 @@ namespace MsgPack {
                 else
                     switch(nextByte) {
                         case Type::NIL:
-                        case Type::ERROR:
+						case Type::UNDEFINED:
                         case Type::BOOL_FALSE:
                         case Type::BOOL_TRUE:
                             element = new Primitive();

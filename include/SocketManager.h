@@ -13,8 +13,7 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef netLink_SocketManager
-#define netLink_SocketManager
+#pragma once
 
 #include "Socket.h"
 
@@ -38,11 +37,9 @@ namespace netLink {
         std::shared_ptr<Socket> generateSocket();
  
         /*! Listens a periode time
-         @param sec Maximum time to wait in seconds
+         @param sec Maximum time to wait in seconds or negative values to wait indefinitely
          */
         void listen(double sec = 0.0);
     };
 
 };
-
-#endif

@@ -13,14 +13,15 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
+#pragma once
+
 #include <vector>
 #include <queue>
 #include <string>
 #include <sstream>
 #include <functional>
-
-#ifndef netLink_MsgPack
-#define netLink_MsgPack
+#include <memory>
+#include <inttypes.h>
 
 //Store numbers in network endian (big endian)
 inline void storeUint8(uint8_t* target, uint8_t source);
@@ -54,7 +55,7 @@ namespace MsgPack {
         FIXARRAY = 0x90,
         FIXSTR = 0xA0,
         NIL = 0xC0,
-        ERROR = 0xC1,
+        UNDEFINED = 0xC1,
         BOOL_FALSE = 0xC2,
         BOOL_TRUE = 0xC3,
         BIN_8 = 0xC4,
@@ -409,5 +410,3 @@ namespace MsgPack {
 
     std::ostream& operator<<(std::ostream& ostream, const Element& obj);
 };
-
-#endif

@@ -12,7 +12,7 @@ Features:
 * Enable/Disable blocking mode
 * Join/Leave UDP-Multicast groups
 * UDP-IPv4-Broadcast
-* Operating Systems: Mac OS, Linux
+* Operating Systems: Mac OS, Linux, Windows
 * Socket can be used as std::streambuf 
 * SocketManager calls events for connecting, disconnecting, receiving data and write buffer overflow
 * MsgPack support: http://msgpack.org

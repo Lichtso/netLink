@@ -13,8 +13,7 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef netLink_Socket
-#define netLink_Socket
+#pragma once
 
 #include "Core.h"
 
@@ -39,7 +38,7 @@ namespace netLink {
         //Buffer management and positioning
         pos_type seekoff(off_type off, std::ios_base::seekdir way, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
         pos_type seekpos(pos_type sp, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
-        int_type sync();
+		int sync();
 
         //Input functions (get)
         std::streamsize inputIntermediateSize = 0;
@@ -156,5 +155,3 @@ namespace netLink {
     };
 
 };
-
-#endif

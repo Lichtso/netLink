@@ -32,7 +32,7 @@ void SocketManager::listen(double secLeft) {
     int maxHandle = 0;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
-        maxHandle = std::max(maxHandle, socket->handle);
+        maxHandle = max(maxHandle, socket->handle);
         FD_SET(socket->handle, &readfds);
         if(socket->type != TCP_SERVER)
             FD_SET(socket->handle, &writefds);
@@ -40,10 +40,15 @@ void SocketManager::listen(double secLeft) {
             FD_SET(socket->handle, &exceptfds);
     }
     
-    struct timeval timeout;
-    timeout.tv_sec = secLeft;
-    timeout.tv_usec = fmod(secLeft, 1.0) * 1000000.0;
-    if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, &timeout) == -1)
+    struct timeval timeout, *timeoutPtr;
+    if(secLeft >= 0.0) {
+        timeout.tv_sec = secLeft;
+        timeout.tv_usec = fmod(secLeft, 1.0) * 1000000.0;
+        timeoutPtr = &timeout;
+    }else
+        timeoutPtr = NULL;
+
+    if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
     
     foreach_e(sockets, iterator) {
