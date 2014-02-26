@@ -20,14 +20,14 @@
 #ifdef WIN32
 #include <SDKDDKVer.h>
 #include <Ws2tcpip.h>
+#undef min
+#undef max
 #else
 #include <arpa/inet.h>
 #include <sys/fcntl.h>
 #include <netdb.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#define min std::min
-#define max std::max
 #endif
 #include <set>
 #include <cmath>

@@ -375,7 +375,7 @@ std::streamsize Socket::advanceInputBuffer() {
 }
 
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
-    size = min(size, showmanyc());
+    size = std::min(size, showmanyc());
     if(size == 0) return 0;
     
     switch(type) {

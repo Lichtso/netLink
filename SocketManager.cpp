@@ -32,7 +32,7 @@ void SocketManager::listen(double secLeft) {
     int maxHandle = 0;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
-        maxHandle = max(maxHandle, socket->handle);
+        maxHandle = std::max(maxHandle, socket->handle);
         FD_SET(socket->handle, &readfds);
         if(socket->type != TCP_SERVER)
             FD_SET(socket->handle, &writefds);
