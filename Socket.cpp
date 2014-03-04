@@ -15,13 +15,18 @@
 
 #include "include/Socket.h"
 
+namespace netLink {
+
 #ifdef WIN32
+void init() {
+	WSADATA wsaData;
+	if(WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
+		throw Exception(Exception::ERROR_INIT);
+}
 #define snprintf _snprintf_s
 #else
 #define closesocket close
 #endif
-
-namespace netLink {
 
 static void readSockaddr(const struct sockaddr* addr, std::string& host, unsigned int& port) {
     char buffer[INET6_ADDRSTRLEN];

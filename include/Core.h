@@ -20,6 +20,7 @@
 #ifdef WIN32
 #include <SDKDDKVer.h>
 #include <Ws2tcpip.h>
+#pragma comment(lib, "Ws2_32")
 #undef min
 #undef max
 #else
@@ -93,5 +94,8 @@ namespace netLink {
         
         Exception(CODE _code): code(_code) { }
     };
+
+	//! Initialize netLink (only neccessary if windows)
+	void init();
     
 };
