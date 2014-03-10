@@ -28,16 +28,16 @@ void init() {
 #define closesocket close
 #endif
 
-static void readSockaddr(const struct sockaddr* addr, std::string& host, unsigned int& port) {
+static void readSockaddr(const struct sockaddr_storage* addr, std::string& host, unsigned int& port) {
     char buffer[INET6_ADDRSTRLEN];
-    if(addr->sa_family == AF_INET) {
+    if(addr->ss_family == AF_INET) {
         auto sin = reinterpret_cast<const struct sockaddr_in*>(addr);
         port = ntohs(sin->sin_port);
-		inet_ntop(addr->sa_family, (void*)&(sin->sin_addr), buffer, sizeof(buffer));
+		inet_ntop(addr->ss_family, (void*)&(sin->sin_addr), buffer, sizeof(buffer));
     }else{
         auto sin = reinterpret_cast<const struct sockaddr_in6*>(addr);
         port = ntohs(sin->sin6_port);
-		inet_ntop(addr->sa_family, (void*)&(sin->sin6_addr), buffer, sizeof(buffer));
+		inet_ntop(addr->ss_family, (void*)&(sin->sin6_addr), buffer, sizeof(buffer));
     }
     host = buffer;
 }
@@ -260,18 +260,19 @@ void Socket::initSocket(bool blockingConnect) {
     if(handle == -1)
         throw Exception(Exception::ERROR_INIT);
 
+    struct sockaddr_storage localAddr;
 	#ifdef WIN32
-    int size = sizeof(nextAddr->ai_addr);
+    int size = sizeof(localAddr);
 	#else
-	unsigned int size = sizeof(nextAddr->ai_addr);
+	unsigned int size = sizeof(localAddr);
 	#endif
-    if(getsockname(handle, nextAddr->ai_addr, &size) != 0)
+    if(getsockname(handle, reinterpret_cast<struct sockaddr*>(&localAddr), &size) != 0)
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
     
-    readSockaddr(nextAddr->ai_addr, hostLocal, portLocal);
+    readSockaddr(&localAddr, hostLocal, portLocal);
 }
 
-void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
+void Socket::setMulticastGroup(const struct sockaddr_storage* addr, bool join) {
     if(ipVersion == IPv4) {
         auto sin = reinterpret_cast<const struct sockaddr_in*>(addr)->sin_addr;
         if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
@@ -296,7 +297,7 @@ void Socket::setMulticastGroup(const struct sockaddr* addr, bool join) {
 }
 
 Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
-               struct sockaddr* remoteAddr, IPVersion _ipVersion)
+               struct sockaddr_storage* remoteAddr, IPVersion _ipVersion)
                 :ipVersion(_ipVersion), type(TCP_SERVERS_CLIENT), status(READY),
                 handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal) {
     readSockaddr(remoteAddr, hostRemote, portRemote);
@@ -385,13 +386,13 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
     
     switch(type) {
         case UDP_PEER: {
-            struct sockaddr remoteAddr;
+            struct sockaddr_storage remoteAddr;
 			#ifdef WIN32
 			int addrSize = sizeof(remoteAddr);
 			#else
 			unsigned int addrSize = sizeof(remoteAddr);
 			#endif
-            int result = recvfrom(handle, (char*)buffer, size, 0, &remoteAddr, &addrSize);
+            int result = recvfrom(handle, (char*)buffer, size, 0, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
             
             if(result == -1) {
                 portRemote = 0;
@@ -489,7 +490,7 @@ void Socket::setOutputBufferSize(std::streamsize n) {
 void Socket::setBlockingMode(bool blocking) {
 	#ifdef WIN32
 	unsigned long flag = !blocking;
-	if(ioctlsocket(handle, FIONBIO, &flag) == -1)
+	if(ioctlsocket(handle, FIONBIO, &flag) != 0)
 	#else
     int flags = fcntl(handle, F_GETFL);
     if(blocking)
@@ -529,21 +530,21 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
             throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
     }
 
-    setMulticastGroup(reinterpret_cast<struct sockaddr*>(&addr), join);
+    setMulticastGroup(&addr, join);
 }
 
 std::unique_ptr<Socket> Socket::accept() {
     if(type != TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
     
-    struct sockaddr remoteAddr;
+    struct sockaddr_storage remoteAddr;
 	#ifdef WIN32
 	int addrSize = sizeof(remoteAddr);
 	#else
 	unsigned int addrSize = sizeof(remoteAddr);
 	#endif
     
-    int newHandler = ::accept(handle, &remoteAddr, &addrSize);
+    int newHandler = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
     if(newHandler == -1) return nullptr;
     
     return std::unique_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVersion));

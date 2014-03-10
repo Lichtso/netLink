@@ -29,7 +29,7 @@ void SocketManager::listen(double secLeft) {
     FD_ZERO(&writefds);
     FD_ZERO(&exceptfds);
     
-    int maxHandle = 0;
+    int maxHandle = -1;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
         maxHandle = std::max(maxHandle, socket->handle);
@@ -39,6 +39,7 @@ void SocketManager::listen(double secLeft) {
         if(socket->type == TCP_CLIENT)
             FD_SET(socket->handle, &exceptfds);
     }
+    if(maxHandle == -1) return;
     
     struct timeval timeout, *timeoutPtr;
     if(secLeft >= 0.0) {

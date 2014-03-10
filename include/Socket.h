@@ -55,9 +55,9 @@ namespace netLink {
         int handle = -1; //!< Handle used for the system interface
 
         void initSocket(bool blocking);
-        void setMulticastGroup(const struct sockaddr* addr, bool join);
+        void setMulticastGroup(const struct sockaddr_storage* addr, bool join);
         Socket(int handle, const std::string& hostLocal, unsigned portLocal,
-               struct sockaddr* remoteAddr, IPVersion ipVersion);
+               struct sockaddr_storage* remoteAddr, IPVersion ipVersion);
         
         public:
         std::string hostLocal, //!< Host string of local
