@@ -467,7 +467,10 @@ std::streamsize Socket::getOutputBufferSize() {
 }
 
 void Socket::setInputBufferSize(std::streamsize n) {
-    if(eback()) delete [] eback();
+    if(eback()) {
+        delete [] eback();
+        setg(NULL, NULL, NULL);
+    }
     if(n == 0) return;
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
@@ -478,7 +481,10 @@ void Socket::setInputBufferSize(std::streamsize n) {
 }
 
 void Socket::setOutputBufferSize(std::streamsize n) {
-    if(pbase()) delete [] pbase();
+    if(pbase()) {
+        delete [] pbase();
+        setp(NULL, NULL);
+    }
     if(n == 0) return;
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
@@ -533,7 +539,7 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
     setMulticastGroup(&addr, join);
 }
 
-std::unique_ptr<Socket> Socket::accept() {
+std::shared_ptr<Socket> Socket::accept() {
     if(type != TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
     
@@ -546,17 +552,20 @@ std::unique_ptr<Socket> Socket::accept() {
     
     int newHandler = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
     if(newHandler == -1) return nullptr;
+
+    std::shared_ptr<Socket> client(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVersion));
+    clients.insert(client);
     
-    return std::unique_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVersion));
+    return client;
 }
 
 void Socket::disconnect() {
+    type = NONE;
+    status = NOT_CONNECTED;
     setInputBufferSize(0);
     setOutputBufferSize(0);
-    if(handle == -1) return;
-	closesocket(handle);
-    handle = -1;
-    status = NOT_CONNECTED;
+    if(handle != -1)
+	   closesocket(handle);
 }
 
 };

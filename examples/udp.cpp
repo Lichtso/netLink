@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     netLink::SocketManager socketManager;
 
     //Define a callback, fired when a socket receives data
-    socketManager.onReceive = [](netLink::SocketManager* manager, netLink::Socket* socket) {
+    socketManager.onReceive = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
         try {
             //Because we are using UDP we want to ensure that we only read data from the incoming packet
             socket->advanceInputBuffer();
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
             std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Let a MsgPack::Deserializer parse all data at once
-            MsgPack::Deserializer deserializer(socket);
+            MsgPack::Deserializer deserializer(socket.get());
             deserializer.deserialize([](std::unique_ptr<MsgPack::Element> element) {
                 std::cout << *element << "\n";
 

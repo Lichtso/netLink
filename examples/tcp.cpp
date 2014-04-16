@@ -34,24 +34,24 @@ int main(int argc, char** argv) {
     hostname[len] = 0;
 
     //Define a callback, fired when a new client tries to connect
-    socketManager.onConnectRequest = [&deserializer](netLink::SocketManager* manager, netLink::Socket* serverSocket, netLink::Socket* socket) {
-        std::cout << "Accepted connection from " << socket->hostRemote << ":" << socket->portRemote << "\n";
+    socketManager.onConnectRequest = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
+        std::cout << "Accepted connection from " << clientSocket->hostRemote << ":" << clientSocket->portRemote << "\n";
 
         //Alloc memory and a Deserializer for incoming messages
-        socket->setInputBufferSize(10000);
-        deserializer.reset(new MsgPack::Deserializer(socket));
+        clientSocket->setInputBufferSize(10000);
+        deserializer.reset(new MsgPack::Deserializer(clientSocket.get()));
 
         //Accept all new connections
         return true;
     };
 
     //Define a callback, fired when a sockets state changes
-    socketManager.onStateChanged = [&hostname](netLink::SocketManager* manager, netLink::Socket* socket, netLink::SocketStatus prev) {
+    socketManager.onStateChanged = [&hostname](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
         if(prev == netLink::NOT_CONNECTED) {
             std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Prepare a MsgPack encoded message
-            MsgPack::Serializer serializer(socket);
+            MsgPack::Serializer serializer(socket.get());
             serializer << new MsgPack::MapHeader(2);
             serializer << "name";
             serializer << hostname;
@@ -66,8 +66,9 @@ int main(int argc, char** argv) {
     };
 
     //Define a callback, fired when a socket disconnects
-    socketManager.onDisconnect = [](netLink::SocketManager* manager, netLink::Socket* socket) {
+    socketManager.onDisconnect = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
         std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << "\n";
+        deserializer.reset();
 
         //Quit if the connection to the server is lost
         if(socket->getType() == netLink::TCP_CLIENT) {
@@ -77,7 +78,7 @@ int main(int argc, char** argv) {
     };
 
     //Define a callback, fired when a socket receives data
-    socketManager.onReceive = [&deserializer](netLink::SocketManager* manager, netLink::Socket* socket) {
+    socketManager.onReceive = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
         try {
             //hostRemote and portRemote are now set to the origin of the last received message
             std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << "\n";

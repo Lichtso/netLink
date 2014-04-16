@@ -30,14 +30,42 @@ void SocketManager::listen(double secLeft) {
     FD_ZERO(&exceptfds);
     
     int maxHandle = -1;
+    std::set<std::shared_ptr<Socket>> selection;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
+
+        //Garbage collect disconnected sockets
+        if(socket->type == NONE) {
+            sockets.erase(iterator);
+            continue;
+        }
+
+        //Add the socket to the listen set
         maxHandle = std::max(maxHandle, socket->handle);
         FD_SET(socket->handle, &readfds);
-        if(socket->type != TCP_SERVER)
+        FD_SET(socket->handle, &exceptfds);
+        selection.insert(*iterator);
+
+        if(socket->type == TCP_SERVER) {
+            //Iterate all TCP_SERVERS_CLIENTs
+            foreach_e(socket->clients, clientIterator) {
+                Socket* client = (*clientIterator).get();
+    
+                //Garbage collect disconnected clients
+                if(client->type == NONE) {
+                    socket->clients.erase(clientIterator);
+                    continue;
+                }
+    
+                //Add client to the listen set
+                maxHandle = std::max(maxHandle, client->handle);
+                FD_SET(client->handle, &readfds);
+                FD_SET(client->handle, &writefds);
+                FD_SET(client->handle, &exceptfds);
+                selection.insert(*clientIterator);
+            }
+        }else
             FD_SET(socket->handle, &writefds);
-        if(socket->type == TCP_CLIENT)
-            FD_SET(socket->handle, &exceptfds);
     }
     if(maxHandle == -1) return;
     
@@ -52,45 +80,45 @@ void SocketManager::listen(double secLeft) {
     if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
     
-    foreach_e(sockets, iterator) {
+    foreach_e(selection, iterator) {
         Socket* socket = (*iterator).get();
-        bool isInReadFDS = FD_ISSET(socket->handle, &readfds);
-        
-        switch(socket->type) {
-            case NONE:
-                throw Exception(Exception::BAD_TYPE);
-            case TCP_SERVER:
-                if(isInReadFDS && onConnectRequest) {
-                    std::unique_ptr<Socket> newSocket = socket->accept();
-                    if(onConnectRequest(this, socket, newSocket.get()))
-                        sockets.insert(std::move(newSocket));
-                }
-            continue;
-            case TCP_CLIENT:
-                if(FD_ISSET(socket->handle, &exceptfds)) {
-                    if(onDisconnect) onDisconnect(this, socket);
-                    sockets.erase(iterator);
-                    continue;
-                }
-            case TCP_SERVERS_CLIENT:
-                if(isInReadFDS && socket->showmanyc() <= 0) {
-                    if(onDisconnect) onDisconnect(this, socket);
-                    sockets.erase(iterator);
-                    continue;
-                }
-            case UDP_PEER:
-                if(isInReadFDS && onReceive)
-                    onReceive(this, socket);
-                
-                SocketStatus prev = (SocketStatus) socket->status;
-                
-                if(FD_ISSET(socket->handle, &writefds))
-                    socket->status = READY;
-                else
-                    socket->status = (prev == NOT_CONNECTED) ? NOT_CONNECTED : BUSY;
 
-                if(onStateChanged && socket->status != prev)
-                    onStateChanged(this, socket, prev);
+        //Exception occured: disconnect
+        if(FD_ISSET(socket->handle, &exceptfds)) {
+            if(onDisconnect) onDisconnect(this, *iterator);
+            socket->disconnect();
+            break;
+        }
+
+        if(socket->type == TCP_SERVER) {
+            if(FD_ISSET(socket->handle, &readfds)) {
+                std::shared_ptr<Socket> newSocket = socket->accept();
+                //New client accepted
+                if(onConnectRequest && !onConnectRequest(this, *iterator, newSocket)) {
+                    newSocket->disconnect();
+                    socket->clients.erase(newSocket);
+                }
+            }
+        }else{
+            if(FD_ISSET(socket->handle, &readfds) && onReceive) {
+                //Unable to read: disconnect
+                if(socket->showmanyc() <= 0) {
+                    if(onDisconnect) onDisconnect(this, *iterator);
+                    socket->disconnect();
+                    break;
+                }
+                onReceive(this, *iterator);
+            }
+            
+            SocketStatus prev = (SocketStatus) socket->status;
+            
+            if(FD_ISSET(socket->handle, &writefds))
+                socket->status = READY;
+            else
+                socket->status = (prev == NOT_CONNECTED) ? NOT_CONNECTED : BUSY;
+
+            if(onStateChanged && socket->status != prev)
+                onStateChanged(this, *iterator, prev);
         }
     }
 }

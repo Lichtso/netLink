@@ -23,13 +23,13 @@ namespace netLink {
     class SocketManager {
         public:
         //! Event which is called if a TCP_SERVER accepts a new connection (if false is returned the connection will be closed immediately)
-        std::function<bool(SocketManager* manager, Socket* serverSocket, Socket* socket)> onConnectRequest;
+        std::function<bool(SocketManager* manager, std::shared_ptr<Socket> serverSocket, std::shared_ptr<Socket> clientSocket)> onConnectRequest;
         //! Event which is called if a socket can or can not send more data (also called if nonblocking connect succeeded)
-        std::function<void(SocketManager* manager, Socket* socket, SocketStatus prev)> onStateChanged;
+        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket, SocketStatus prev)> onStateChanged;
         //! Event which is called if a socket is disconnected (or if nonblocking connect failed)
-        std::function<void(SocketManager* manager, Socket* socket)> onDisconnect;
+        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket)> onDisconnect;
         //! Event which is called if a socket receives new data
-        std::function<void(SocketManager* manager, Socket* socket)> onReceive;
+        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket)> onReceive;
         //! Sockets which are managed
         std::set<std::shared_ptr<Socket>> sockets;
 

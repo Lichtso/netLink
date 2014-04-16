@@ -60,6 +60,7 @@ namespace netLink {
                struct sockaddr_storage* remoteAddr, IPVersion ipVersion);
         
         public:
+        std::set<std::shared_ptr<Socket>> clients; //!< Client sockets of a server
         std::string hostLocal, //!< Host string of local
                     hostRemote; //!< Host string of remote
         unsigned int portLocal = 0, //!< Port of local
@@ -149,7 +150,7 @@ namespace netLink {
          @return The new accepted socket (type will be TCP_SERVERS_CLIENT)
          @pre Type needs to be TCP_SERVER
          */
-        std::unique_ptr<Socket> accept();
+        std::shared_ptr<Socket> accept();
         //! Disconnects the socket, deletes the intermediate buffers and sets the handle to -1
         void disconnect();
     };
