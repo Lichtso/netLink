@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -382,26 +382,24 @@ namespace MsgPack {
     //! Used to deserialize elements from a std::streambuf
     class Deserializer : public StreamManager {
         typedef std::function<bool(std::unique_ptr<Element> parsedElement)> PushCallback;
-        bool hierarchy;
         public:
         /*! Constructs the Deserializer
          @param _streamBuffer A std::basic_streambuf<uint8_t> to be used as target for write operations
-         @param _hierarchy If false arrays and maps will be deserialized as a flat stream of elements
          */
-        Deserializer(std::basic_streambuf<uint8_t>* _streamBuffer, bool _hierarchy = true)
-            : StreamManager(_streamBuffer), hierarchy(_hierarchy) { }
+        Deserializer(std::basic_streambuf<uint8_t>* _streamBuffer)
+            : StreamManager(_streamBuffer) { }
         /*! Constructs the Deserializer
          @param _streamBuffer A std::streambuf to be used as target for write operations
-         @param _hierarchy If false arrays and maps will be deserialized as a flat stream of elements
          */
-        Deserializer(std::streambuf* _streamBuffer, bool _hierarchy = true)
-            : Deserializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer), _hierarchy) { }
+        Deserializer(std::streambuf* _streamBuffer)
+            : Deserializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer)) { }
         /*! Deserializes elements from the streamBuffer
          @param pullElement Callback which will be called when the next element has
                            been deserialized and can return true to stop the deserializing
+         @param hierarchy If false arrays and maps will be deserialized as a flat stream of elements
          @param bytes Limit of bytes to read or 0 to read as much as possible
          */
-        std::streamsize deserialize(PushCallback pushElement, std::streamsize bytes = 0);
+        std::streamsize deserialize(PushCallback pushElement, bool hierarchy = true, std::streamsize bytes = 0);
         /*! Tries to deserialize one MsgPack::Element from the streamBuffer
          @param element std::unique_ptr in which the element will be stored
          */

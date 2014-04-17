@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -20,36 +20,20 @@ int main(int argc, char** argv) {
     netLink::SocketManager socketManager;
 
     //Define a callback, fired when a socket receives data
-    socketManager.onReceive = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
+    socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
         try {
-            //Because we are using UDP we want to ensure that we only read data from the incoming packet
-            socket->advanceInputBuffer();
-
             //hostRemote and portRemote are now set to the origin of the last received message
-            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << "\n";
-
-            //Let a MsgPack::Deserializer parse all data at once
-            MsgPack::Deserializer deserializer(socket.get());
-            deserializer.deserialize([](std::unique_ptr<MsgPack::Element> element) {
-                std::cout << *element << "\n";
-
-                //Don't stop yet, try to parse more data
-                return false;
-            });
+            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
         }catch(netLink::Exception exc) {
             std::cout << "Exception " << exc.code << "\n";
         }
     };
 
     //Alloc a new socket and insert it into the SocketManager
-    std::shared_ptr<netLink::Socket> socket = socketManager.generateSocket();
+    std::shared_ptr<netLink::Socket> socket = socketManager.newMsgPackSocket();
 
     //Init socket as UDP listening to all incoming adresses (let the system choose IPv4 or IPv6) on port 3824
     socket->initAsUdpPeer("*", 3824);
-
-    //Set the size of the intermediate buffers needed when using streams of UDP sockets
-    socket->setInputBufferSize(10000);
-    socket->setOutputBufferSize(10000);
 
     //Define the destination for the next sent message (depending on the choosen IP version)
     socket->hostRemote = (socket->getIPVersion() == netLink::IPv4) ? "224.0.0.1" : "FF02:0001::";
@@ -59,7 +43,7 @@ int main(int argc, char** argv) {
     socket->setMulticastGroup(socket->hostRemote, true);
 
     //Prepare a MsgPack encoded message
-    MsgPack::Serializer serializer(socket.get());
+    MsgPack::Serializer& serializer = static_cast<netLink::MsgPackSocket*>(socket.get())->serializer;
     serializer << "Test message";
     serializer << new MsgPack::ArrayHeader(3);
     serializer << new MsgPack::MapHeader(2);
@@ -69,10 +53,6 @@ int main(int argc, char** argv) {
     serializer << 2487.348;
     serializer << new MsgPack::ArrayHeader(0);
     serializer << new MsgPack::Primitive();
-
-    //Write all elements of the queue into the output buffer of the socket and flush it
-    serializer.serialize();
-    socket->pubsync();
 
     while(true) {
         //Let the SocketManager poll from all sockets, events will be triggered here

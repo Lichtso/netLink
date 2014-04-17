@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Socket.h"
+#include "MsgPackSocket.h"
 
 namespace netLink {
 
@@ -25,16 +25,20 @@ namespace netLink {
         //! Event which is called if a TCP_SERVER accepts a new connection (if false is returned the connection will be closed immediately)
         std::function<bool(SocketManager* manager, std::shared_ptr<Socket> serverSocket, std::shared_ptr<Socket> clientSocket)> onConnectRequest;
         //! Event which is called if a socket can or can not send more data (also called if nonblocking connect succeeded)
-        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket, SocketStatus prev)> onStateChanged;
+        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket, SocketStatus prev)> onStatusChanged;
         //! Event which is called if a socket is disconnected (or if nonblocking connect failed)
         std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket)> onDisconnect;
-        //! Event which is called if a socket receives new data
+        //! Event which is called if a socket receives new raw data
         std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket)> onReceive;
+        //! Event which is called if a socket receives a MsgPack::Element
+        std::function<void(SocketManager* manager, std::shared_ptr<Socket> socket, std::unique_ptr<MsgPack::Element> element)> onReceiveMsgPack;
         //! Sockets which are managed
         std::set<std::shared_ptr<Socket>> sockets;
 
-        //! Allocates a new socket, inserts it into sockets and returns it
-        std::shared_ptr<Socket> generateSocket();
+        //! Allocates a new Socket, inserts it into sockets and returns it
+        std::shared_ptr<Socket> newSocket();
+        //! Allocates a new MsgPackSocket, inserts it into sockets and returns it
+        std::shared_ptr<Socket> newMsgPackSocket();
  
         /*! Listens a periode time
          @param sec Maximum time to wait in seconds or negative values to wait indefinitely

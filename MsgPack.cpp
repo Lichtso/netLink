@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -919,7 +919,7 @@ namespace MsgPack {
 
 
 
-    std::streamsize Deserializer::deserialize(PushCallback pushElement, std::streamsize bytesLeft) {
+    std::streamsize Deserializer::deserialize(PushCallback pushElement, bool hierarchy, std::streamsize bytesLeft) {
         bool deserializeAll = (bytesLeft == 0);
         std::streamsize bytesDone = 0;
 

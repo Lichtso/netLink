@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -49,15 +49,21 @@ namespace netLink {
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
         
+        protected:
         IPVersion ipVersion = ANY;
         SocketType type = NONE;
-        unsigned int status = NOT_INITIALIZED; //!< Or listen queue size if socket is TCP_SERVER
+        unsigned int status = NOT_CONNECTED; //!< Or listen queue size if socket is TCP_SERVER
         int handle = -1; //!< Handle used for the system interface
 
         void initSocket(bool blocking);
         void setMulticastGroup(const struct sockaddr_storage* addr, bool join);
+
         Socket(int handle, const std::string& hostLocal, unsigned portLocal,
                struct sockaddr_storage* remoteAddr, IPVersion ipVersion);
+
+        virtual std::shared_ptr<Socket> allocateTcpServersClient(int newHandler, struct sockaddr_storage* remoteAddr) {
+            return std::shared_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, remoteAddr, ipVersion));
+        }
         
         public:
         std::set<std::shared_ptr<Socket>> clients; //!< Client sockets of a server
@@ -95,7 +101,7 @@ namespace netLink {
          */
         void initAsUdpPeer(const std::string& hostLocal, unsigned portLocal);
         
-        Socket() { };
+        Socket();
         virtual ~Socket();
 
         //! Returns the IPVersion of the socket

@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -17,8 +17,14 @@
 
 namespace netLink {
 
-std::shared_ptr<Socket> SocketManager::generateSocket() {
+std::shared_ptr<Socket> SocketManager::newSocket() {
     std::shared_ptr<Socket> socket(new Socket());
+    sockets.insert(socket);
+    return socket;
+}
+
+std::shared_ptr<Socket> SocketManager::newMsgPackSocket() {
+    std::shared_ptr<Socket> socket(new MsgPackSocket());
     sockets.insert(socket);
     return socket;
 }
@@ -35,7 +41,7 @@ void SocketManager::listen(double secLeft) {
         Socket* socket = (*iterator).get();
 
         //Garbage collect disconnected sockets
-        if(socket->type == NONE) {
+        if(socket->status == NOT_CONNECTED) {
             sockets.erase(iterator);
             continue;
         }
@@ -52,7 +58,7 @@ void SocketManager::listen(double secLeft) {
                 Socket* client = (*clientIterator).get();
     
                 //Garbage collect disconnected clients
-                if(client->type == NONE) {
+                if(client->status == NOT_CONNECTED) {
                     socket->clients.erase(clientIterator);
                     continue;
                 }
@@ -82,6 +88,7 @@ void SocketManager::listen(double secLeft) {
     
     foreach_e(selection, iterator) {
         Socket* socket = (*iterator).get();
+        MsgPackSocket* msgPackSocket = dynamic_cast<MsgPackSocket*>(socket);
 
         //Exception occured: disconnect
         if(FD_ISSET(socket->handle, &exceptfds)) {
@@ -100,14 +107,26 @@ void SocketManager::listen(double secLeft) {
                 }
             }
         }else{
-            if(FD_ISSET(socket->handle, &readfds) && onReceive) {
+            if(FD_ISSET(socket->handle, &readfds)) {
                 //Unable to read: disconnect
                 if(socket->showmanyc() <= 0) {
                     if(onDisconnect) onDisconnect(this, *iterator);
                     socket->disconnect();
                     break;
                 }
-                onReceive(this, *iterator);
+                //Ensure that we only read data from the incoming packet (UDP)
+                if(socket->type == UDP_PEER)
+                    socket->advanceInputBuffer();
+                //Received new data
+                if(msgPackSocket && onReceiveMsgPack) {
+                    std::unique_ptr<MsgPack::Element> element;
+                    while(true) {
+                        msgPackSocket->deserializer >> element;
+                        if(!element) break;
+                        onReceiveMsgPack(this, *iterator, std::move(element));
+                    }
+                }else if(onReceive)
+                    onReceive(this, *iterator);
             }
             
             SocketStatus prev = (SocketStatus) socket->status;
@@ -115,10 +134,16 @@ void SocketManager::listen(double secLeft) {
             if(FD_ISSET(socket->handle, &writefds))
                 socket->status = READY;
             else
-                socket->status = (prev == NOT_CONNECTED) ? NOT_CONNECTED : BUSY;
+                socket->status = (prev == CONNECTING) ? CONNECTING : BUSY;
 
-            if(onStateChanged && socket->status != prev)
-                onStateChanged(this, *iterator, prev);
+            if(onStatusChanged && socket->status != prev)
+                onStatusChanged(this, *iterator, prev);
+
+            //Try to send data of MsgPack queue in socket
+            if(msgPackSocket && socket->status == READY) {
+                msgPackSocket->serializer.serialize();
+                msgPackSocket->pubsync();
+            }
         }
     }
 }

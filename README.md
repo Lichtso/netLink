@@ -1,7 +1,7 @@
 netLink
 =======
 
-C++ 11 Networking Library
+C++ 11 networking library especially made for computer games.
 
 [![Build Status](https://travis-ci.org/Lichtso/netLink.png)](https://travis-ci.org/Lichtso/netLink)
 
@@ -14,8 +14,8 @@ Features:
 * UDP-IPv4-Broadcast
 * Operating Systems: Mac OS, Linux, Windows
 * Socket can be used as std::streambuf 
-* SocketManager calls events for connecting, disconnecting, receiving data and write buffer overflow
-* MsgPack support: http://msgpack.org
+* SocketManager calls various events for (dis)connecting, receiving data, connection requests and status changes
+* MsgPack v5 support: http://msgpack.org
 	* std::streambuf serializer and deserializer
 	* hierarchy or token stream
 	* push and pull parser

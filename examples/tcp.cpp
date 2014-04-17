@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -19,11 +19,8 @@
 int main(int argc, char** argv) {
     netLink::SocketManager socketManager;
 
-    //Alloc a new socket, insert it into the SocketManager
-    std::shared_ptr<netLink::Socket> socket = socketManager.generateSocket();
-
-    //Prepare a Deserializer which has to be persistent over serval 'onReceive' calls
-    std::unique_ptr<MsgPack::Deserializer> deserializer;
+    //Allocate a new socket and insert it into the SocketManager
+    std::shared_ptr<netLink::Socket> socket = socketManager.newMsgPackSocket();
 
     //Get hostname
     char hostname[256];
@@ -34,62 +31,38 @@ int main(int argc, char** argv) {
     hostname[len] = 0;
 
     //Define a callback, fired when a new client tries to connect
-    socketManager.onConnectRequest = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
+    socketManager.onConnectRequest = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
         std::cout << "Accepted connection from " << clientSocket->hostRemote << ":" << clientSocket->portRemote << "\n";
-
-        //Alloc memory and a Deserializer for incoming messages
-        clientSocket->setInputBufferSize(10000);
-        deserializer.reset(new MsgPack::Deserializer(clientSocket.get()));
 
         //Accept all new connections
         return true;
     };
 
     //Define a callback, fired when a sockets state changes
-    socketManager.onStateChanged = [&hostname](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
-        if(prev == netLink::NOT_CONNECTED) {
+    socketManager.onStatusChanged = [&hostname](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
+        if(prev == netLink::CONNECTING) {
             std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Prepare a MsgPack encoded message
-            MsgPack::Serializer serializer(socket.get());
+            MsgPack::Serializer& serializer = static_cast<netLink::MsgPackSocket*>(socket.get())->serializer;
             serializer << new MsgPack::MapHeader(2);
             serializer << "name";
             serializer << hostname;
             serializer << "message";
             serializer << "Hello World!";
-            
-            //Write all elements of the queue into the allocated output buffer of the socket and flush it
-            socket->setOutputBufferSize(10000);
-            serializer.serialize();
-            socket->pubsync();
         }
     };
 
     //Define a callback, fired when a socket disconnects
-    socketManager.onDisconnect = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
+    socketManager.onDisconnect = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
         std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << "\n";
-        deserializer.reset();
-
-        //Quit if the connection to the server is lost
-        if(socket->getType() == netLink::TCP_CLIENT) {
-            std::cout << "Quit\n";
-            exit(0);
-        }
     };
 
     //Define a callback, fired when a socket receives data
-    socketManager.onReceive = [&deserializer](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
+    socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
         try {
             //hostRemote and portRemote are now set to the origin of the last received message
-            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << "\n";
-
-            //Let a MsgPack::Deserializer parse all data at once
-            deserializer->deserialize([](std::unique_ptr<MsgPack::Element> element) {
-                std::cout << *element << "\n";
-
-                //Don't stop yet, try to parse more data
-                return false;
-            });
+            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
         }catch(netLink::Exception exc) {
             std::cout << "Exception " << exc.code << "\n";
         }
@@ -97,7 +70,7 @@ int main(int argc, char** argv) {
 
     //Ask user for a nice IP address
     std::cout << "Enter a IP-Adress to connect to a sever or '*' to start a server:\n";
-    while(socket->getStatus() == netLink::NOT_INITIALIZED) {
+    while(socket->getStatus() == netLink::NOT_CONNECTED) {
         try {
             std::cin >> socket->hostRemote;
         
@@ -111,10 +84,12 @@ int main(int argc, char** argv) {
         }
     }
 
-    while(true) {
+    while(socket->getStatus() != netLink::NOT_CONNECTED) {
         //Let the SocketManager poll from all sockets, events will be triggered here
         socketManager.listen();
     }
+
+    std::cout << "Quit\n";
 
     return 0;
 }

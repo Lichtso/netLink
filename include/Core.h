@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -33,6 +33,9 @@
 #include <set>
 #include <cmath>
 
+#define NETLINK_DEFAULT_INPUT_BUFFER_SIZE 8192
+#define NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE 8192
+
 #define foreach_e(c,i) for(auto end##i = (c).end(), next##i = (c).begin(), \
 i = (next##i==end##i)?end##i:next##i++; \
 i != next##i; \
@@ -64,8 +67,8 @@ namespace netLink {
      @enum SocketStatus
      */
     enum SocketStatus {
-        NOT_INITIALIZED, //!< Socket is not even initialized
-        NOT_CONNECTED, //!< Socket is initialized but not connected yet and can not send or receive data
+        NOT_CONNECTED, //!< Socket is not even initialized or disconnected
+        CONNECTING, //!< Socket is initialized but not connected yet and can not send or receive data
         LISTENING, //!< Socket is a server and can neither send nor receive data
         READY, //!< Socket is connected and can send and receive data
         BUSY //!< Socket is connected but can not send but receive data (at the moment)

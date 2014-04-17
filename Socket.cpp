@@ -1,6 +1,6 @@
 /*
     netLink: c++ 11 networking library
-    Copyright 2013 Alexander Meißner (lichtso@gamefortec.net)
+    Copyright 2014 Alexander Meißner (lichtso@gamefortec.net)
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
@@ -227,7 +227,7 @@ void Socket::initSocket(bool blockingConnect) {
                 }else if(blockingConnect)
                     status = READY;
                 else
-                    status = NOT_CONNECTED;
+                    status = CONNECTING;
             break;
             case TCP_SERVER: {
                 if(bind(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1) {
@@ -302,6 +302,12 @@ Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
                 handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal) {
     readSockaddr(remoteAddr, hostRemote, portRemote);
     setBlockingMode(false);
+    #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
+    setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+    #endif
+    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
+    setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
+    #endif
 }
 
 void Socket::initAsTcpClient(const std::string& _hostRemote, unsigned _portRemote, bool waitUntilConnected) {
@@ -326,21 +332,30 @@ void Socket::initAsUdpPeer(const std::string& _hostLocal, unsigned _portLocal) {
     initSocket(false);
 }
 
+Socket::Socket() {
+    #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
+    setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+    #endif
+    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
+    setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
+    #endif
+};
+
 Socket::~Socket() {
     disconnect();
-}
-
-SocketType Socket::getType() const {
-    return type;
 }
 
 IPVersion Socket::getIPVersion() const {
     return ipVersion;
 }
 
+SocketType Socket::getType() const {
+    return type;
+}
+
 SocketStatus Socket::getStatus() const {
     if(type == TCP_SERVER)
-        return (status == NOT_INITIALIZED) ? NOT_INITIALIZED : LISTENING;
+        return (status == NOT_CONNECTED) ? NOT_CONNECTED : LISTENING;
     else
         return (SocketStatus)status;
 }
@@ -553,17 +568,17 @@ std::shared_ptr<Socket> Socket::accept() {
     int newHandler = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
     if(newHandler == -1) return nullptr;
 
-    std::shared_ptr<Socket> client(new Socket(newHandler, hostLocal, portLocal, &remoteAddr, ipVersion));
+    std::shared_ptr<Socket> client = allocateTcpServersClient(newHandler, &remoteAddr);
     clients.insert(client);
     
     return client;
 }
 
 void Socket::disconnect() {
-    type = NONE;
     status = NOT_CONNECTED;
     setInputBufferSize(0);
     setOutputBufferSize(0);
+    clients.clear();
     if(handle != -1)
 	   closesocket(handle);
 }
