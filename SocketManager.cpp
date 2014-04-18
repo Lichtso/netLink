@@ -140,10 +140,14 @@ void SocketManager::listen(double secLeft) {
                 onStatusChanged(this, *iterator, prev);
 
             //Try to send data of MsgPack queue in socket
-            if(msgPackSocket && socket->status == READY) {
-                msgPackSocket->serializer.serialize();
-                msgPackSocket->pubsync();
-            }
+            if(socket->status == READY && socket->pubsync() != EOF && msgPackSocket)
+                while(msgPackSocket->queue.size()) {
+                    std::unique_ptr<MsgPack::Element>& element = msgPackSocket->queue.front();
+                    msgPackSocket->serializer << element;
+                    if(!element)
+                        msgPackSocket->queue.pop();
+                    if(socket->pubsync() == EOF) break;
+                }
         }
     }
 }

@@ -13,8 +13,38 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "Primitive.h"
-#include "Number.h"
-#include "Data.h"
-#include "Container.h"
-#include "StreamManager.h"
+#pragma once
+
+#include "Header.h"
+
+namespace MsgPack {
+    
+    //! MsgPack::Header representing only the header of a array
+    class ArrayHeader : public Header {
+        friend Serializer;
+        friend Deserializer;
+        protected:
+        ArrayHeader() { }
+        uint32_t getLength() const;
+        int64_t getHeaderLength() const;
+        public:
+        ArrayHeader(uint32_t len);
+        void stringify(std::ostream& stream) const;
+        uint32_t getSizeInBytes() const;
+    };
+
+    //! MsgPack::Header representing only the header of a map
+    class MapHeader : public Header {
+        friend Serializer;
+        friend Deserializer;
+        protected:
+        MapHeader() { }
+        uint32_t getLength() const;
+        int64_t getHeaderLength() const;
+        public:
+        MapHeader(uint32_t len);
+        void stringify(std::ostream& stream) const;
+        uint32_t getSizeInBytes() const;
+    };
+
+};

@@ -95,15 +95,15 @@ void storeInt64(uint8_t* target, int64_t source) {
 
 
 
-uint8_t readUint8(const uint8_t* source) {
+uint8_t loadUint8(const uint8_t* source) {
     return *reinterpret_cast<const uint8_t*>(source);
 }
 
-int8_t readInt8(const uint8_t* source) {
+int8_t loadInt8(const uint8_t* source) {
     return *reinterpret_cast<const int8_t*>(source);
 }
 
-uint16_t readUint16(const uint8_t* source) {
+uint16_t loadUint16(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const uint8_t*>(source);
     #else
@@ -111,7 +111,7 @@ uint16_t readUint16(const uint8_t* source) {
     #endif
 }
 
-int16_t readInt16(const uint8_t* source) {
+int16_t loadInt16(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const int16_t*>(source);
     #else
@@ -119,7 +119,7 @@ int16_t readInt16(const uint8_t* source) {
     #endif
 }
 
-float readFloat32(const uint8_t* source) {
+float loadFloat32(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const float*>(source);
     #else
@@ -127,7 +127,7 @@ float readFloat32(const uint8_t* source) {
     #endif
 }
 
-uint32_t readUint32(const uint8_t* source) {
+uint32_t loadUint32(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const uint32_t*>(source);
     #else
@@ -135,7 +135,7 @@ uint32_t readUint32(const uint8_t* source) {
     #endif
 }
 
-int32_t readInt32(const uint8_t* source) {
+int32_t loadInt32(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const int32_t*>(source);
     #else
@@ -143,7 +143,7 @@ int32_t readInt32(const uint8_t* source) {
     #endif
 }
 
-double readFloat64(const uint8_t* source) {
+double loadFloat64(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const double*>(source);
     #else
@@ -151,7 +151,7 @@ double readFloat64(const uint8_t* source) {
     #endif
 }
 
-uint64_t readUint64(const uint8_t* source) {
+uint64_t loadUint64(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const uint64_t*>(source);
     #else
@@ -159,7 +159,7 @@ uint64_t readUint64(const uint8_t* source) {
     #endif
 }
 
-int64_t readInt64(const uint8_t* source) {
+int64_t loadInt64(const uint8_t* source) {
     #if BIG_ENDIAN
     return *reinterpret_cast<const int64_t*>(source);
     #else
@@ -217,14 +217,6 @@ namespace MsgPack {
         return (Type)type;
     }
 
-    bool Primitive::isNull() const {
-        return (type == Type::NIL);
-    }
-
-    bool Primitive::getValue() const {
-        return (type == Type::BOOL_TRUE);
-    }
-
 
 
     int64_t Header::startSerialize() {
@@ -262,6 +254,10 @@ namespace MsgPack {
 
     Type Header::getType() const {
         return (Type)header[0];
+    }
+
+    uint32_t Header::getSizeInBytes() const {
+        return getHeaderLength()+getEndPos();
     }
 
     uint32_t Header::getLength() const {
@@ -325,11 +321,11 @@ namespace MsgPack {
     int64_t Binary::getEndPos() const {
         switch(header[0]) {
             case Type::BIN_8:
-                return readUint8(&header[1]);
+                return loadUint8(&header[1]);
             case Type::BIN_16:
-                return readUint16(&header[1]);
+                return loadUint16(&header[1]);
             case Type::BIN_32:
-                return readUint32(&header[1]);
+                return loadUint32(&header[1]);
             default:
                 return 0;
         }
@@ -411,11 +407,11 @@ namespace MsgPack {
             case Type::FIXEXT_128:
                 return 17;
             case Type::EXT_8:
-                return readUint8(&header[1])+1;
+                return loadUint8(&header[1])+1;
             case Type::EXT_16:
-                return readUint16(&header[1])+1;
+                return loadUint16(&header[1])+1;
             case Type::EXT_32:
-                return readUint32(&header[1])+1;
+                return loadUint32(&header[1])+1;
             default:
                 return 0;
         }
@@ -490,11 +486,11 @@ namespace MsgPack {
 
         switch(header[0]) {
             case Type::STR_8:
-                return readUint8(&header[1]);
+                return loadUint8(&header[1]);
             case Type::STR_16:
-                return readUint16(&header[1]);
+                return loadUint16(&header[1]);
             case Type::STR_32:
-                return readUint32(&header[1]);
+                return loadUint32(&header[1]);
             default:
                 return 0;
         }
@@ -623,34 +619,34 @@ namespace MsgPack {
             else
                 switch(data[0]) {
                     case Type::FLOAT_32:
-                        stream << readFloat32(data+1);
+                        stream << loadFloat32(data+1);
                     break;
                     case Type::FLOAT_64:
-                        stream << readFloat64(data+1);
+                        stream << loadFloat64(data+1);
                     break;
                     case Type::UINT_8:
-                        stream << (uint16_t)readUint8(data+1);
+                        stream << (uint16_t)loadUint8(data+1);
                     break;
                     case Type::UINT_16:
-                        stream << readUint16(data+1);
+                        stream << loadUint16(data+1);
                     break;
                     case Type::UINT_32:
-                        stream << readUint32(data+1);
+                        stream << loadUint32(data+1);
                     break;
                     case Type::UINT_64:
-                        stream << readUint64(data+1);
+                        stream << loadUint64(data+1);
                     break;
                     case Type::INT_8:
-                        stream << (int16_t)readInt8(data+1);
+                        stream << (int16_t)loadInt8(data+1);
                     break;
                     case Type::INT_16:
-                        stream << readInt16(data+1);
+                        stream << loadInt16(data+1);
                     break;
                     case Type::INT_32:
-                        stream << readInt32(data+1);
+                        stream << loadInt32(data+1);
                     break;
                     case Type::INT_64:
-                        stream << readInt64(data+1);
+                        stream << loadInt64(data+1);
                     break;
                 }
     }
@@ -679,9 +675,9 @@ namespace MsgPack {
 
         switch(header[0]) {
             case Type::ARRAY_16:
-                return readUint16(&header[1]);
+                return loadUint16(&header[1]);
             case Type::ARRAY_32:
-                return readUint32(&header[1]);
+                return loadUint32(&header[1]);
             default:
                 return 0;
         }
@@ -705,6 +701,10 @@ namespace MsgPack {
         stream << "< Array length=" << getLength() << " >";
     }
 
+    uint32_t ArrayHeader::getSizeInBytes() const {
+        return getHeaderLength();
+    }
+
 
 
     MapHeader::MapHeader(uint32_t len) {
@@ -725,9 +725,9 @@ namespace MsgPack {
 
         switch(header[0]) {
             case Type::MAP_16:
-                return readUint16(&header[1]);
+                return loadUint16(&header[1]);
             case Type::MAP_32:
-                return readUint32(&header[1]);
+                return loadUint32(&header[1]);
             default:
                 return 0;
         }
@@ -749,6 +749,10 @@ namespace MsgPack {
 
     void MapHeader::stringify(std::ostream& stream) const {
         stream << "< Map length=" << getLength() << " >";
+    }
+
+    uint32_t MapHeader::getSizeInBytes() const {
+        return getHeaderLength();
     }
 
 
@@ -782,6 +786,14 @@ namespace MsgPack {
             }
         }
         stream << "]";
+    }
+
+    uint32_t Array::getSizeInBytes() const {
+        int64_t size = getHeaderLength();
+        uint32_t len = elements.size();
+        for(uint32_t i = 1; i < len; i ++)
+            size += elements[i]->getSizeInBytes();
+        return size;
     }
 
 
@@ -822,6 +834,14 @@ namespace MsgPack {
         stream << "}";
     }
 
+    uint32_t Map::getSizeInBytes() const {
+        int64_t size = getHeaderLength();
+        uint32_t len = elements.size();
+        for(uint32_t i = 1; i < len; i ++)
+            size += elements[i]->getSizeInBytes();
+        return size;
+    }
+
 
 
     std::streamsize Serializer::serialize(PullCallback pullElement, std::streamsize bytesLeft) {
@@ -833,11 +853,7 @@ namespace MsgPack {
 
             //Try to pull next element if necessary
             if(stack.size() == 0) {
-                if(queue.size() > 0) {
-                    rootElement = std::move(queue.front());
-                    queue.pop();
-                }else if(pullElement)
-                    rootElement = pullElement();
+                rootElement = pullElement();
 
                 if(!rootElement)
                     break; //Got no element: quit
@@ -898,22 +914,11 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    uint32_t Serializer::getQueueLength() {
-        if(rootElement)
-            return 1 + queue.size();
-        else
-            return queue.size();
-    }
-
     Serializer& Serializer::operator<<(std::unique_ptr<Element>& element) {
         if(element)
-            queue.push(std::move(element));
-        return *this;
-    }
-
-    Serializer& Serializer::operator<<(Element* element) {
-        if(element)
-            queue.push(std::move(std::unique_ptr<Element>(element)));
+            serialize([&element]() {
+                return std::move(element);
+            });
         return *this;
     }
 

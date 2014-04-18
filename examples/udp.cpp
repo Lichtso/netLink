@@ -21,12 +21,8 @@ int main(int argc, char** argv) {
 
     //Define a callback, fired when a socket receives data
     socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
-        try {
-            //hostRemote and portRemote are now set to the origin of the last received message
-            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
-        }catch(netLink::Exception exc) {
-            std::cout << "Exception " << exc.code << "\n";
-        }
+        //hostRemote and portRemote are now set to the origin of the last received message
+        std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
     };
 
     //Alloc a new socket and insert it into the SocketManager
@@ -43,16 +39,16 @@ int main(int argc, char** argv) {
     socket->setMulticastGroup(socket->hostRemote, true);
 
     //Prepare a MsgPack encoded message
-    MsgPack::Serializer& serializer = static_cast<netLink::MsgPackSocket*>(socket.get())->serializer;
-    serializer << "Test message";
-    serializer << new MsgPack::ArrayHeader(3);
-    serializer << new MsgPack::MapHeader(2);
-    serializer << "Boolean";
-    serializer << true;
-    serializer << "Number";
-    serializer << 2487.348;
-    serializer << new MsgPack::ArrayHeader(0);
-    serializer << new MsgPack::Primitive();
+    netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
+    msgPackSocket << new MsgPack::String("Test message");
+    msgPackSocket << new MsgPack::ArrayHeader(3);
+    msgPackSocket << new MsgPack::MapHeader(2);
+    msgPackSocket << new MsgPack::String("Boolean");
+    msgPackSocket << new MsgPack::Primitive(true);
+    msgPackSocket << new MsgPack::String("Number");
+    msgPackSocket << new MsgPack::Number(2487.348);
+    msgPackSocket << new MsgPack::ArrayHeader(0);
+    msgPackSocket << new MsgPack::Primitive();
 
     while(true) {
         //Let the SocketManager poll from all sockets, events will be triggered here

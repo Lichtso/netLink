@@ -13,8 +13,29 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "Primitive.h"
-#include "Number.h"
-#include "Data.h"
-#include "Container.h"
-#include "StreamManager.h"
+#pragma once
+
+#include "Element.h"
+
+namespace MsgPack {
+
+    //! MsgPack::Element to represent the header of a dynamical length element
+    class Header : public Element {
+        friend Serializer;
+        friend Deserializer;
+        protected:
+        uint8_t header[5];
+        int64_t startSerialize();
+        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        int64_t getEndPos() const;
+        virtual int64_t getHeaderLength() const = 0;
+        public:
+        Type getType() const;
+        uint32_t getSizeInBytes() const;
+        //! Returns the content length in bytes
+        virtual uint32_t getLength() const;
+    };
+    
+};

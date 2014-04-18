@@ -44,12 +44,12 @@ int main(int argc, char** argv) {
             std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Prepare a MsgPack encoded message
-            MsgPack::Serializer& serializer = static_cast<netLink::MsgPackSocket*>(socket.get())->serializer;
-            serializer << new MsgPack::MapHeader(2);
-            serializer << "name";
-            serializer << hostname;
-            serializer << "message";
-            serializer << "Hello World!";
+            netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
+            msgPackSocket << new MsgPack::MapHeader(2);
+            msgPackSocket << new MsgPack::String("name");
+            msgPackSocket << new MsgPack::String(hostname);
+            msgPackSocket << new MsgPack::String("message");
+            msgPackSocket << new MsgPack::String("Hello World!");
         }
     };
 
@@ -60,12 +60,8 @@ int main(int argc, char** argv) {
 
     //Define a callback, fired when a socket receives data
     socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
-        try {
-            //hostRemote and portRemote are now set to the origin of the last received message
-            std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
-        }catch(netLink::Exception exc) {
-            std::cout << "Exception " << exc.code << "\n";
-        }
+        //hostRemote and portRemote are now set to the origin of the last received message
+        std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
     };
 
     //Ask user for a nice IP address

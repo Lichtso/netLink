@@ -35,10 +35,28 @@ namespace netLink {
         }
 
         public:
+        std::queue<std::unique_ptr<MsgPack::Element>> queue;
         MsgPack::Serializer serializer;
         MsgPack::Deserializer deserializer;
         
         MsgPackSocket() :Socket(), serializer(this), deserializer(this) { };
+
+        /*! Pushes one MsgPack::Element in the queue.
+         @param element pointer containing the element
+         */
+        MsgPackSocket& operator<<(std::unique_ptr<MsgPack::Element> element) {
+            queue.push(std::move(element));
+            return *this;
+        }
+
+        /*! Pushes one MsgPack::Element in the queue.
+         @param element pointer to the element
+         @waring element will be deleted, don't push stack associated references
+         */
+        MsgPackSocket& operator<<(MsgPack::Element* element) {
+            queue.push(std::unique_ptr<MsgPack::Element>(element));
+            return *this;
+        }
     };
 
 };
