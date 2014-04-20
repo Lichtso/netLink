@@ -79,20 +79,20 @@ namespace netLink {
         public:
         enum CODE {
             //System calls
-            ERROR_IOCTL,
-            ERROR_SELECT,
-            ERROR_SET_SOCK_OPT,
-            ERROR_GET_SOCK_NAME,
-            ERROR_RESOLVING_ADDRESS,
+            ERROR_IOCTL = 1,
+            ERROR_SELECT = 2,
+            ERROR_SET_SOCK_OPT = 3,
+            ERROR_GET_SOCK_NAME = 4,
+            ERROR_RESOLVING_ADDRESS = 5,
             
             //Functionality
-            ERROR_READ,
-            ERROR_SEND,
-            ERROR_INIT,
+            ERROR_READ = 6,
+            ERROR_SEND = 7,
+            ERROR_INIT = 8,
             
             //Wrong parameters
-            BAD_PROTOCOL,
-            BAD_TYPE
+            BAD_PROTOCOL = 9,
+            BAD_TYPE = 10
         } code; //!< netLinks error code
         
         Exception(CODE _code): code(_code) { }

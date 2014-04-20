@@ -60,6 +60,7 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
             conf.ai_socktype = SOCK_DGRAM;
         break;
         default:
+            disconnect();
             throw Exception(Exception::BAD_PROTOCOL);
     }
     
@@ -204,8 +205,10 @@ void Socket::initSocket(bool blockingConnect) {
 		#else
 		int flag = 1;
 		#endif
-        if(setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
+        if(setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1) {
+            disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
         
         switch(nextAddr->ai_family) {
             case AF_INET:
@@ -219,6 +222,7 @@ void Socket::initSocket(bool blockingConnect) {
         switch(type) {
             case NONE:
             case TCP_SERVERS_CLIENT:
+                disconnect();
                 throw Exception(Exception::BAD_TYPE);
             case TCP_CLIENT:
                 if(connect(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1 && blockingConnect) {
@@ -235,8 +239,10 @@ void Socket::initSocket(bool blockingConnect) {
                     handle = -1;
                 }
                 
-                if(listen(handle, status) == -1)
+                if(listen(handle, status) == -1) {
+                    disconnect();
                     throw Exception(Exception::ERROR_INIT);
+                }
             } break;
             case UDP_PEER: {
                 if(bind(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1) {
@@ -257,8 +263,10 @@ void Socket::initSocket(bool blockingConnect) {
         break;
     }
     
-    if(handle == -1)
+    if(handle == -1) {
+        disconnect();
         throw Exception(Exception::ERROR_INIT);
+    }
 
     struct sockaddr_storage localAddr;
 	#ifdef WIN32
@@ -266,8 +274,10 @@ void Socket::initSocket(bool blockingConnect) {
 	#else
 	unsigned int size = sizeof(localAddr);
 	#endif
-    if(getsockname(handle, reinterpret_cast<struct sockaddr*>(&localAddr), &size) != 0)
+    if(getsockname(handle, reinterpret_cast<struct sockaddr*>(&localAddr), &size) != 0) {
+        disconnect();
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
+    }
     
     readSockaddr(&localAddr, hostLocal, portLocal);
 }
@@ -363,13 +373,14 @@ SocketStatus Socket::getStatus() const {
 std::streamsize Socket::showmanyc() {
 	#ifdef WIN32
 	unsigned long result = -1;
-	if(ioctlsocket(handle, FIONREAD, &result))
+	if(ioctlsocket(handle, FIONREAD, &result)) {
 	#else
 	int result = -1;
-	if(ioctl(handle, FIONREAD, &result))
+	if(ioctl(handle, FIONREAD, &result)) {
 	#endif
+        disconnect();
 		throw Exception(Exception::ERROR_IOCTL);
-    else
+    }else
         return result;
 }
 
