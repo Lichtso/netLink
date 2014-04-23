@@ -27,9 +27,9 @@ namespace MsgPack {
         std::vector<std::unique_ptr<Element>> elements;
         Array() { }
         bool containerDeserialized();
-        std::vector<std::unique_ptr<Element>>* getContainer();
         public:
-        Array(std::vector<std::unique_ptr<Element>> elements);
+        Array(std::vector<std::unique_ptr<Element>>& elements);
+        std::vector<std::unique_ptr<Element>>* getContainer();
         void stringify(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };
@@ -42,9 +42,9 @@ namespace MsgPack {
         std::vector<std::unique_ptr<Element>> elements;
         Map() { }
         bool containerDeserialized();
-        std::vector<std::unique_ptr<Element>>* getContainer();
         public:
-        Map(std::vector<std::unique_ptr<Element>> elements);
+        Map(std::vector<std::unique_ptr<Element>>& elements);
+        std::vector<std::unique_ptr<Element>>* getContainer();
         void stringify(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };

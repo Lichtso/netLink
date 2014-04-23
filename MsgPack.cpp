@@ -757,7 +757,7 @@ namespace MsgPack {
 
 
 
-    Array::Array(std::vector<std::unique_ptr<Element>> _elements)
+    Array::Array(std::vector<std::unique_ptr<Element>>& _elements)
         : ArrayHeader(_elements.size()), elements(std::move(_elements)) {
 
     }
@@ -798,7 +798,7 @@ namespace MsgPack {
 
 
 
-    Map::Map(std::vector<std::unique_ptr<Element>> _elements)
+    Map::Map(std::vector<std::unique_ptr<Element>>& _elements)
         : MapHeader(_elements.size()/2), elements(std::move(_elements)) {
         if(elements.size()%2 == 1)
             elements.erase(elements.end()-1);

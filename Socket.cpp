@@ -131,8 +131,7 @@ int Socket::sync() {
         return 0;
 
     try {
-        send(pbase(), pptr()-pbase());
-        setp(pbase(), epptr());
+        setp(pbase(), pptr()+send(pbase(), pptr()-pbase()));
         return 0;
     } catch(Exception err) {
         return EOF;
