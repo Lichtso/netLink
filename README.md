@@ -16,6 +16,3 @@ Features:
 * Socket can be used as std::streambuf 
 * SocketManager calls various events for (dis)connecting, receiving data, connection requests and status changes
 * MsgPack v5 support: http://msgpack.org
-	* std::streambuf serializer and deserializer
-	* hierarchy or token stream
-	* push and pull parser

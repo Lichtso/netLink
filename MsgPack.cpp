@@ -914,12 +914,12 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    Serializer& Serializer::operator<<(std::unique_ptr<Element>& element) {
-        if(element)
-            serialize([&element]() {
-                return std::move(element);
-            });
-        return *this;
+    std::streamsize Serializer::serialize(std::unique_ptr<Element>& element, std::streamsize bytesLeft) {
+        return (element) ?
+        serialize([&element]() {
+            return std::move(element);
+        }, bytesLeft)
+        : 0;
     }
 
 
@@ -1047,12 +1047,11 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    Deserializer& Deserializer::operator>>(std::unique_ptr<Element>& element) {
-        deserialize([&element](std::unique_ptr<Element> _element) {
-            element = std::move(_element);
+    std::streamsize Deserializer::deserialize(std::unique_ptr<Element>& element, bool hierarchy, std::streamsize bytesLeft) {
+        return deserialize([&element](std::unique_ptr<Element> parsedElement) {
+            element = std::move(parsedElement);
             return true;
-        }, true);
-        return *this;
+        }, hierarchy, bytesLeft);
     }
 
 

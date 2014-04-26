@@ -43,15 +43,23 @@ namespace MsgPack {
          */
         Serializer(std::streambuf* _streamBuffer)
             : Serializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer)) { }
-        /*! Serializes the elements in the queue and writes them into the streamBuffer
+        /*! Pulls elements and writes them into the streamBuffer
          @param pullElement Callback which will be called to get the next element
          @param bytes Limit of bytes to write or 0 to write as much as possible
          */
         std::streamsize serialize(PullCallback pullElement, std::streamsize bytes = 0);
         /*! Tries to serialize one MsgPack::Element into the streamBuffer
          @param element std::unique_ptr containing the element
+         @param bytes Limit of bytes to write or 0 to write as much as possible
          */
-        Serializer& operator<<(std::unique_ptr<Element>& element);
+        std::streamsize serialize(std::unique_ptr<Element>& element, std::streamsize bytes = 0);
+        /*! Tries to serialize one MsgPack::Element into the streamBuffer
+         @param element std::unique_ptr containing the element
+         */
+        Serializer& operator<<(std::unique_ptr<Element>& element) {
+            Serializer::serialize(element);
+            return *this;
+        }
     };
 
     //! Used to deserialize elements from a std::streambuf
@@ -75,10 +83,19 @@ namespace MsgPack {
          @param bytes Limit of bytes to read or 0 to read as much as possible
          */
         std::streamsize deserialize(PushCallback pushElement, bool hierarchy = true, std::streamsize bytes = 0);
+        /*! Deserializes one element from the streamBuffer
+         @param element std::unique_ptr in which the element will be stored
+         @param hierarchy If false arrays and maps will be deserialized as a flat stream of elements
+         @param bytes Limit of bytes to read or 0 to read as much as possible
+         */
+        std::streamsize deserialize(std::unique_ptr<Element>& element, bool hierarchy = true, std::streamsize bytes = 0);
         /*! Tries to deserialize one MsgPack::Element from the streamBuffer
          @param element std::unique_ptr in which the element will be stored
          */
-        Deserializer& operator>>(std::unique_ptr<Element>& element);
+        Deserializer& operator>>(std::unique_ptr<Element>& element) {
+            deserialize(element);
+            return *this;
+        }
     };
 
     std::ostream& operator<<(std::ostream& ostream, const Element& obj);
