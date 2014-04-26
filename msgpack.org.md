@@ -6,4 +6,4 @@
 * push and pull parser
 * byte wise data flow control
 
-link:doc/MsgPack.html[Tutorial]
+[Tutorial](doc/MsgPack.html)
