@@ -6,4 +6,4 @@
 * push and pull parser
 * byte wise data flow control
 
-[Tutorial](doc/MsgPack.html)
+[Tutorial](https://github.com/Lichtso/netLink/wiki/MsgPack)
