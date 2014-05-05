@@ -5,7 +5,7 @@ C++ 11 networking library especially made for computer games.
 [![Build Status](https://travis-ci.org/Lichtso/netLink.png)](https://travis-ci.org/Lichtso/netLink)
 
 ## Documentation:
-[MsgPack tutorial](https://github.com/Lichtso/netLink/wiki)
+[See wiki pages](https://github.com/Lichtso/netLink/wiki)
 
 ## Features:
 * C++ 11
