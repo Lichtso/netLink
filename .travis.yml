@@ -2,5 +2,5 @@ language: objective-c
 compiler:
   - clang
 before_install:
-  - sudo brew install cmake
+  - brew install cmake
 script: cmake CMakeLists.txt
