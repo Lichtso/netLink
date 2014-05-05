@@ -1,0 +1,20 @@
+cmake_minimum_required (VERSION 2.6)
+project(NetLink)
+include_directories("include/")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "out/")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "out/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "out/")
+
+if(UNIX)
+    set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11 -stdlib=libc++")
+endif()
+
+add_library(netLinkShared SHARED src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
+add_library(netLinkStatic STATIC src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
+set_target_properties(netLinkShared PROPERTIES OUTPUT_NAME NetLink)
+set_target_properties(netLinkStatic PROPERTIES OUTPUT_NAME NetLink)
+
+add_executable(example_tcp src/examples/tcp.cpp)
+add_executable(example_udp src/examples/udp.cpp)
+target_link_libraries(example_tcp netLinkStatic)
+target_link_libraries(example_udp netLinkStatic)

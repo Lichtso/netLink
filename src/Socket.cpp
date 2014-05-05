@@ -13,7 +13,7 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "include/Socket.h"
+#include "Socket.h"
 
 namespace netLink {
 

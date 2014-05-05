@@ -13,7 +13,7 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "include/MsgPack.h"
+#include "MsgPack.h"
 
 #ifdef WIN32
 #define __builtin_bswap16 _byteswap_ushort
