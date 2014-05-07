@@ -17,6 +17,10 @@
 #include "../include/netLink.h"
 
 int main(int argc, char** argv) {
+    #ifdef WIN32
+    netLink::init();
+    #endif
+    
     netLink::SocketManager socketManager;
 
     //Define a callback, fired when a socket receives data
@@ -32,7 +36,7 @@ int main(int argc, char** argv) {
     socket->initAsUdpPeer("*", 3824);
 
     //Define the destination for the next sent message (depending on the choosen IP version)
-    socket->hostRemote = (socket->getIPVersion() == netLink::IPv4) ? "224.0.0.1" : "FF02:0001::";
+    socket->hostRemote = (socket->getIPVersion() == netLink::IPv4) ? "224.0.0.100" : "FF02:0001::";
     socket->portRemote = socket->portLocal;
 
     //Join the multicast group to receive messages from the given address

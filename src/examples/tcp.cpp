@@ -17,18 +17,14 @@
 #include "../include/netLink.h"
 
 int main(int argc, char** argv) {
+    #ifdef WIN32
+    netLink::init();
+    #endif
+    
     netLink::SocketManager socketManager;
 
     //Allocate a new socket and insert it into the SocketManager
     std::shared_ptr<netLink::Socket> socket = socketManager.newMsgPackSocket();
-
-    //Get hostname
-    char hostname[256];
-    FILE* f = popen("hostname -s", "r");
-    fgets(hostname, 128, f);
-    pclose(f);
-    int len = strlen(hostname)-1;
-    hostname[len] = 0;
 
     //Define a callback, fired when a new client tries to connect
     socketManager.onConnectRequest = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
@@ -39,15 +35,15 @@ int main(int argc, char** argv) {
     };
 
     //Define a callback, fired when a sockets state changes
-    socketManager.onStatusChanged = [&hostname](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
+    socketManager.onStatusChanged = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
         if(prev == netLink::CONNECTING) {
             std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << "\n";
 
             //Prepare a MsgPack encoded message
             netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
             msgPackSocket << new MsgPack::MapHeader(2);
-            msgPackSocket << new MsgPack::String("name");
-            msgPackSocket << new MsgPack::String(hostname);
+            msgPackSocket << new MsgPack::String("type");
+            msgPackSocket << new MsgPack::String("post");
             msgPackSocket << new MsgPack::String("message");
             msgPackSocket << new MsgPack::String("Hello World!");
         }
