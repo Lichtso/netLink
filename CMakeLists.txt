@@ -6,7 +6,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "out/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "out/")
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11 -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11")
 endif()
 
 add_library(netLinkShared SHARED src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
