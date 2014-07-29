@@ -5,8 +5,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "out/")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "out/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "out/")
 
-if(UNIX)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11 -stdlib=libc++")
 endif()
 
 add_library(netLinkShared SHARED src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
