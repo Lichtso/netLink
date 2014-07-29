@@ -14,7 +14,6 @@
 */
 
 #include "Socket.h"
-#include <cstring>
 
 namespace netLink {
 

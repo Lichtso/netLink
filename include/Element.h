@@ -15,12 +15,11 @@
 
 #pragma once
 
-#include <vector>
 #include <queue>
-#include <string>
 #include <sstream>
 #include <functional>
-#include <memory>
+#include <climits>
+#include <cstring>
 #include <inttypes.h>
 
 //Store numbers in network endian (big endian)

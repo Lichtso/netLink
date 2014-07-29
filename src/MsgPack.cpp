@@ -14,8 +14,6 @@
 */
 
 #include "MsgPack.h"
-#include <climits>
-#include <cstring>
 
 #ifdef WIN32
 #define __builtin_bswap16 _byteswap_ushort

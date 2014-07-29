@@ -4,3 +4,4 @@ compiler:
 before_install:
   - brew install cmake
 script: cmake CMakeLists.txt
+after_script: make
