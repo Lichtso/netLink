@@ -74,7 +74,7 @@ namespace MsgPack {
         String(const std::string& str);
         void stringify(std::ostream& stream) const;
         //! Returns a std::string represenation of the content
-        std::string getStr() const;
+        std::string stdString() const;
     };
 
 };

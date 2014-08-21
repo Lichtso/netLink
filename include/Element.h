@@ -15,13 +15,12 @@
 
 #pragma once
 
-#include <vector>
 #include <queue>
-#include <string>
+#include <memory>
 #include <sstream>
 #include <functional>
-#include <memory>
-#include <inttypes.h>
+#include <climits>
+#include <cstring>
 
 //Store numbers in network endian (big endian)
 inline void storeUint8(uint8_t* target, uint8_t source);
