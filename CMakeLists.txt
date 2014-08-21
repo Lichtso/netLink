@@ -11,8 +11,9 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -o3 -std=c++11 -stdlib=libc++")
 endif()
 
-add_library(netLinkShared SHARED src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
-add_library(netLinkStatic STATIC src/MsgPack.cpp src/Socket.cpp src/SocketManager.cpp)
+AUX_SOURCE_DIRECTORY(src/ SOURCE_DIR) 
+add_library(netLinkShared SHARED ${SOURCE_DIR})
+add_library(netLinkStatic STATIC ${SOURCE_DIR})
 set_target_properties(netLinkShared PROPERTIES OUTPUT_NAME NetLink)
 set_target_properties(netLinkStatic PROPERTIES OUTPUT_NAME NetLink)
 

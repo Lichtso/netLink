@@ -307,7 +307,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <p>Pushes one <a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream.">MsgPack::Element</a> in the queue. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">element</td><td>pointer to the element  element will be deleted, don't push stack associated references </td></tr>
+    <tr><td class="paramname">element</td><td>pointer to the element  element will be deleted, only push heap allocated objects (by using the new operator) </td></tr>
   </table>
   </dd>
 </dl>
