@@ -51,7 +51,7 @@ namespace netLink {
 
         /*! Pushes one MsgPack::Element in the queue.
          @param element pointer to the element
-         @waring element will be deleted, don't push stack associated references
+         @waring element will be deleted, only push heap allocated objects (by using the new operator)
          */
         MsgPackSocket& operator<<(MsgPack::Element* element) {
             queue.push(std::unique_ptr<MsgPack::Element>(element));

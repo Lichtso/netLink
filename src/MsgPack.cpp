@@ -514,12 +514,12 @@ namespace MsgPack {
 
     void String::stringify(std::ostream& stream) const {
         stream << "\"";
-        stream << getStr();
+		stream.write(reinterpret_cast<const char*>(data.get()), getEndPos());
         stream << "\"";
     }
 
-    std::string String::getStr() const {
-        return std::string((const char*)data.get(), getEndPos());
+    std::string String::stdString() const {
+        return std::string(reinterpret_cast<const char*>(data.get()), getEndPos());
     }
 
 

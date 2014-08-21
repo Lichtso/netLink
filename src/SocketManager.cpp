@@ -13,7 +13,7 @@
     3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SocketManager.h"
+#include "netLink.h"
 
 namespace netLink {
 
@@ -140,13 +140,12 @@ void SocketManager::listen(double secLeft) {
                 onStatusChanged(this, *iterator, prev);
 
             //Try to send data of MsgPack queue in socket
-            if(socket->status == READY && socket->pubsync() != EOF && msgPackSocket)
-                while(msgPackSocket->queue.size()) {
+            if(socket->status == READY && msgPackSocket)
+                while(socket->pubsync() != EOF && msgPackSocket->queue.size()) {
                     std::unique_ptr<MsgPack::Element>& element = msgPackSocket->queue.front();
                     msgPackSocket->serializer << element;
                     if(!element)
                         msgPackSocket->queue.pop();
-                    if(socket->pubsync() == EOF) break;
                 }
         }
     }
