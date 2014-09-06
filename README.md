@@ -18,3 +18,4 @@ C++ 11 networking library especially made for computer games.
 * Socket can be used as std::streambuf 
 * SocketManager calls various events for (dis)connecting, receiving data, connection requests and status changes
 * MsgPack v5 support: http://msgpack.org
+* Optional: Upgrade std::string with UTF8 support
