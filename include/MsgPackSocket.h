@@ -48,15 +48,6 @@ namespace netLink {
             queue.push(std::move(element));
             return *this;
         }
-
-        /*! Pushes one MsgPack::Element in the queue.
-         @param element pointer to the element
-         @waring element will be deleted, only push heap allocated objects (by using the new operator)
-         */
-        MsgPackSocket& operator<<(MsgPack::Element* element) {
-            queue.push(std::unique_ptr<MsgPack::Element>(element));
-            return *this;
-        }
     };
 
 };

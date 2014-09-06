@@ -107,7 +107,7 @@ namespace MsgPack {
         public:
         virtual ~Element() { }
         //! Writes a human readable JSON-like string into the given stream
-        virtual void stringify(std::ostream& stream) const = 0;
+        virtual void toJSON(std::ostream& stream) const = 0;
         //! Returns the MsgPack::Type
         virtual Type getType() const = 0;
         //! Returns the size in bytes this MsgPack::Element takes if completely serialized

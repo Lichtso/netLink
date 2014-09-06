@@ -35,7 +35,7 @@ namespace MsgPack {
         Number(int64_t value);
         Number(float value);
         Number(double value);
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         Type getType() const;
         //! Returns the value as given data type T
         template<class T> T getValue() const {

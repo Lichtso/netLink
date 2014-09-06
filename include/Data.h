@@ -39,7 +39,7 @@ namespace MsgPack {
         int64_t getHeaderLength() const;
         public:
         Binary(uint32_t len, const uint8_t* data);
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         //! Returns a pointer to the binary data
         uint8_t* getData() const;
     };
@@ -54,7 +54,7 @@ namespace MsgPack {
         int64_t getHeaderLength() const;
         public:
         Extended(uint8_t type, uint32_t len, const uint8_t* data);
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         //! Returns the user defined data type
         uint8_t getDataType() const;
         //! Returns a pointer to the binary data
@@ -71,8 +71,13 @@ namespace MsgPack {
         int64_t getEndPos() const;
         int64_t getHeaderLength() const;
         public:
-        String(const std::string& str);
-        void stringify(std::ostream& stream) const;
+		//! Initialize from raw c string and length in bytes
+		String(const char* str, uint32_t len);
+		//! Initialize from nullterminated c string
+		String(const char* str);
+		//! Initialize from std::string
+		String(const std::string& str);
+        void toJSON(std::ostream& stream) const;
         //! Returns a std::string represenation of the content
         std::string stdString() const;
     };

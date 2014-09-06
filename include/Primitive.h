@@ -32,7 +32,7 @@ namespace MsgPack {
         public:
         Primitive(bool value);
         Primitive() :Primitive(Type::NIL) { }
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         Type getType() const;
         //! Returns if type is NIL
         bool isNull() const {

@@ -28,9 +28,9 @@ namespace MsgPack {
         Array() { }
         bool containerDeserialized();
         public:
-        Array(std::vector<std::unique_ptr<Element>>& elements);
+        Array(std::vector<std::unique_ptr<Element>>&& elements);
         std::vector<std::unique_ptr<Element>>* getContainer();
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };
 
@@ -43,9 +43,9 @@ namespace MsgPack {
         Map() { }
         bool containerDeserialized();
         public:
-        Map(std::vector<std::unique_ptr<Element>>& elements);
+        Map(std::vector<std::unique_ptr<Element>>&& elements);
         std::vector<std::unique_ptr<Element>>* getContainer();
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };
     

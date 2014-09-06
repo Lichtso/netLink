@@ -29,7 +29,7 @@ namespace MsgPack {
         int64_t getHeaderLength() const;
         public:
         ArrayHeader(uint32_t len);
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };
 
@@ -43,7 +43,7 @@ namespace MsgPack {
         int64_t getHeaderLength() const;
         public:
         MapHeader(uint32_t len);
-        void stringify(std::ostream& stream) const;
+        void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
     };
 

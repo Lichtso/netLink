@@ -41,11 +41,11 @@ int main(int argc, char** argv) {
 
             //Prepare a MsgPack encoded message
             netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
-            msgPackSocket << new MsgPack::MapHeader(2);
-            msgPackSocket << new MsgPack::String("type");
-            msgPackSocket << new MsgPack::String("post");
-            msgPackSocket << new MsgPack::String("message");
-            msgPackSocket << new MsgPack::String("Hello World!");
+            msgPackSocket << MsgPack__Factory(MapHeader(2));
+            msgPackSocket << MsgPack::Factory("type");
+            msgPackSocket << MsgPack::Factory("post");
+            msgPackSocket << MsgPack::Factory("message");
+            msgPackSocket << MsgPack::Factory("Hello World!");
         }
     };
 

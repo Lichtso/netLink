@@ -70,8 +70,8 @@ namespace netLink {
         NOT_CONNECTED, //!< Socket is not even initialized or disconnected
         CONNECTING, //!< Socket is initialized but not connected yet and can not send or receive data
         LISTENING, //!< Socket is a server and can neither send nor receive data
-        READY, //!< Socket is connected and can send and receive data
-        BUSY //!< Socket is connected but can not send but receive data (at the moment)
+        READY, //!< Socket is connected, can send and receive data
+        BUSY //!< Socket is connected and can not send but receive data (at the moment)
     };
     
     //! netLink Exceptions

@@ -44,15 +44,15 @@ int main(int argc, char** argv) {
 
     //Prepare a MsgPack encoded message
     netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
-    msgPackSocket << new MsgPack::String("Test message");
-    msgPackSocket << new MsgPack::ArrayHeader(3);
-    msgPackSocket << new MsgPack::MapHeader(2);
-    msgPackSocket << new MsgPack::String("Boolean");
-    msgPackSocket << new MsgPack::Primitive(true);
-    msgPackSocket << new MsgPack::String("Number");
-    msgPackSocket << new MsgPack::Number(2487.348);
-    msgPackSocket << new MsgPack::ArrayHeader(0);
-    msgPackSocket << new MsgPack::Primitive();
+    msgPackSocket << MsgPack::Factory("Test message");
+    msgPackSocket << MsgPack__Factory(ArrayHeader(3));
+    msgPackSocket << MsgPack__Factory(MapHeader(2));
+    msgPackSocket << MsgPack::Factory("Boolean");
+    msgPackSocket << MsgPack::Factory(true);
+    msgPackSocket << MsgPack::Factory("Number");
+    msgPackSocket << MsgPack::Factory(2487.348);
+    msgPackSocket << MsgPack__Factory(ArrayHeader(0));
+    msgPackSocket << MsgPack::Factory();
 
     while(true) {
         //Let the SocketManager poll from all sockets, events will be triggered here

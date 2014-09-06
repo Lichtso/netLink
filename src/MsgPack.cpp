@@ -196,7 +196,7 @@ namespace MsgPack {
         return 1;
     }
 
-    void Primitive::stringify(std::ostream& stream) const {
+    void Primitive::toJSON(std::ostream& stream) const {
         switch(type) {
             case Type::NIL:
                 stream << "null";
@@ -216,6 +216,14 @@ namespace MsgPack {
     Type Primitive::getType() const {
         return (Type)type;
     }
+	
+	std::unique_ptr<Element> Factory() {
+		return std::unique_ptr<Element>(new Primitive());
+	}
+	
+	std::unique_ptr<Element> Factory(bool value) {
+		return std::unique_ptr<Element>(new Primitive(value));
+	}
 
 
 
@@ -344,7 +352,7 @@ namespace MsgPack {
         }
     }
 
-    void Binary::stringify(std::ostream& stream) const {
+    void Binary::toJSON(std::ostream& stream) const {
         uint32_t len = getEndPos();
         stream << "< Buffer length=" << len << " data: ";
         for(uint32_t i = 0; i < len; i ++)
@@ -436,7 +444,7 @@ namespace MsgPack {
         }
     }
 
-    void Extended::stringify(std::ostream& stream) const {
+    void Extended::toJSON(std::ostream& stream) const {
         uint32_t len = getEndPos();
         stream << "< Extended type=" << (uint16_t)data[0];
         stream << " length=" << (len-1) << " data: ";
@@ -459,11 +467,10 @@ namespace MsgPack {
 
 
 
-    String::String(const std::string& str) {
-        uint32_t len = str.size();
+    String::String(const char* str, uint32_t len) {
         if(len > 0) {
             data.reset(new uint8_t[len]);
-            memcpy(data.get(), &*str.begin(), len);
+            memcpy(data.get(), str, len);
         }
 
         if(len < 0x20)
@@ -478,6 +485,14 @@ namespace MsgPack {
             header[0] = Type::STR_32;
             storeUint32(&header[1], len);
         }
+    }
+	
+	String::String(const char* str) :String(str, strlen(str)) {
+        
+    }
+	
+	String::String(const std::string& str) :String(str.c_str(), str.size()) {
+        
     }
 
     int64_t String::getEndPos() const {
@@ -512,7 +527,7 @@ namespace MsgPack {
         }
     }
 
-    void String::stringify(std::ostream& stream) const {
+    void String::toJSON(std::ostream& stream) const {
         stream << "\"";
 		stream.write(reinterpret_cast<const char*>(data.get()), getEndPos());
         stream << "\"";
@@ -521,6 +536,14 @@ namespace MsgPack {
     std::string String::stdString() const {
         return std::string(reinterpret_cast<const char*>(data.get()), getEndPos());
     }
+	
+	std::unique_ptr<Element> Factory(const char* str) {
+		return std::unique_ptr<Element>(new String(str));
+	}
+	
+	std::unique_ptr<Element> Factory(const std::string& str) {
+		return std::unique_ptr<Element>(new String(str));
+	}
 
 
 
@@ -613,7 +636,7 @@ namespace MsgPack {
         }
     }
 
-    void Number::stringify(std::ostream& stream) const {
+    void Number::toJSON(std::ostream& stream) const {
             if(data[0] < 0x80 || data[0] >= 0xE0)
                 stream << (int16_t)reinterpret_cast<const int8_t&>(data[0]);
             else
@@ -654,6 +677,22 @@ namespace MsgPack {
     Type Number::getType() const {
         return (Type)data[0];
     }
+	
+	std::unique_ptr<Element> Factory(uint64_t value) {
+		return std::unique_ptr<Element>(new Number(value));
+	}
+	
+	std::unique_ptr<Element> Factory(int64_t value) {
+		return std::unique_ptr<Element>(new Number(value));
+	}
+	
+	std::unique_ptr<Element> Factory(float value) {
+		return std::unique_ptr<Element>(new Number(value));
+	}
+	
+	std::unique_ptr<Element> Factory(double value) {
+		return std::unique_ptr<Element>(new Number(value));
+	}
 
 
 
@@ -697,7 +736,7 @@ namespace MsgPack {
         }
     }
 
-    void ArrayHeader::stringify(std::ostream& stream) const {
+    void ArrayHeader::toJSON(std::ostream& stream) const {
         stream << "< Array length=" << getLength() << " >";
     }
 
@@ -747,7 +786,7 @@ namespace MsgPack {
         }
     }
 
-    void MapHeader::stringify(std::ostream& stream) const {
+    void MapHeader::toJSON(std::ostream& stream) const {
         stream << "< Map length=" << getLength() << " >";
     }
 
@@ -757,7 +796,7 @@ namespace MsgPack {
 
 
 
-    Array::Array(std::vector<std::unique_ptr<Element>>& _elements)
+	Array::Array(std::vector<std::unique_ptr<Element>>&& _elements)
         : ArrayHeader(_elements.size()), elements(std::move(_elements)) {
 
     }
@@ -775,14 +814,14 @@ namespace MsgPack {
         return &elements;
     }
 
-    void Array::stringify(std::ostream& stream) const {
+    void Array::toJSON(std::ostream& stream) const {
         uint32_t len = elements.size();
         stream << "[";
         if(len > 0) {
-            elements[0]->stringify(stream);
+            elements[0]->toJSON(stream);
             for(uint32_t i = 1; i < len; i ++) {
                 stream << ", ";
-                elements[i]->stringify(stream);
+                elements[i]->toJSON(stream);
             }
         }
         stream << "]";
@@ -798,7 +837,7 @@ namespace MsgPack {
 
 
 
-    Map::Map(std::vector<std::unique_ptr<Element>>& _elements)
+    Map::Map(std::vector<std::unique_ptr<Element>>&& _elements)
         : MapHeader(_elements.size()/2), elements(std::move(_elements)) {
         if(elements.size()%2 == 1)
             elements.erase(elements.end()-1);
@@ -817,18 +856,18 @@ namespace MsgPack {
         return &elements;
     }
 
-    void Map::stringify(std::ostream& stream) const {
+    void Map::toJSON(std::ostream& stream) const {
         uint64_t len = elements.size();
         stream << "{";
         if(len > 0) {
-            elements[0]->stringify(stream);
+            elements[0]->toJSON(stream);
             stream << ": ";
-            elements[1]->stringify(stream);
+            elements[1]->toJSON(stream);
             for(uint64_t i = 2; i < len; i += 2) {
                 stream << ", ";
-                elements[i]->stringify(stream);
+                elements[i]->toJSON(stream);
                 stream << ": ";
-                elements[i+1]->stringify(stream);
+                elements[i+1]->toJSON(stream);
             }
         }
         stream << "}";
@@ -1057,7 +1096,7 @@ namespace MsgPack {
 
 
     std::ostream& operator<<(std::ostream& ostream, const Element& obj) {
-        obj.stringify(ostream);
+        obj.toJSON(ostream);
         return ostream;
     }
 };
