@@ -125,7 +125,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        int64_t getHeaderLength() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <a class="code" href="class_msg_pack_1_1_binary.html" title="MsgPack::Data to represent binary/raw data elements.">Binary</a>(uint32_t len, <span class="keyword">const</span> uint8_t* data);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_binary.html#aeb1c57289f7f2e26d964ac02b561e568" title="Writes a human readable JSON-like string into the given stream.">stringify</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_binary.html#a1f9bbcd477df46232d4b92a7bd274754" title="Writes a human readable JSON-like string into the given stream.">toJSON</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        uint8_t* <a class="code" href="class_msg_pack_1_1_binary.html#ab60579bb97942087f4980ed18b56a70f" title="Returns a pointer to the binary data.">getData</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    };</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    </div>
@@ -138,7 +138,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        int64_t getHeaderLength() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <a class="code" href="class_msg_pack_1_1_extended.html" title="MsgPack::Data to represent extended elements.">Extended</a>(uint8_t type, uint32_t len, <span class="keyword">const</span> uint8_t* data);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_extended.html#a0193ac6f6660b2e6af9bef45739582b3" title="Writes a human readable JSON-like string into the given stream.">stringify</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_extended.html#a3571dd4fead5021ddcd97e9bd7c3327d" title="Writes a human readable JSON-like string into the given stream.">toJSON</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        uint8_t <a class="code" href="class_msg_pack_1_1_extended.html#a44e9d38496e45b7126efbc1c08ced824" title="Returns the user defined data type.">getDataType</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        uint8_t* <a class="code" href="class_msg_pack_1_1_extended.html#a674b5d1a9690afb34eeb4ac62dbaa0b7" title="Returns a pointer to the binary data.">getData</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        uint32_t <a class="code" href="class_msg_pack_1_1_extended.html#a36446cbb3498bbb5691fee60255e3994" title="Returns the content length in bytes.">getLength</a>() <span class="keyword">const</span>;</div>
@@ -152,12 +152,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        int64_t getEndPos() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        int64_t getHeaderLength() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <a class="code" href="class_msg_pack_1_1_string.html" title="MsgPack::Data to represent strings.">String</a>(<span class="keyword">const</span> std::string&amp; str);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_string.html#a4a7c08d5d67dd1cd046062d823f4b0aa" title="Writes a human readable JSON-like string into the given stream.">stringify</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        std::string <a class="code" href="class_msg_pack_1_1_string.html#ad228bde452ce0ab4af39e76db51a2045" title="Returns a std::string represenation of the content.">stdString</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    };</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;};</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <a class="code" href="class_msg_pack_1_1_string.html" title="MsgPack::Data to represent strings.">String</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, uint32_t len);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <a class="code" href="class_msg_pack_1_1_string.html" title="MsgPack::Data to represent strings.">String</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <a class="code" href="class_msg_pack_1_1_string.html" title="MsgPack::Data to represent strings.">String</a>(<span class="keyword">const</span> std::string&amp; str);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_string.html#a191e76b1a4c4c493ea90600e0de03670" title="Writes a human readable JSON-like string into the given stream.">toJSON</a>(std::ostream&amp; stream) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        std::string <a class="code" href="class_msg_pack_1_1_string.html#ad228bde452ce0ab4af39e76db51a2045" title="Returns a std::string represenation of the content.">stdString</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    };</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;};</div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

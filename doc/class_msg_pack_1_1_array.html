@@ -113,17 +113,17 @@ Inheritance diagram for MsgPack::Array:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5a0f0376a4f726b6959ca971199b256c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a0f0376a4f726b6959ca971199b256c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Array</b> (std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&gt; &amp;elements)</td></tr>
-<tr class="separator:a5a0f0376a4f726b6959ca971199b256c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77786f2ba0905624adcc5267882df743"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a77786f2ba0905624adcc5267882df743"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Array</b> (std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&gt; &amp;&amp;elements)</td></tr>
+<tr class="separator:a77786f2ba0905624adcc5267882df743"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81e17345bc71cc4fd210760a970dd2c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a81e17345bc71cc4fd210760a970dd2c4"></a>
 std::vector&lt; std::unique_ptr<br class="typebreak"/>
 &lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt; &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>getContainer</b> ()</td></tr>
 <tr class="separator:a81e17345bc71cc4fd210760a970dd2c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af16e65391f4d7cb725825e926180aaa3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af16e65391f4d7cb725825e926180aaa3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#af16e65391f4d7cb725825e926180aaa3">stringify</a> (std::ostream &amp;stream) const </td></tr>
-<tr class="memdesc:af16e65391f4d7cb725825e926180aaa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br/></td></tr>
-<tr class="separator:af16e65391f4d7cb725825e926180aaa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed421f380a53f9b5725cc98ff029b162"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed421f380a53f9b5725cc98ff029b162"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#aed421f380a53f9b5725cc98ff029b162">toJSON</a> (std::ostream &amp;stream) const </td></tr>
+<tr class="memdesc:aed421f380a53f9b5725cc98ff029b162"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br/></td></tr>
+<tr class="separator:aed421f380a53f9b5725cc98ff029b162"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebc5202bc442c32344c5909d610c2dcc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aebc5202bc442c32344c5909d610c2dcc"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#aebc5202bc442c32344c5909d610c2dcc">getSizeInBytes</a> () const </td></tr>
 <tr class="memdesc:aebc5202bc442c32344c5909d610c2dcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size in bytes this <a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream.">MsgPack::Element</a> takes if completely serialized. <br/></td></tr>
@@ -132,10 +132,10 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="memitem:a7dad72f049bb22b681769963c7c34bf0 inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7dad72f049bb22b681769963c7c34bf0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ArrayHeader</b> (uint32_t len)</td></tr>
 <tr class="separator:a7dad72f049bb22b681769963c7c34bf0 inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfe3eea061aba8c724af408c12139fdc inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abfe3eea061aba8c724af408c12139fdc"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array_header.html#abfe3eea061aba8c724af408c12139fdc">stringify</a> (std::ostream &amp;stream) const </td></tr>
-<tr class="memdesc:abfe3eea061aba8c724af408c12139fdc inherit pub_methods_class_msg_pack_1_1_array_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br/></td></tr>
-<tr class="separator:abfe3eea061aba8c724af408c12139fdc inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ae61b57244126700b052b628095acdf inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ae61b57244126700b052b628095acdf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array_header.html#a0ae61b57244126700b052b628095acdf">toJSON</a> (std::ostream &amp;stream) const </td></tr>
+<tr class="memdesc:a0ae61b57244126700b052b628095acdf inherit pub_methods_class_msg_pack_1_1_array_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br/></td></tr>
+<tr class="separator:a0ae61b57244126700b052b628095acdf inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbca665a9fd4491324f17f7adfcfabd5 inherit pub_methods_class_msg_pack_1_1_array_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abbca665a9fd4491324f17f7adfcfabd5"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array_header.html#abbca665a9fd4491324f17f7adfcfabd5">getSizeInBytes</a> () const </td></tr>
 <tr class="memdesc:abbca665a9fd4491324f17f7adfcfabd5 inherit pub_methods_class_msg_pack_1_1_array_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size in bytes this <a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream.">MsgPack::Element</a> takes if completely serialized. <br/></td></tr>

@@ -113,8 +113,6 @@ Inheritance diagram for netLink::MsgPackSocket:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad9a3858842065d6fc9786df83b6095a8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classnet_link_1_1_msg_pack_socket.html">MsgPackSocket</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_msg_pack_socket.html#ad9a3858842065d6fc9786df83b6095a8">operator&lt;&lt;</a> (std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">MsgPack::Element</a> &gt; element)</td></tr>
 <tr class="separator:ad9a3858842065d6fc9786df83b6095a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8df5bd2ad4791fd1091dc3149061221"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classnet_link_1_1_msg_pack_socket.html">MsgPackSocket</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_msg_pack_socket.html#ab8df5bd2ad4791fd1091dc3149061221">operator&lt;&lt;</a> (<a class="el" href="class_msg_pack_1_1_element.html">MsgPack::Element</a> *element)</td></tr>
-<tr class="separator:ab8df5bd2ad4791fd1091dc3149061221"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classnet_link_1_1_socket"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classnet_link_1_1_socket')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classnet_link_1_1_socket.html">netLink::Socket</a></td></tr>
 <tr class="memitem:a571f756f8aa4f199cc7cc8db313bde98 inherit pub_methods_classnet_link_1_1_socket"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a571f756f8aa4f199cc7cc8db313bde98">initAsTcpClient</a> (const std::string &amp;<a class="el" href="classnet_link_1_1_socket.html#a956e599cb177baf7f24f3cea2f5a475b">hostRemote</a>, unsigned <a class="el" href="classnet_link_1_1_socket.html#af16d02ebbad7e45dce6a68f3e60cb89d">portRemote</a>, bool waitUntilConnected=false)</td></tr>
 <tr class="separator:a571f756f8aa4f199cc7cc8db313bde98 inherit pub_methods_classnet_link_1_1_socket"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -277,37 +275,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">element</td><td>pointer containing the element </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ab8df5bd2ad4791fd1091dc3149061221"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classnet_link_1_1_msg_pack_socket.html">MsgPackSocket</a>&amp; netLink::MsgPackSocket::operator&lt;&lt; </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="class_msg_pack_1_1_element.html">MsgPack::Element</a> *&#160;</td>
-          <td class="paramname"><em>element</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Pushes one <a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream.">MsgPack::Element</a> in the queue. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">element</td><td>pointer to the element  element will be deleted, only push heap allocated objects (by using the new operator) </td></tr>
   </table>
   </dd>
 </dl>
