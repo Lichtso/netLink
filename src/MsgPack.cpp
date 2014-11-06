@@ -21,150 +21,110 @@
 #define __builtin_bswap64 _byteswap_uint64
 #endif
 
-void storeUint8(uint8_t* target, uint8_t source) {
+#if BIG_ENDIAN
+#define storeBSwap(bits) \
+    memcpy(target, &source, sizeof(source));
+#define loadBSwap(bits) \
+    memcpy(&target, source, sizeof(target)); \
+    return target;
+#else
+#define storeBSwap(bits) \
+    source = __builtin_bswap##bits(source); \
+    memcpy(target, &source, sizeof(source));
+#define loadBSwap(bits) \
+    memcpy(&target, source, sizeof(target)); \
+    target = __builtin_bswap##bits(target); \
+    return target;
+#endif
+
+inline void storeUint8(uint8_t* target, uint8_t source) {
     *reinterpret_cast<uint8_t*>(target) = source;
 }
 
-void storeInt8(uint8_t* target, int8_t source) {
+inline void storeInt8(uint8_t* target, int8_t source) {
     *reinterpret_cast<int8_t*>(target) = source;
 }
 
-void storeUint16(uint8_t* target, uint16_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<uint16_t*>(target) = source;
-    #else
-    *reinterpret_cast<uint16_t*>(target) = __builtin_bswap16(source);
-    #endif
+inline void storeUint16(uint8_t* target, uint16_t source) {
+    storeBSwap(16);
 }
 
-void storeInt16(uint8_t* target, int16_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<int16_t*>(target) = source;
-    #else
-    *reinterpret_cast<int16_t*>(target) = __builtin_bswap16(source);
-    #endif
+inline void storeInt16(uint8_t* target, int16_t source) {
+    storeBSwap(16);
 }
 
-void storeFloat32(uint8_t* target, float source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<float*>(target) = source;
-    #else
-    *reinterpret_cast<float*>(target) = __builtin_bswap32(source);
-    #endif
+inline void storeFloat32(uint8_t* target, float source) {
+    storeBSwap(32);
 }
 
-void storeUint32(uint8_t* target, uint32_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<uint32_t*>(target) = source;
-    #else
-    *reinterpret_cast<uint32_t*>(target) = __builtin_bswap32(source);
-    #endif
+inline void storeUint32(uint8_t* target, uint32_t source) {
+    storeBSwap(32);
 }
 
-void storeInt32(uint8_t* target, int32_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<int32_t*>(target) = source;
-    #else
-    *reinterpret_cast<int32_t*>(target) = __builtin_bswap32(source);
-    #endif
+inline void storeInt32(uint8_t* target, int32_t source) {
+    storeBSwap(32);
 }
 
-void storeFloat64(uint8_t* target, double source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<double*>(target) = source;
-    #else
-    *reinterpret_cast<double*>(target) = __builtin_bswap64(source);
-    #endif
+inline void storeFloat64(uint8_t* target, double source) {
+    storeBSwap(64);
 }
 
-void storeUint64(uint8_t* target, uint64_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<uint64_t*>(target) = source;
-    #else
-    *reinterpret_cast<uint64_t*>(target) = __builtin_bswap64(source);
-    #endif
+inline void storeUint64(uint8_t* target, uint64_t source) {
+    storeBSwap(64);
 }
 
-void storeInt64(uint8_t* target, int64_t source) {
-    #if BIG_ENDIAN
-    *reinterpret_cast<int64_t*>(target) = source;
-    #else
-    *reinterpret_cast<int64_t*>(target) = __builtin_bswap64(source);
-    #endif
+inline void storeInt64(uint8_t* target, int64_t source) {
+    storeBSwap(64);
 }
 
 
 
-uint8_t loadUint8(const uint8_t* source) {
+inline uint8_t loadUint8(const uint8_t* source) {
     return *reinterpret_cast<const uint8_t*>(source);
 }
 
-int8_t loadInt8(const uint8_t* source) {
+inline int8_t loadInt8(const uint8_t* source) {
     return *reinterpret_cast<const int8_t*>(source);
 }
 
-uint16_t loadUint16(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const uint8_t*>(source);
-    #else
-    return __builtin_bswap16(*reinterpret_cast<const uint8_t*>(source));
-    #endif
+inline uint16_t loadUint16(const uint8_t* source) {
+    uint16_t target;
+    loadBSwap(16);
 }
 
-int16_t loadInt16(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const int16_t*>(source);
-    #else
-    return __builtin_bswap16(*reinterpret_cast<const int16_t*>(source));
-    #endif
+inline int16_t loadInt16(const uint8_t* source) {
+    int16_t target;
+    loadBSwap(16);
 }
 
-float loadFloat32(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const float*>(source);
-    #else
-    return __builtin_bswap32(*reinterpret_cast<const float*>(source));
-    #endif
+inline float loadFloat32(const uint8_t* source) {
+    float target;
+    loadBSwap(32);
 }
 
-uint32_t loadUint32(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const uint32_t*>(source);
-    #else
-    return __builtin_bswap32(*reinterpret_cast<const uint32_t*>(source));
-    #endif
+inline uint32_t loadUint32(const uint8_t* source) {
+    uint32_t target;
+    loadBSwap(32);
 }
 
-int32_t loadInt32(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const int32_t*>(source);
-    #else
-    return __builtin_bswap32(*reinterpret_cast<const int32_t*>(source));
-    #endif
+inline int32_t loadInt32(const uint8_t* source) {
+    int32_t target;
+    loadBSwap(32);
 }
 
-double loadFloat64(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const double*>(source);
-    #else
-    return __builtin_bswap64(*reinterpret_cast<const double*>(source));
-    #endif
+inline double loadFloat64(const uint8_t* source) {
+    double target;
+    loadBSwap(64);
 }
 
-uint64_t loadUint64(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const uint64_t*>(source);
-    #else
-    return __builtin_bswap64(*reinterpret_cast<const uint64_t*>(source));
-    #endif
+inline uint64_t loadUint64(const uint8_t* source) {
+    uint64_t target;
+    loadBSwap(64);
 }
 
-int64_t loadInt64(const uint8_t* source) {
-    #if BIG_ENDIAN
-    return *reinterpret_cast<const int64_t*>(source);
-    #else
-    return __builtin_bswap64(*reinterpret_cast<const int64_t*>(source));
-    #endif
+inline int64_t loadInt64(const uint8_t* source) {
+    int64_t target;
+    loadBSwap(64);
 }
 
 
@@ -217,13 +177,13 @@ namespace MsgPack {
         return (Type)type;
     }
 	
-	std::unique_ptr<Element> Factory() {
-		return std::unique_ptr<Element>(new Primitive());
-	}
-	
-	std::unique_ptr<Element> Factory(bool value) {
-		return std::unique_ptr<Element>(new Primitive(value));
-	}
+    std::unique_ptr<Element> Factory() {
+        return std::unique_ptr<Element>(new Primitive());
+    }
+
+    std::unique_ptr<Element> Factory(bool value) {
+        return std::unique_ptr<Element>(new Primitive(value));
+    }
 
 
 
@@ -537,13 +497,13 @@ namespace MsgPack {
         return std::string(reinterpret_cast<const char*>(data.get()), getEndPos());
     }
 	
-	std::unique_ptr<Element> Factory(const char* str) {
-		return std::unique_ptr<Element>(new String(str));
-	}
-	
-	std::unique_ptr<Element> Factory(const std::string& str) {
-		return std::unique_ptr<Element>(new String(str));
-	}
+    std::unique_ptr<Element> Factory(const char* str) {
+        return std::unique_ptr<Element>(new String(str));
+    }
+
+    std::unique_ptr<Element> Factory(const std::string& str) {
+        return std::unique_ptr<Element>(new String(str));
+    }
 
 
 
@@ -678,21 +638,21 @@ namespace MsgPack {
         return (Type)data[0];
     }
 	
-	std::unique_ptr<Element> Factory(uint64_t value) {
-		return std::unique_ptr<Element>(new Number(value));
-	}
-	
-	std::unique_ptr<Element> Factory(int64_t value) {
-		return std::unique_ptr<Element>(new Number(value));
-	}
-	
-	std::unique_ptr<Element> Factory(float value) {
-		return std::unique_ptr<Element>(new Number(value));
-	}
-	
-	std::unique_ptr<Element> Factory(double value) {
-		return std::unique_ptr<Element>(new Number(value));
-	}
+    std::unique_ptr<Element> Factory(uint64_t value) {
+        return std::unique_ptr<Element>(new Number(value));
+    }
+
+    std::unique_ptr<Element> Factory(int64_t value) {
+        return std::unique_ptr<Element>(new Number(value));
+    }
+
+    std::unique_ptr<Element> Factory(float value) {
+        return std::unique_ptr<Element>(new Number(value));
+    }
+
+    std::unique_ptr<Element> Factory(double value) {
+        return std::unique_ptr<Element>(new Number(value));
+    }
 
 
 
