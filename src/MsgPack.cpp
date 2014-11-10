@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -21,7 +21,7 @@
 #define __builtin_bswap64 _byteswap_uint64
 #endif
 
-#if BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 #define storeBSwap(bits) \
     memcpy(target, &source, sizeof(source));
 #define loadBSwap(bits) \
@@ -176,7 +176,7 @@ namespace MsgPack {
     Type Primitive::getType() const {
         return (Type)type;
     }
-	
+
     std::unique_ptr<Element> Factory() {
         return std::unique_ptr<Element>(new Primitive());
     }
@@ -446,13 +446,13 @@ namespace MsgPack {
             storeUint32(&header[1], len);
         }
     }
-	
+
 	String::String(const char* str) :String(str, strlen(str)) {
-        
+
     }
-	
+
 	String::String(const std::string& str) :String(str.c_str(), str.size()) {
-        
+
     }
 
     int64_t String::getEndPos() const {
@@ -496,7 +496,7 @@ namespace MsgPack {
     std::string String::stdString() const {
         return std::string(reinterpret_cast<const char*>(data.get()), getEndPos());
     }
-	
+
     std::unique_ptr<Element> Factory(const char* str) {
         return std::unique_ptr<Element>(new String(str));
     }
@@ -575,7 +575,7 @@ namespace MsgPack {
     int64_t Number::getEndPos() const {
         if(data[0] < 0x80 || data[0] >= 0xE0)
             return 1;
-        
+
         switch(data[0]) {
             case Type::UINT_8:
             case Type::INT_8:
@@ -637,7 +637,7 @@ namespace MsgPack {
     Type Number::getType() const {
         return (Type)data[0];
     }
-	
+
     std::unique_ptr<Element> Factory(uint64_t value) {
         return std::unique_ptr<Element>(new Number(value));
     }
@@ -862,7 +862,7 @@ namespace MsgPack {
 
             //Find highest element in stack
             StackElement* stackPointer = &stack[stack.size()-1];
-            
+
             //Serialize element
             std::streamsize bytesWritten = stackPointer->first->serialize(stackPointer->second, streamBuffer, bytesLeft);
             bytesLeft -= bytesWritten;
@@ -901,7 +901,7 @@ namespace MsgPack {
                 if(stackIndex == 0) break;
                 stackIndex --;
             }
-            
+
             //Pop all done containers from stack
             stack.erase(stack.begin()+stackIndex, stack.end());
 
@@ -1034,10 +1034,10 @@ namespace MsgPack {
                     if(stackIndex == 0) break;
                     stackIndex --;
                 }
-                
+
                 stack.erase(stack.begin()+stackIndex, stack.end());
             }
-    
+
             //Trigger event for done element
             if(stack.size() == 0 && pushElement(std::move(rootElement)))
                 break; //One element done: quit
