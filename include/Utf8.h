@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <stdio>
+#include <cstring>
 #include <string>
 
 #ifdef WIN32
