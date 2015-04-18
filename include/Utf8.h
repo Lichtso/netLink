@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <stdio>
 #include <string>
 
 #ifdef WIN32
@@ -30,26 +31,26 @@ namespace utf8 {
         while((*(--i) & 0xC0) == 0x80);
         return i;
     }
-	
+
 	//! Increments a Utf8 string iterator by one character
 	template<typename iterator>
 	iterator& increment(iterator& i) {
         while((*(++i) & 0xC0) == 0x80);
         return i;
     }
-	
+
 	//! Returns a decremented copy of the given Utf8 string iterator
 	template<typename iterator>
 	iterator decremented(iterator i) {
         return decrement(i);
     }
-	
+
 	//! Returns a incremented copy of the given Utf8 string iterator
 	template<typename iterator>
 	iterator incremented(iterator i) {
         return increment(i);
     }
-	
+
 	//! Decrements a Utf8 string iterator by n characters
 	template<typename iterator>
     iterator& backward(iterator& i, size_t n) {
@@ -59,7 +60,7 @@ namespace utf8 {
         }
         return i;
     }
-	
+
 	//! Increments a Utf8 string iterator by n characters
 	template<typename iterator>
     iterator& forward(iterator& i, size_t n) {
@@ -69,7 +70,7 @@ namespace utf8 {
         }
         return i;
     }
-	
+
 	//! Decrements a Utf8 string iterator string by n characters or stops at end iterator
 	template<typename iterator>
     iterator& backwardUntil(iterator& i, const iterator& end, size_t n) {
@@ -79,7 +80,7 @@ namespace utf8 {
         }
         return i;
     }
-	
+
 	//! Increments a Utf8 string iterator by n characters or stops at end iterator
 	template<typename iterator>
     iterator& forwardUntil(iterator& i, const iterator& end, size_t n) {
@@ -89,7 +90,7 @@ namespace utf8 {
         }
         return i;
     }
-	
+
 	//! Returns the difference in characters between two Utf8 string iterators
 	template<typename iterator>
 	size_t difference(const iterator& end, const iterator& begin) {
@@ -99,37 +100,37 @@ namespace utf8 {
                 len ++;
         return len;
     }
-	
+
 	//! Byte Order Mark
 	extern const char bom[4];
-    
+
     //! Check the BOM at the given Utf8 string iterator
     template<typename iterator>
     bool checkBOM(iterator i) {
         return (i[0] == bom[0] && i[1] == bom[1]  && i[2] == bom[2]);
     }
-    
+
     //! Set the BOM in the given Utf8 string
     void setBOM(std::string& str);
-	
+
 	//! Get the length in characters of a Utf8 string
 	size_t length(const char* str);
-	
+
 	//! Get the length in characters of a Utf8 string
 	size_t length(const std::string& str);
-	
+
 	//! Insert a Utf8 string into another one at the given character position
 	void insert(std::string& dst, size_t pos, const char* src);
-	
+
 	//! Erase a interval from a Utf8 string at the given character position and length
 	void erase(std::string& str, size_t pos, size_t len);
-	
+
 	//! Erase a interval from a Utf8 string at the given character position and length
 	void replace(std::string& dst, size_t pos, size_t len, const char* src);
-	
+
 	//! Returns the Utf8 size in bytes of a given Utf32 character
 	size_t byteSize(char32_t c);
-	
+
 	//! Returns the Utf8 size in bytes of a given Utf8 character
 	template<typename iterator>
 	size_t byteSize(iterator i) {
@@ -145,7 +146,7 @@ namespace utf8 {
 		}else
 			return (s > 4) ? -1 : s;
     }
-	
+
 	//! Returns the Utf32 character at the given Utf8 string iterator
 	template<typename iterator>
     char32_t toUtf32(iterator i) {
@@ -167,13 +168,13 @@ namespace utf8 {
                 return -1;
 		}
     }
-	
+
 	//! Appends a Utf32 character to a Utf8 string
 	void append(std::string& str, char32_t c);
-	
+
 	//! Converts a Utf8 string into a Utf32 string
 	std::u32string convertToUtf32(const std::string& str);
-	
+
 	//! Converts a Utf32 string into a Utf8 string
 	std::string convertFromUtf32(const std::u32string& str);
 }
