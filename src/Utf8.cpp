@@ -28,28 +28,28 @@ namespace utf8 {
 	}
 
 	size_t length(const std::string& str) {
-        return difference(str.cend(), str.cbegin());
+        return difference(str.end(), str.begin());
 	}
 
 	void insert(std::string& dst, size_t pos, const char* src) {
-        auto iterator = dst.cbegin();
-		forwardUntil(iterator, dst.cend(), pos);
-        dst.insert(iterator - dst.cbegin(), src);
+        auto iterator = dst.begin();
+		forwardUntil(iterator, dst.end(), pos);
+        dst.insert(iterator - dst.begin(), src);
 	}
 
 	void erase(std::string& str, size_t pos, size_t len) {
-		auto begin = str.cbegin(), from = begin;
-		forwardUntil(from, str.cend(), pos);
+		auto begin = str.begin(), from = begin;
+		forwardUntil(from, str.end(), pos);
 		auto to = from;
-		forwardUntil(to, str.cend(), len);
+		forwardUntil(to, str.end(), len);
 		str.erase(from, to);
 	}
 
 	void replace(std::string& dst, size_t pos, size_t len, const char* src) {
-		auto begin(dst.cbegin()), from = begin;
-		forwardUntil(from, dst.cend(), pos);
+		auto begin(dst.begin()), from = begin;
+		forwardUntil(from, dst.end(), pos);
 		auto to = from;
-		forwardUntil(to, dst.cend(), len);
+		forwardUntil(to, dst.end(), len);
 		dst.replace(from-begin, to-from, src);
 	}
 
@@ -82,7 +82,7 @@ namespace utf8 {
 
 	std::u32string convertToUtf32(const std::string& str) {
 		std::u32string result;
-		auto begin = str.cbegin(), end = str.cend();
+		auto begin = str.begin(), end = str.end();
 		for(auto i = begin; i != end; increment(i))
 			result.push_back(toUtf32(i));
 		return result;
