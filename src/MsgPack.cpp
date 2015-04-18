@@ -888,7 +888,7 @@ namespace MsgPack {
             while(true) {
                 stackPointer = &stack[stackIndex];
                 container = stackPointer->first->getContainer();
-                if(container && stackPointer->second+1 < container->size()) {
+                if(container && stackPointer->second+1 < (int64_t)container->size()) {
                     //Container is not done yet. move to next element
                     int64_t pos = ++ stackPointer->second;
                     stackPointer = &stack[++ stackIndex];
@@ -1027,7 +1027,7 @@ namespace MsgPack {
                 std::vector<std::unique_ptr<Element>>* container;
                 while(true) {
                     container = stack[stackIndex].first->getContainer();
-                    if(container && stack[stackIndex].second+1 < container->size()) {
+                    if(container && stack[stackIndex].second+1 < (int64_t)container->size()) {
                         stack[stackIndex ++].second ++;
                         break;
                     }

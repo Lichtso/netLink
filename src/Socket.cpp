@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -47,10 +47,10 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
     memset(&conf, 0, sizeof(conf));
     conf.ai_flags = AI_V4MAPPED;
     conf.ai_family = AF_UNSPEC;
-    
+
     if(wildcardAddress)
         conf.ai_flags |= AI_PASSIVE;
-    
+
     switch(type) {
         case TCP_CLIENT:
         case TCP_SERVER:
@@ -63,7 +63,7 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
             disconnect();
             throw Exception(Exception::BAD_PROTOCOL);
     }
-    
+
     char portStr[10];
     snprintf(portStr, 10, "%u", port);
 
@@ -141,7 +141,7 @@ int Socket::sync() {
 std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
     if(inputIntermediateSize > 0) //Read from input buffer
         return super::xsgetn(buffer, size);
-    
+
     try {
         return receive(buffer, size);
     } catch(Exception err) {
@@ -158,7 +158,7 @@ Socket::int_type Socket::underflow() {
 std::streamsize Socket::xsputn(const char_type* buffer, std::streamsize size) {
     if(getOutputBufferSize()) //Write into buffer
         return super::xsputn(buffer, size);
-    
+
     try {
         return send(buffer, size);
     } catch(Exception err) {
@@ -197,7 +197,7 @@ void Socket::initSocket(bool blockingConnect) {
             nextAddr = nextAddr->ai_next;
             continue;
         }
-        
+
         setBlockingMode(blockingConnect);
 		#ifdef WIN32
 		char flag = 1;
@@ -208,7 +208,7 @@ void Socket::initSocket(bool blockingConnect) {
             disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
-        
+
         switch(nextAddr->ai_family) {
             case AF_INET:
                 ipVersion = IPv4;
@@ -217,7 +217,7 @@ void Socket::initSocket(bool blockingConnect) {
                 ipVersion = IPv6;
             break;
         }
-        
+
         switch(type) {
             case NONE:
             case TCP_SERVERS_CLIENT:
@@ -237,7 +237,7 @@ void Socket::initSocket(bool blockingConnect) {
 					closesocket(handle);
                     handle = -1;
                 }
-                
+
                 if(listen(handle, status) == -1) {
                     disconnect();
                     throw Exception(Exception::ERROR_INIT);
@@ -248,7 +248,7 @@ void Socket::initSocket(bool blockingConnect) {
 					closesocket(handle);
                     handle = -1;
                 }
-                
+
                 status = READY;
             } break;
         }
@@ -256,12 +256,12 @@ void Socket::initSocket(bool blockingConnect) {
             nextAddr = nextAddr->ai_next;
             continue;
         }
-        
+
         if(blockingConnect)
             setBlockingMode(false);
         break;
     }
-    
+
     if(handle == -1) {
         disconnect();
         throw Exception(Exception::ERROR_INIT);
@@ -277,7 +277,7 @@ void Socket::initSocket(bool blockingConnect) {
         disconnect();
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
     }
-    
+
     readSockaddr(&localAddr, hostLocal, portLocal);
 }
 
@@ -408,7 +408,7 @@ std::streamsize Socket::advanceInputBuffer() {
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
     size = std::min(size, showmanyc());
     if(size == 0) return 0;
-    
+
     switch(type) {
         case UDP_PEER: {
             struct sockaddr_storage remoteAddr;
@@ -418,23 +418,23 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
 			unsigned int addrSize = sizeof(remoteAddr);
 			#endif
             int result = recvfrom(handle, (char*)buffer, size, 0, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
-            
+
             if(result == -1) {
                 portRemote = 0;
                 hostRemote = "";
                 throw Exception(Exception::ERROR_READ);
             }else
                 readSockaddr(&remoteAddr, hostRemote, portRemote);
-            
+
             return result;
         }
         case TCP_CLIENT:
         case TCP_SERVERS_CLIENT: {
             int result = recv(handle, (char*)buffer, size, 0);
-            
+
             if(result == -1)
                 throw Exception(Exception::ERROR_READ);
-            
+
             return result;
         }
 		default:
@@ -450,14 +450,14 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
     switch(type) {
         case UDP_PEER: {
             AddrinfoContainer info = getSocketInfoFor(hostRemote.c_str(), portRemote, false);
-            
+
             size_t sentBytes = 0;
-            while(sentBytes < size) {
+            while(sentBytes < (size_t)size) {
                 int result = ::sendto(handle, (const char*)buffer + sentBytes, size - sentBytes, 0, info->ai_addr, info->ai_addrlen);
-                
+
                 if(result == -1)
                     throw Exception(Exception::ERROR_SEND);
-                
+
                 sentBytes += result;
             }
 
@@ -466,12 +466,12 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
         case TCP_CLIENT:
         case TCP_SERVERS_CLIENT: {
             size_t sentBytes = 0;
-            while(sentBytes < size) {
+            while(sentBytes < (size_t)size) {
                 int result = ::send(handle, (const char*)buffer + sentBytes, size - sentBytes, 0);
-                
+
                 if(result == -1)
                     throw Exception(Exception::ERROR_SEND);
-                
+
                 sentBytes += result;
             }
             return sentBytes;
@@ -499,7 +499,7 @@ void Socket::setInputBufferSize(std::streamsize n) {
     if(n == 0) return;
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
-    
+
     char_type* readBuffer = new char_type[n];
     setg(readBuffer, readBuffer, readBuffer);
     inputIntermediateSize = n;
@@ -513,7 +513,7 @@ void Socket::setOutputBufferSize(std::streamsize n) {
     if(n == 0) return;
     if(type == TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
-    
+
     char_type* writeBuffer = new char_type[n];
     setp(writeBuffer, writeBuffer+n);
 }
@@ -549,7 +549,7 @@ void Socket::setBroadcast(bool active) {
 void Socket::setMulticastGroup(const std::string& address, bool join) {
     if(type != UDP_PEER)
         throw Exception(Exception::BAD_PROTOCOL);
-    
+
     struct sockaddr_storage addr;
     if(ipVersion == IPv4) {
         auto sin = reinterpret_cast<struct sockaddr_in*>(&addr);
@@ -567,20 +567,20 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
 std::shared_ptr<Socket> Socket::accept() {
     if(type != TCP_SERVER)
         throw Exception(Exception::BAD_TYPE);
-    
+
     struct sockaddr_storage remoteAddr;
 	#ifdef WIN32
 	int addrSize = sizeof(remoteAddr);
 	#else
 	unsigned int addrSize = sizeof(remoteAddr);
 	#endif
-    
+
     int newHandler = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
     if(newHandler == -1) return nullptr;
 
     std::shared_ptr<Socket> client = allocateTcpServersClient(newHandler, &remoteAddr);
     clients.insert(client);
-    
+
     return client;
 }
 
