@@ -1,7 +1,16 @@
-language: objective-c
+language: cpp
+
 compiler:
   - clang
+  - gcc
+
 before_install:
   - brew install cmake
-script: cmake CMakeLists.txt
-after_script: make
+
+script:
+  - echo $CXX
+  - $CXX --version
+  - cmake -D CMAKE_CXX_COMPILER=$CXX CMakeLists.txt
+
+after_script:
+  - make
