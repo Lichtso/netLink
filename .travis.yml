@@ -8,17 +8,8 @@ compiler:
   - clang
   - gcc
 
-matrix:
-  exclude:
-    - os: osx
-      compiler: gcc
-
-before_install:
-  - "if [ $CC = 'gcc' ]; then export CC='gcc' && export CXX='g++'; fi"
-  - "if [ $CC = 'clang' ]; then export CC='clang' && export CXX='clang++'; fi"
-
 script:
-  - echo $TRAVIS_OS_NAME
-  - echo $CXX
-  - $CXX --version
   - cmake -D CMAKE_CXX_COMPILER=$CXX CMakeLists.txt
+
+after_script:
+  - make
