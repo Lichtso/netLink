@@ -114,7 +114,8 @@ Inheritance diagram for MsgPack::Binary:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a48596ef0cbd4011984fbf0654f5a605b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48596ef0cbd4011984fbf0654f5a605b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Binary</b> (uint32_t len, const uint8_t *data)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#a48596ef0cbd4011984fbf0654f5a605b">Binary</a> (uint32_t len, const uint8_t *<a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a>)</td></tr>
+<tr class="memdesc:a48596ef0cbd4011984fbf0654f5a605b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from len in bytes and raw data (copy semantic) <br /></td></tr>
 <tr class="separator:a48596ef0cbd4011984fbf0654f5a605b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f9bbcd477df46232d4b92a7bd274754"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f9bbcd477df46232d4b92a7bd274754"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#a1f9bbcd477df46232d4b92a7bd274754">toJSON</a> (std::ostream &amp;stream) const </td></tr>
@@ -141,51 +142,64 @@ virtual uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a0b98691d9225e2f75cda351bb253d5a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b98691d9225e2f75cda351bb253d5a8"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>getEndPos</b> () const </td></tr>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#a0b98691d9225e2f75cda351bb253d5a8">getEndPos</a> () const </td></tr>
+<tr class="memdesc:a0b98691d9225e2f75cda351bb253d5a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first invalid (de)serializer position. <br /></td></tr>
 <tr class="separator:a0b98691d9225e2f75cda351bb253d5a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af31c08dbfef188676e4887d4a14ab83d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af31c08dbfef188676e4887d4a14ab83d"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>getHeaderLength</b> () const </td></tr>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#af31c08dbfef188676e4887d4a14ab83d">getHeaderLength</a> () const </td></tr>
+<tr class="memdesc:af31c08dbfef188676e4887d4a14ab83d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size of the header in bytes. <br /></td></tr>
 <tr class="separator:af31c08dbfef188676e4887d4a14ab83d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_class_msg_pack_1_1_data"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_msg_pack_1_1_data')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_msg_pack_1_1_data.html">MsgPack::Data</a></td></tr>
 <tr class="memitem:a6167a86bb0e10f7e83dd486d57492d81 inherit pro_methods_class_msg_pack_1_1_data"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6167a86bb0e10f7e83dd486d57492d81"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_data.html#a6167a86bb0e10f7e83dd486d57492d81">serialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:a6167a86bb0e10f7e83dd486d57492d81 inherit pro_methods_class_msg_pack_1_1_data"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes bytes at the given serializer position pos into streamBuffer. <br /></td></tr>
 <tr class="separator:a6167a86bb0e10f7e83dd486d57492d81 inherit pro_methods_class_msg_pack_1_1_data"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeac27fe5043fe036b069e5e25b73589a inherit pro_methods_class_msg_pack_1_1_data"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeac27fe5043fe036b069e5e25b73589a"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_data.html#aeac27fe5043fe036b069e5e25b73589a">deserialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:aeac27fe5043fe036b069e5e25b73589a inherit pro_methods_class_msg_pack_1_1_data"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserializes bytes at the given deserializer position pos from streamBuffer. <br /></td></tr>
 <tr class="separator:aeac27fe5043fe036b069e5e25b73589a inherit pro_methods_class_msg_pack_1_1_data"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_class_msg_pack_1_1_header"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_msg_pack_1_1_header')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_msg_pack_1_1_header.html">MsgPack::Header</a></td></tr>
 <tr class="memitem:a61a541b11c0c76e2953e1e8a49c33fe5 inherit pro_methods_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61a541b11c0c76e2953e1e8a49c33fe5"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>startSerialize</b> ()</td></tr>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#a61a541b11c0c76e2953e1e8a49c33fe5">startSerialize</a> ()</td></tr>
+<tr class="memdesc:a61a541b11c0c76e2953e1e8a49c33fe5 inherit pro_methods_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial serializer position in bytes (negative value if there is a header) <br /></td></tr>
 <tr class="separator:a61a541b11c0c76e2953e1e8a49c33fe5 inherit pro_methods_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a887d853c5fb09ba429d431f46f6e95 inherit pro_methods_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a887d853c5fb09ba429d431f46f6e95"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>startDeserialize</b> (std::basic_streambuf&lt; uint8_t &gt; *streamBuffer)</td></tr>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#a3a887d853c5fb09ba429d431f46f6e95">startDeserialize</a> (std::basic_streambuf&lt; uint8_t &gt; *streamBuffer)</td></tr>
+<tr class="memdesc:a3a887d853c5fb09ba429d431f46f6e95 inherit pro_methods_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in one byte and returns the initial deserializer position in bytes (negative value if there is a header) <br /></td></tr>
 <tr class="separator:a3a887d853c5fb09ba429d431f46f6e95 inherit pro_methods_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2cc02df6e315d4d446f90d5aff6df24c inherit pro_methods_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cc02df6e315d4d446f90d5aff6df24c"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#a2cc02df6e315d4d446f90d5aff6df24c">serialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:a2cc02df6e315d4d446f90d5aff6df24c inherit pro_methods_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes bytes at the given serializer position pos into streamBuffer. <br /></td></tr>
 <tr class="separator:a2cc02df6e315d4d446f90d5aff6df24c inherit pro_methods_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f21b2cb1064e1767c9bb04b1d6279b3 inherit pro_methods_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f21b2cb1064e1767c9bb04b1d6279b3"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#a1f21b2cb1064e1767c9bb04b1d6279b3">deserialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:a1f21b2cb1064e1767c9bb04b1d6279b3 inherit pro_methods_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserializes bytes at the given deserializer position pos from streamBuffer. <br /></td></tr>
 <tr class="separator:a1f21b2cb1064e1767c9bb04b1d6279b3 inherit pro_methods_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae011311e645bf238d8f916c03419f959 inherit pro_methods_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae011311e645bf238d8f916c03419f959"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>getEndPos</b> () const </td></tr>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#ae011311e645bf238d8f916c03419f959">getEndPos</a> () const </td></tr>
+<tr class="memdesc:ae011311e645bf238d8f916c03419f959 inherit pro_methods_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first invalid (de)serializer position. <br /></td></tr>
 <tr class="separator:ae011311e645bf238d8f916c03419f959 inherit pro_methods_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_class_msg_pack_1_1_element"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_msg_pack_1_1_element')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_msg_pack_1_1_element.html">MsgPack::Element</a></td></tr>
 <tr class="memitem:a385642caa044d461759d06e04e929da8 inherit pro_methods_class_msg_pack_1_1_element"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a385642caa044d461759d06e04e929da8"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>containerDeserialized</b> ()</td></tr>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">containerDeserialized</a> ()</td></tr>
+<tr class="memdesc:a385642caa044d461759d06e04e929da8 inherit pro_methods_class_msg_pack_1_1_element"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the header of a container is deserialized and reserves the necessary space for its element vector. <br /></td></tr>
 <tr class="separator:a385642caa044d461759d06e04e929da8 inherit pro_methods_class_msg_pack_1_1_element"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdfddef644b2e5b7d0b07e5d6f68815d inherit pro_methods_class_msg_pack_1_1_element"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdfddef644b2e5b7d0b07e5d6f68815d"></a>
-virtual std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt; &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>getContainer</b> ()</td></tr>
+virtual std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt; &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_element.html#abdfddef644b2e5b7d0b07e5d6f68815d">getContainer</a> ()</td></tr>
+<tr class="memdesc:abdfddef644b2e5b7d0b07e5d6f68815d inherit pro_methods_class_msg_pack_1_1_element"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a raw pointer to the element vector of a container. <br /></td></tr>
 <tr class="separator:abdfddef644b2e5b7d0b07e5d6f68815d inherit pro_methods_class_msg_pack_1_1_element"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_attribs_class_msg_pack_1_1_data"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_msg_pack_1_1_data')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_msg_pack_1_1_data.html">MsgPack::Data</a></td></tr>
 <tr class="memitem:ab9454cff5b943d13d1bf35cd095110dc inherit pro_attribs_class_msg_pack_1_1_data"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9454cff5b943d13d1bf35cd095110dc"></a>
-std::unique_ptr&lt; uint8_t[]&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>data</b></td></tr>
+std::unique_ptr&lt; uint8_t[]&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a></td></tr>
+<tr class="memdesc:ab9454cff5b943d13d1bf35cd095110dc inherit pro_attribs_class_msg_pack_1_1_data"><td class="mdescLeft">&#160;</td><td class="mdescRight">The raw data buffer. <br /></td></tr>
 <tr class="separator:ab9454cff5b943d13d1bf35cd095110dc inherit pro_attribs_class_msg_pack_1_1_data"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_msg_pack_1_1_header"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_msg_pack_1_1_header')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_msg_pack_1_1_header.html">MsgPack::Header</a></td></tr>
 <tr class="memitem:ab3f62b8c535a1ef3e8c863b960db4b21 inherit pro_attribs_class_msg_pack_1_1_header"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab3f62b8c535a1ef3e8c863b960db4b21"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>header</b> [5]</td></tr>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#ab3f62b8c535a1ef3e8c863b960db4b21">header</a> [5]</td></tr>
+<tr class="memdesc:ab3f62b8c535a1ef3e8c863b960db4b21 inherit pro_attribs_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal buffer of the header. <br /></td></tr>
 <tr class="separator:ab3f62b8c535a1ef3e8c863b960db4b21 inherit pro_attribs_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>

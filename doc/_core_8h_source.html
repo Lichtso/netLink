@@ -93,10 +93,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">    This software is provided &#39;as-is&#39;, without any express or implied warranty.</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">    In no event will the authors be held liable for any damages arising from the use of this software.</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">    Permission is granted to anyone to use this software for any purpose, </span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">    including commercial applications, and to alter it and redistribute it freely, </span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">    Permission is granted to anyone to use this software for any purpose,</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">    including commercial applications, and to alter it and redistribute it freely,</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment">    subject to the following restrictions:</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">    </span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">    3. This notice may not be removed or altered from any source distribution.</span></div>
@@ -132,57 +132,37 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacenet_link.html">netLink</a> {</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">enum</span> IPVersion {</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        IPv4,</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        IPv6,</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        ANY</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    };</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">enum</span> SocketType {</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        NONE, </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        TCP_CLIENT, </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        TCP_SERVER, </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        TCP_SERVERS_CLIENT, </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        UDP_PEER </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    };</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">enum</span> SocketStatus {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        NOT_CONNECTED, </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        CONNECTING, </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        LISTENING, </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        READY, </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        BUSY </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    };</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    </div>
-<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="classnet_link_1_1_exception.html">   78</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classnet_link_1_1_exception.html">Exception</a> {</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keyword">enum</span> CODE {</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <span class="comment">//System calls</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            ERROR_IOCTL = 1,</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            ERROR_SELECT = 2,</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            ERROR_SET_SOCK_OPT = 3,</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            ERROR_GET_SOCK_NAME = 4,</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            ERROR_RESOLVING_ADDRESS = 5,</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="comment">//Functionality</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            ERROR_READ = 6,</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            ERROR_SEND = 7,</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            ERROR_INIT = 8,</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            </div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="comment">//Wrong parameters</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            BAD_PROTOCOL = 9,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            BAD_TYPE = 10</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        } <a class="code" href="classnet_link_1_1_exception.html#a8c84d9cf276b4bae60f041efdb27e76e">code</a>; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <a class="code" href="classnet_link_1_1_exception.html">Exception</a>(CODE _code): <a class="code" href="classnet_link_1_1_exception.html#a8c84d9cf276b4bae60f041efdb27e76e">code</a>(_code) { }</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    };</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> init();</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;};</div>
-<div class="ttc" id="classnet_link_1_1_exception_html_a8c84d9cf276b4bae60f041efdb27e76e"><div class="ttname"><a href="classnet_link_1_1_exception.html#a8c84d9cf276b4bae60f041efdb27e76e">netLink::Exception::code</a></div><div class="ttdeci">enum netLink::Exception::CODE code</div><div class="ttdoc">netLinks error code </div></div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classnet_link_1_1_exception.html">   47</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classnet_link_1_1_exception.html">Exception</a> {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classnet_link_1_1_exception.html#a25edae371208c03e829d12b2d0513275">   50</a></span>&#160;        <span class="keyword">enum</span> <a class="code" href="classnet_link_1_1_exception.html#a25edae371208c03e829d12b2d0513275">Code</a> {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            <span class="comment">//System calls</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            ERROR_IOCTL = 1,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            ERROR_SELECT = 2,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            ERROR_SET_SOCK_OPT = 3,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            ERROR_GET_SOCK_NAME = 4,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            ERROR_RESOLVING_ADDRESS = 5,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <span class="comment">//Functionality</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            ERROR_READ = 6,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            ERROR_SEND = 7,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            ERROR_INIT = 8,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            <span class="comment">//Wrong parameters</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            BAD_PROTOCOL = 9,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            BAD_TYPE = 10</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        } <a class="code" href="classnet_link_1_1_exception.html#aba22703070bfa55219be21a2f58fd52a">code</a>; </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classnet_link_1_1_exception.html#acd206fd7a1e2519a64402ac983322a82">   69</a></span>&#160;        <a class="code" href="classnet_link_1_1_exception.html#acd206fd7a1e2519a64402ac983322a82">Exception</a>(<a class="code" href="classnet_link_1_1_exception.html#a25edae371208c03e829d12b2d0513275">Code</a> _code): <a class="code" href="classnet_link_1_1_exception.html#aba22703070bfa55219be21a2f58fd52a">code</a>(_code) { }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    };</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> init();</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;};</div>
+<div class="ttc" id="classnet_link_1_1_exception_html_a25edae371208c03e829d12b2d0513275"><div class="ttname"><a href="classnet_link_1_1_exception.html#a25edae371208c03e829d12b2d0513275">netLink::Exception::Code</a></div><div class="ttdeci">Code</div><div class="ttdoc">Types of errors. </div><div class="ttdef"><b>Definition:</b> Core.h:50</div></div>
+<div class="ttc" id="classnet_link_1_1_exception_html_acd206fd7a1e2519a64402ac983322a82"><div class="ttname"><a href="classnet_link_1_1_exception.html#acd206fd7a1e2519a64402ac983322a82">netLink::Exception::Exception</a></div><div class="ttdeci">Exception(Code _code)</div><div class="ttdoc">Initialize from error code. </div><div class="ttdef"><b>Definition:</b> Core.h:69</div></div>
+<div class="ttc" id="classnet_link_1_1_exception_html_aba22703070bfa55219be21a2f58fd52a"><div class="ttname"><a href="classnet_link_1_1_exception.html#aba22703070bfa55219be21a2f58fd52a">netLink::Exception::code</a></div><div class="ttdeci">enum netLink::Exception::Code code</div><div class="ttdoc">Exceptions error code. </div></div>
 <div class="ttc" id="namespacenet_link_html"><div class="ttname"><a href="namespacenet_link.html">netLink</a></div><div class="ttdef"><b>Definition:</b> Socket.cpp:18</div></div>
-<div class="ttc" id="classnet_link_1_1_exception_html"><div class="ttname"><a href="classnet_link_1_1_exception.html">netLink::Exception</a></div><div class="ttdoc">netLink Exceptions </div><div class="ttdef"><b>Definition:</b> Core.h:78</div></div>
+<div class="ttc" id="classnet_link_1_1_exception_html"><div class="ttname"><a href="classnet_link_1_1_exception.html">netLink::Exception</a></div><div class="ttdoc">netLink Exceptions </div><div class="ttdef"><b>Definition:</b> Core.h:47</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['initastcpclient',['initAsTcpClient',['../classnet_link_1_1_socket.html#a571f756f8aa4f199cc7cc8db313bde98',1,'netLink::Socket']]],
-  ['initastcpserver',['initAsTcpServer',['../classnet_link_1_1_socket.html#a477d9c082e3c7636bb7e103e8d617e11',1,'netLink::Socket']]],
-  ['initasudppeer',['initAsUdpPeer',['../classnet_link_1_1_socket.html#a579fee22b3df524283e0462f0ce4eb6a',1,'netLink::Socket']]],
-  ['isnull',['isNull',['../class_msg_pack_1_1_primitive.html#ab792fc1726f41ff8d2702f6b7cb36781',1,'MsgPack::Primitive']]]
+  ['deserialize',['deserialize',['../class_msg_pack_1_1_data.html#aeac27fe5043fe036b069e5e25b73589a',1,'MsgPack::Data::deserialize()'],['../class_msg_pack_1_1_element.html#a1d0be8f2d9a9428a6783988a3e48f78d',1,'MsgPack::Element::deserialize()'],['../class_msg_pack_1_1_header.html#a1f21b2cb1064e1767c9bb04b1d6279b3',1,'MsgPack::Header::deserialize()'],['../class_msg_pack_1_1_number.html#a0ce510bdafb6c35eb6390d56dc2e998c',1,'MsgPack::Number::deserialize()'],['../class_msg_pack_1_1_deserializer.html#a8204968ef56482f602d9da6fdff7491d',1,'MsgPack::Deserializer::deserialize(PushCallback pushElement, bool hierarchy=true, std::streamsize bytes=0)'],['../class_msg_pack_1_1_deserializer.html#a906dd9012a6b4702086ad96dcc0a6ab3',1,'MsgPack::Deserializer::deserialize(std::unique_ptr&lt; Element &gt; &amp;element, bool hierarchy=true, std::streamsize bytes=0)']]],
+  ['deserializer',['Deserializer',['../class_msg_pack_1_1_deserializer.html#a2f9585a3ef7e239339281f73930dcfac',1,'MsgPack::Deserializer::Deserializer(std::basic_streambuf&lt; uint8_t &gt; *_streamBuffer)'],['../class_msg_pack_1_1_deserializer.html#ab4075ab25790c7f8f56b05e46d083ae8',1,'MsgPack::Deserializer::Deserializer(std::streambuf *_streamBuffer)']]],
+  ['disconnect',['disconnect',['../classnet_link_1_1_socket.html#ac078338471cceaa79e6dbfac1926cf59',1,'netLink::Socket']]]
 ];

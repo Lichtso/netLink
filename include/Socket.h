@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -23,7 +23,7 @@ namespace netLink {
 
     //! Socket and stream buffer
     class Socket : public std::basic_streambuf<uint8_t> {
-        typedef std::basic_streambuf<uint8_t> super;
+        typedef std::basic_streambuf<uint8_t> super; //!< Typedef of super class
         friend SocketManager;
 
         struct AddrinfoDestructor {
@@ -48,40 +48,69 @@ namespace netLink {
         //Output functions (put)
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
-        
+
+        public:
+        //! Defines the version of IP.
+        enum IPVersion {
+            IPv4, //!< IPv4 only
+            IPv6, //!< IPv6 only
+            ANY //!< IPv4 or IPv6 (choosen by the system)
+        };
+
+        //! Defines the nature of a socket.
+        enum Type {
+            NONE, //!< No type defined
+            TCP_CLIENT, //!< TCP socket connecting to a server
+            TCP_SERVER, //!< TCP socket waiting for TCP_CLIENT to connect
+            TCP_SERVERS_CLIENT, //!< TCP socket to represent a TCP_CLIENT connection at the TCP_SERVER
+            UDP_PEER //!< UDP socket
+        };
+
+        //! Defines the send status of a socket.
+        enum Status {
+            NOT_CONNECTED, //!< Socket is not even initialized or disconnected
+            CONNECTING, //!< Socket is initialized but not connected yet and can not send or receive data
+            LISTENING, //!< Socket is a server and can neither send nor receive data
+            READY, //!< Socket is connected, can send and receive data
+            BUSY //!< Socket is connected and can not send but receive data (at the moment)
+        };
+
         protected:
-        IPVersion ipVersion = ANY;
-        SocketType type = NONE;
+        IPVersion ipVersion = ANY; //!< IP version which is in use
+        Type type = NONE; //!< Type of the socket
         unsigned int status = NOT_CONNECTED; //!< Or listen queue size if socket is TCP_SERVER
         int handle = -1; //!< Handle used for the system interface
-
+        /*! Initzialize system handle
+         @param blocking Waits for connection if true
+        */
         void initSocket(bool blocking);
+        /*! Join or leave a multicast group
+         @param addr Address of the multicast group
+         @param join true joins the group and false leaves it
+        */
         void setMulticastGroup(const struct sockaddr_storage* addr, bool join);
-
-        Socket(int handle, const std::string& hostLocal, unsigned portLocal,
-               struct sockaddr_storage* remoteAddr, IPVersion ipVersion);
-
-        virtual std::shared_ptr<Socket> allocateTcpServersClient(int newHandler, struct sockaddr_storage* remoteAddr) {
-            return std::shared_ptr<Socket>(new Socket(newHandler, hostLocal, portLocal, remoteAddr, ipVersion));
+        //! Generates new sockets for client connections of a server
+        virtual std::shared_ptr<Socket> SocketFactory() {
+            return std::shared_ptr<Socket>(new Socket());
         }
-        
+
         public:
         std::set<std::shared_ptr<Socket>> clients; //!< Client sockets of a server
         std::string hostLocal, //!< Host string of local
                     hostRemote; //!< Host string of remote
         unsigned int portLocal = 0, //!< Port of local
                      portRemote = 0; //!< Port of remote
-        
+
         /*! Setup socket as TCP client
          @param hostRemote The remote host to connect to
          @param portRemote The remote port to connect to
          @param waitUntilConnected Set blocking mode until connected
          */
         void initAsTcpClient(const std::string& hostRemote, unsigned portRemote, bool waitUntilConnected = false);
-        
+
         /*! Setup socket as TCP server
          @param hostLocal The host to be listening to:
-         
+
          "" or "*" to listen to any incoming data (IPVersion will be choosen by system)
          "0.0.0.0" to listen to any incoming data (IPVersion will be IPv4)
          "::0" to listen to any incoming data (IPVersion will be IPv6)
@@ -89,10 +118,10 @@ namespace netLink {
          @param listenQueue Queue size for outstanding sockets to accept
          */
         void initAsTcpServer(const std::string& hostLocal, unsigned portLocal, unsigned listenQueue = 16);
-        
+
         /*! Setup socket as UDP server
          @param hostLocal The host to be listening to:
-         
+
          "" or "*" to listen to any incoming data (IPVersion will be choosen by system)
          "0.0.0.0" to listen to any incoming data (IPVersion will be IPv4)
          "::0" to listen to any incoming data (IPVersion will be IPv6)
@@ -100,7 +129,7 @@ namespace netLink {
          @param portLocal The local port
          */
         void initAsUdpPeer(const std::string& hostLocal, unsigned portLocal);
-        
+
         Socket();
         virtual ~Socket();
 
@@ -108,10 +137,10 @@ namespace netLink {
         IPVersion getIPVersion() const;
 
         //! Returns the SocketType of the socket
-        SocketType getType() const;
+        Type getType() const;
 
         //! Returns the SocketStatus of the socket
-        SocketStatus getStatus() const;
+        Status getStatus() const;
 
         //! Returns the outstanding bytes in system cache to read
         std::streamsize showmanyc();
@@ -126,7 +155,7 @@ namespace netLink {
         std::streamsize receive(char_type* buffer, std::streamsize size);
         //! Sends size bytes from buffer
         std::streamsize send(const char_type* buffer, std::streamsize size);
-        
+
         //! Get the size of the input intermediate buffer in bytes
         std::streamsize getInputBufferSize();
         //! Get the size of the output intermediate buffer in bytes
@@ -135,7 +164,7 @@ namespace netLink {
         void setInputBufferSize(std::streamsize size);
         //! Set the size of the output intermediate buffer in bytes (unwritten contents are lost)
         void setOutputBufferSize(std::streamsize size);
-        
+
         /*! Updates the blocking mode of the socket.
          A socket will be non blocking by default.
          Try to avoid using blocking mode. Use a SocketManager with listen(sec > 0.0) instead.

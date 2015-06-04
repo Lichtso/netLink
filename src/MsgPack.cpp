@@ -682,6 +682,14 @@ namespace MsgPack {
         }
     }
 
+    void ArrayHeader::toJSON(std::ostream& stream) const {
+        stream << "< Array length=" << getLength() << " >";
+    }
+
+    uint32_t ArrayHeader::getSizeInBytes() const {
+        return getHeaderLength();
+    }
+
     int64_t ArrayHeader::getHeaderLength() const {
         if(header[0] >= Type::FIXARRAY && header[0] < Type::FIXSTR)
             return 1;
@@ -696,14 +704,6 @@ namespace MsgPack {
         }
     }
 
-    void ArrayHeader::toJSON(std::ostream& stream) const {
-        stream << "< Array length=" << getLength() << " >";
-    }
-
-    uint32_t ArrayHeader::getSizeInBytes() const {
-        return getHeaderLength();
-    }
-
 
 
     MapHeader::MapHeader(uint32_t len) {
@@ -715,20 +715,6 @@ namespace MsgPack {
         }else{
             header[0] = Type::MAP_32;
             storeUint32(&header[1], len);
-        }
-    }
-
-    uint32_t MapHeader::getLength() const {
-        if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
-            return header[0] - Type::FIXMAP;
-
-        switch(header[0]) {
-            case Type::MAP_16:
-                return loadUint16(&header[1]);
-            case Type::MAP_32:
-                return loadUint32(&header[1]);
-            default:
-                return 0;
         }
     }
 
@@ -754,6 +740,20 @@ namespace MsgPack {
         return getHeaderLength();
     }
 
+    uint32_t MapHeader::getLength() const {
+        if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
+            return header[0] - Type::FIXMAP;
+
+        switch(header[0]) {
+            case Type::MAP_16:
+                return loadUint16(&header[1]);
+            case Type::MAP_32:
+                return loadUint32(&header[1]);
+            default:
+                return 0;
+        }
+    }
+
 
 
 	Array::Array(std::vector<std::unique_ptr<Element>>&& _elements)
@@ -768,10 +768,6 @@ namespace MsgPack {
             return true;
         }else
             return false;
-    }
-
-    std::vector<std::unique_ptr<Element>>* Array::getContainer() {
-        return &elements;
     }
 
     void Array::toJSON(std::ostream& stream) const {
@@ -795,6 +791,14 @@ namespace MsgPack {
         return size;
     }
 
+    std::vector<std::unique_ptr<Element>>* Array::getContainer() {
+        return &elements;
+    }
+
+    Element* Array::getEntry(uint32_t index) const {
+        return (index < elements.size()) ? elements[index].get() : nullptr;
+    }
+
 
 
     Map::Map(std::vector<std::unique_ptr<Element>>&& _elements)
@@ -810,10 +814,6 @@ namespace MsgPack {
             return true;
         }else
             return false;
-    }
-
-    std::vector<std::unique_ptr<Element>>* Map::getContainer() {
-        return &elements;
     }
 
     void Map::toJSON(std::ostream& stream) const {
@@ -839,6 +839,30 @@ namespace MsgPack {
         for(uint32_t i = 1; i < len; i ++)
             size += elements[i]->getSizeInBytes();
         return size;
+    }
+
+    std::vector<std::unique_ptr<Element>>* Map::getContainer() {
+        return &elements;
+    }
+
+    std::pair<String*, Element*> Map::getEntry(uint32_t index) const {
+        index = index*2;
+        if(index+1 < elements.size()) {
+            auto key = dynamic_cast<String*>(elements[index].get());
+            if(key)
+                return std::pair<String*, Element*>(key, elements[index+1].get());
+        }
+        return std::pair<String*, Element*>(nullptr, nullptr);
+    }
+
+    String* Map::getKey(uint32_t index) const {
+        index = index*2;
+        return (index < elements.size()) ? dynamic_cast<String*>(elements[index].get()) : nullptr;
+    }
+
+    Element* Map::getValue(uint32_t index) const {
+        index = index*2+1;
+        return (index < elements.size()) ? elements[index].get() : nullptr;
     }
 
 

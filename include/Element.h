@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -97,12 +97,19 @@ namespace MsgPack {
         friend Deserializer;
         protected:
         Element() { }
+        //! Returns the initial serializer position in bytes (negative value if there is a header)
         virtual int64_t startSerialize() { return 0; };
+        //! Reads in one byte and returns the initial deserializer position in bytes (negative value if there is a header)
         virtual int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) = 0;
+        //! Serializes bytes at the given serializer position pos into streamBuffer
         virtual std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) = 0;
+        //! Deserializes bytes at the given deserializer position pos from streamBuffer
         virtual std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) { return 0; };
+        //! Returns true if the header of a container is deserialized and reserves the necessary space for its element vector
         virtual bool containerDeserialized() { return false; };
+        //! Returns a raw pointer to the element vector of a container
         virtual std::vector<std::unique_ptr<Element>>* getContainer() { return NULL; };
+        //! Returns the first invalid (de)serializer position
         virtual int64_t getEndPos() const = 0;
         public:
         virtual ~Element() { }
@@ -113,5 +120,5 @@ namespace MsgPack {
         //! Returns the size in bytes this MsgPack::Element takes if completely serialized
         virtual uint32_t getSizeInBytes() const { return getEndPos(); };
     };
-    
+
 };

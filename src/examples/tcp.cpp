@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     #ifdef WIN32
     netLink::init();
     #endif
-    
+
     netLink::SocketManager socketManager;
 
     //Allocate a new socket and insert it into the SocketManager
@@ -28,16 +28,16 @@ int main(int argc, char** argv) {
 
     //Define a callback, fired when a new client tries to connect
     socketManager.onConnectRequest = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
-        std::cout << "Accepted connection from " << clientSocket->hostRemote << ":" << clientSocket->portRemote << "\n";
+        std::cout << "Accepted connection from " << clientSocket->hostRemote << ":" << clientSocket->portRemote << std::endl;
 
         //Accept all new connections
         return true;
     };
 
     //Define a callback, fired when a sockets state changes
-    socketManager.onStatusChanged = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::SocketStatus prev) {
-        if(prev == netLink::CONNECTING) {
-            std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << "\n";
+    socketManager.onStatusChanged = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::Socket::Status prev) {
+        if(socket->getStatus() == netLink::Socket::Status::READY) {
+            std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << std::endl;
 
             //Prepare a MsgPack encoded message
             netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
@@ -51,37 +51,62 @@ int main(int argc, char** argv) {
 
     //Define a callback, fired when a socket disconnects
     socketManager.onDisconnect = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
-        std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << "\n";
+        std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << std::endl;
     };
 
     //Define a callback, fired when a socket receives data
     socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
         //hostRemote and portRemote are now set to the origin of the last received message
-        std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << "\n";
+        std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << std::endl;
+
+        // Parse the *element
+        auto elementMap = dynamic_cast<MsgPack::Map*>(element.get());
+        if(elementMap) { // The received element is a map
+            auto container = elementMap->getContainer();
+            // Iterate them sequentially
+            std::cout << "Iterate them sequentially:" << std::endl;
+            for(auto& elementInContainer : *container) {
+                auto str = dynamic_cast<MsgPack::String*>(elementInContainer.get());
+                if(str) // elementInContainer is a string
+                    std::cout << *elementInContainer << std::endl;
+            }
+            // Or just access them directly
+            if(elementMap->getLength() >= 2) {
+                std::cout << "Access them directly:" << std::endl;
+                auto firstKey = elementMap->getKey(0);
+                auto firstValue = elementMap->getValue(0);
+                auto secondKey = elementMap->getKey(1);
+                auto secondValue = elementMap->getValue(1);
+                // ... and so on
+                std::cout << firstKey->stdString() << " : " << *firstValue << std::endl;
+                std::cout << secondKey->stdString() << " : " << *secondValue << std::endl;
+            }
+        }
+
     };
 
     //Ask user for a nice IP address
-    std::cout << "Enter a IP-Adress to connect to a sever or '*' to start a server:\n";
-    while(socket->getStatus() == netLink::NOT_CONNECTED) {
+    std::cout << "Enter a IP-Adress to connect to a sever or '*' to start a server:" << std::endl;
+    while(socket->getStatus() == netLink::Socket::Status::NOT_CONNECTED) {
         try {
             std::cin >> socket->hostRemote;
-        
+
             //Init socket as TCP server or client on port 3823
             if(socket->hostRemote == "*")
                 socket->initAsTcpServer("*", 3823);
             else
                 socket->initAsTcpClient(socket->hostRemote, 3823);
         }catch(netLink::Exception exc) {
-            std::cout << "Could not resolve address, please try again...\n";
+            std::cout << "Could not resolve address, please try again..." << std::endl;
         }
     }
 
-    while(socket->getStatus() != netLink::NOT_CONNECTED) {
+    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED) {
         //Let the SocketManager poll from all sockets, events will be triggered here
         socketManager.listen();
     }
 
-    std::cout << "Quit\n";
+    std::cout << "Quit" << std::endl;
 
     return 0;
 }

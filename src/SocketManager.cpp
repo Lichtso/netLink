@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -34,14 +34,14 @@ void SocketManager::listen(double secLeft) {
     FD_ZERO(&readfds);
     FD_ZERO(&writefds);
     FD_ZERO(&exceptfds);
-    
+
     int maxHandle = -1;
     std::set<std::shared_ptr<Socket>> selection;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
 
         //Garbage collect disconnected sockets
-        if(socket->status == NOT_CONNECTED) {
+        if(socket->status == Socket::Status::NOT_CONNECTED) {
             sockets.erase(iterator);
             continue;
         }
@@ -52,17 +52,17 @@ void SocketManager::listen(double secLeft) {
         FD_SET(socket->handle, &exceptfds);
         selection.insert(*iterator);
 
-        if(socket->type == TCP_SERVER) {
+        if(socket->type == Socket::Type::TCP_SERVER) {
             //Iterate all TCP_SERVERS_CLIENTs
             foreach_e(socket->clients, clientIterator) {
                 Socket* client = (*clientIterator).get();
-    
+
                 //Garbage collect disconnected clients
-                if(client->status == NOT_CONNECTED) {
+                if(client->status == Socket::Status::NOT_CONNECTED) {
                     socket->clients.erase(clientIterator);
                     continue;
                 }
-    
+
                 //Add client to the listen set
                 maxHandle = std::max(maxHandle, client->handle);
                 FD_SET(client->handle, &readfds);
@@ -74,7 +74,7 @@ void SocketManager::listen(double secLeft) {
             FD_SET(socket->handle, &writefds);
     }
     if(maxHandle == -1) return;
-    
+
     struct timeval timeout, *timeoutPtr;
     if(secLeft >= 0.0) {
         timeout.tv_sec = secLeft;
@@ -85,7 +85,7 @@ void SocketManager::listen(double secLeft) {
 
     if(select(maxHandle + 1, &readfds, &writefds, &exceptfds, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
-    
+
     foreach_e(selection, iterator) {
         Socket* socket = (*iterator).get();
         MsgPackSocket* msgPackSocket = dynamic_cast<MsgPackSocket*>(socket);
@@ -97,7 +97,7 @@ void SocketManager::listen(double secLeft) {
             break;
         }
 
-        if(socket->type == TCP_SERVER) {
+        if(socket->type == Socket::Type::TCP_SERVER) {
             if(FD_ISSET(socket->handle, &readfds)) {
                 std::shared_ptr<Socket> newSocket = socket->accept();
                 //New client accepted
@@ -115,7 +115,7 @@ void SocketManager::listen(double secLeft) {
                     break;
                 }
                 //Ensure that we only read data from the incoming packet (UDP)
-                if(socket->type == UDP_PEER)
+                if(socket->type == Socket::Type::UDP_PEER)
                     socket->advanceInputBuffer();
                 //Received new data
                 if(msgPackSocket && onReceiveMsgPack) {
@@ -128,19 +128,19 @@ void SocketManager::listen(double secLeft) {
                 }else if(onReceive)
                     onReceive(this, *iterator);
             }
-            
-            SocketStatus prev = (SocketStatus) socket->status;
-            
+
+            Socket::Status prev = (Socket::Status) socket->status;
+
             if(FD_ISSET(socket->handle, &writefds))
-                socket->status = READY;
+                socket->status = Socket::Status::READY;
             else
-                socket->status = (prev == CONNECTING) ? CONNECTING : BUSY;
+                socket->status = (prev == Socket::Status::CONNECTING) ? Socket::Status::CONNECTING : Socket::Status::BUSY;
 
             if(onStatusChanged && socket->status != prev)
                 onStatusChanged(this, *iterator, prev);
 
             //Try to send data of MsgPack queue in socket
-            if(socket->status == READY && msgPackSocket)
+            if(socket->status == Socket::Status::READY && msgPackSocket)
                 while(socket->pubsync() != EOF && msgPackSocket->queue.size()) {
                     std::unique_ptr<MsgPack::Element>& element = msgPackSocket->queue.front();
                     msgPackSocket->serializer << element;

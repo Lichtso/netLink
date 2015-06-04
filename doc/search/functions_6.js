@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['operator_3c_3c',['operator&lt;&lt;',['../classnet_link_1_1_msg_pack_socket.html#ad9a3858842065d6fc9786df83b6095a8',1,'netLink::MsgPackSocket::operator&lt;&lt;()'],['../class_msg_pack_1_1_serializer.html#ac433078ff903f0da178a5a372e2d79b2',1,'MsgPack::Serializer::operator&lt;&lt;()']]],
-  ['operator_3e_3e',['operator&gt;&gt;',['../class_msg_pack_1_1_deserializer.html#ae5aa9e97bcec0a83c32ac99a7e585844',1,'MsgPack::Deserializer']]]
+  ['initastcpclient',['initAsTcpClient',['../classnet_link_1_1_socket.html#a571f756f8aa4f199cc7cc8db313bde98',1,'netLink::Socket']]],
+  ['initastcpserver',['initAsTcpServer',['../classnet_link_1_1_socket.html#a477d9c082e3c7636bb7e103e8d617e11',1,'netLink::Socket']]],
+  ['initasudppeer',['initAsUdpPeer',['../classnet_link_1_1_socket.html#a579fee22b3df524283e0462f0ce4eb6a',1,'netLink::Socket']]],
+  ['initsocket',['initSocket',['../classnet_link_1_1_socket.html#a2bfbb3d0188794023985874d08627e80',1,'netLink::Socket']]],
+  ['isnull',['isNull',['../class_msg_pack_1_1_primitive.html#ab792fc1726f41ff8d2702f6b7cb36781',1,'MsgPack::Primitive']]]
 ];

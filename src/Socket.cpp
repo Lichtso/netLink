@@ -305,20 +305,6 @@ void Socket::setMulticastGroup(const struct sockaddr_storage* addr, bool join) {
     }
 }
 
-Socket::Socket(int _handle, const std::string& _hostLocal, unsigned _portLocal,
-               struct sockaddr_storage* remoteAddr, IPVersion _ipVersion)
-                :ipVersion(_ipVersion), type(TCP_SERVERS_CLIENT), status(READY),
-                handle(_handle), hostLocal(_hostLocal), portLocal(_portLocal) {
-    readSockaddr(remoteAddr, hostRemote, portRemote);
-    setBlockingMode(false);
-    #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
-    setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
-    #endif
-    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
-    setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
-    #endif
-}
-
 void Socket::initAsTcpClient(const std::string& _hostRemote, unsigned _portRemote, bool waitUntilConnected) {
     type = TCP_CLIENT;
     hostRemote = _hostRemote;
@@ -354,19 +340,19 @@ Socket::~Socket() {
     disconnect();
 }
 
-IPVersion Socket::getIPVersion() const {
+Socket::IPVersion Socket::getIPVersion() const {
     return ipVersion;
 }
 
-SocketType Socket::getType() const {
+Socket::Type Socket::getType() const {
     return type;
 }
 
-SocketStatus Socket::getStatus() const {
+Socket::Status Socket::getStatus() const {
     if(type == TCP_SERVER)
         return (status == NOT_CONNECTED) ? NOT_CONNECTED : LISTENING;
     else
-        return (SocketStatus)status;
+        return (Socket::Status)status;
 }
 
 std::streamsize Socket::showmanyc() {
@@ -575,10 +561,18 @@ std::shared_ptr<Socket> Socket::accept() {
 	unsigned int addrSize = sizeof(remoteAddr);
 	#endif
 
-    int newHandler = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
-    if(newHandler == -1) return nullptr;
+    int clientHandle = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
+    if(clientHandle == -1) return nullptr;
 
-    std::shared_ptr<Socket> client = allocateTcpServersClient(newHandler, &remoteAddr);
+    std::shared_ptr<Socket> client = SocketFactory();
+	client->ipVersion = ipVersion;
+	client->type = TCP_SERVERS_CLIENT;
+	client->status = READY;
+	client->handle = clientHandle;
+	client->hostLocal = hostLocal;
+	client->portLocal = portLocal;
+	readSockaddr(&remoteAddr, client->hostRemote, client->portRemote);
+	client->setBlockingMode(false);
     clients.insert(client);
 
     return client;

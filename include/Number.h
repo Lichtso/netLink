@@ -4,10 +4,10 @@
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the use of this software.
-    Permission is granted to anyone to use this software for any purpose, 
-    including commercial applications, and to alter it and redistribute it freely, 
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it freely,
     subject to the following restrictions:
-    
+
     1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
     2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
     3. This notice may not be removed or altered from any source distribution.
@@ -24,16 +24,20 @@ namespace MsgPack {
         friend Serializer;
         friend Deserializer;
         protected:
-        uint8_t data[9];
+        uint8_t data[9]; //!< Internal raw represenation of the number
         Number() { }
         int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
         std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
         std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
+        //! Initialize from unsigned 64 bit integer
         Number(uint64_t value);
+        //! Initialize from signed 64 bit integer
         Number(int64_t value);
+        //! Initialize from 32 bit float
         Number(float value);
+        //! Initialize from 64 bit float
         Number(double value);
         void toJSON(std::ostream& stream) const;
         Type getType() const;
@@ -67,5 +71,5 @@ namespace MsgPack {
             return (T)0;
         }
     };
-    
+
 };

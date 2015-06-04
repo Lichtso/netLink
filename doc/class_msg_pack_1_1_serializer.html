@@ -125,21 +125,24 @@ Public Member Functions</h2></td></tr>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_types_class_msg_pack_1_1_stream_manager"><td colspan="2" onclick="javascript:toggleInherit('pro_types_class_msg_pack_1_1_stream_manager')"><img src="closed.png" alt="-"/>&#160;Protected Types inherited from <a class="el" href="class_msg_pack_1_1_stream_manager.html">MsgPack::StreamManager</a></td></tr>
 <tr class="memitem:a78d6144c89619f8811723a38378d15a2 inherit pro_types_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78d6144c89619f8811723a38378d15a2"></a>
-typedef std::pair&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> *, int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>StackElement</b></td></tr>
+typedef std::pair&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> *, int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_stream_manager.html#a78d6144c89619f8811723a38378d15a2">StackElement</a></td></tr>
+<tr class="memdesc:a78d6144c89619f8811723a38378d15a2 inherit pro_types_class_msg_pack_1_1_stream_manager"><td class="mdescLeft">&#160;</td><td class="mdescRight">To store the (de)serializer position. <br /></td></tr>
 <tr class="separator:a78d6144c89619f8811723a38378d15a2 inherit pro_types_class_msg_pack_1_1_stream_manager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_class_msg_pack_1_1_stream_manager"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_msg_pack_1_1_stream_manager')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_msg_pack_1_1_stream_manager.html">MsgPack::StreamManager</a></td></tr>
 <tr class="memitem:a687df76ed12734d94a7653cfda7ab9e6 inherit pro_methods_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a687df76ed12734d94a7653cfda7ab9e6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>StreamManager</b> (std::basic_streambuf&lt; uint8_t &gt; *_streamBuffer)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_stream_manager.html#a687df76ed12734d94a7653cfda7ab9e6">StreamManager</a> (std::basic_streambuf&lt; uint8_t &gt; *_streamBuffer)</td></tr>
+<tr class="memdesc:a687df76ed12734d94a7653cfda7ab9e6 inherit pro_methods_class_msg_pack_1_1_stream_manager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initalize from stream buffer. <br /></td></tr>
 <tr class="separator:a687df76ed12734d94a7653cfda7ab9e6 inherit pro_methods_class_msg_pack_1_1_stream_manager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_msg_pack_1_1_stream_manager"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_msg_pack_1_1_stream_manager')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_msg_pack_1_1_stream_manager.html">MsgPack::StreamManager</a></td></tr>
 <tr class="memitem:a7ba5513c15dbc3b16b7c76980b218f1f inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ba5513c15dbc3b16b7c76980b218f1f"></a>
-std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>rootElement</b></td></tr>
+std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_stream_manager.html#a7ba5513c15dbc3b16b7c76980b218f1f">rootElement</a></td></tr>
+<tr class="memdesc:a7ba5513c15dbc3b16b7c76980b218f1f inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="mdescLeft">&#160;</td><td class="mdescRight">The element at the root of the hierarchy. <br /></td></tr>
 <tr class="separator:a7ba5513c15dbc3b16b7c76980b218f1f inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ef225894886b39d839ef0fce291a3e7 inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ef225894886b39d839ef0fce291a3e7"></a>
-std::vector&lt; StackElement &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>stack</b></td></tr>
+std::vector&lt; <a class="el" href="class_msg_pack_1_1_stream_manager.html#a78d6144c89619f8811723a38378d15a2">StackElement</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_stream_manager.html#a6ef225894886b39d839ef0fce291a3e7">stack</a></td></tr>
+<tr class="memdesc:a6ef225894886b39d839ef0fce291a3e7 inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="mdescLeft">&#160;</td><td class="mdescRight">The element hierarchy stack. <br /></td></tr>
 <tr class="separator:a6ef225894886b39d839ef0fce291a3e7 inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3342bd27e680175afcabd191cf4c1baf inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3342bd27e680175afcabd191cf4c1baf"></a>
-std::basic_streambuf&lt; uint8_t &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>streamBuffer</b></td></tr>
+<tr class="memitem:a3342bd27e680175afcabd191cf4c1baf inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memItemLeft" align="right" valign="top">std::basic_streambuf&lt; uint8_t &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_stream_manager.html#a3342bd27e680175afcabd191cf4c1baf">streamBuffer</a></td></tr>
 <tr class="separator:a3342bd27e680175afcabd191cf4c1baf inherit pro_attribs_class_msg_pack_1_1_stream_manager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
