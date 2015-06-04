@@ -18,7 +18,7 @@
 #include <cstring>
 #include <string>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define countLeadingOneBits(x) __lzcnt(~(x))
 #else
 #define countLeadingOneBits(x) __builtin_clz(~(x))

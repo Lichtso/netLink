@@ -24,6 +24,7 @@ void init() {
 		throw Exception(Exception::ERROR_INIT);
 }
 #define snprintf _snprintf_s
+#define _WIN32_WINNT 0x0602
 #else
 #define closesocket close
 #endif
