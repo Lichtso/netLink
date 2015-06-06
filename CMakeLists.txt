@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(NetLink)
+project(netLink)
 
 set(OUTPUT_DIR out)
 set(SOURCE_DIR src)
@@ -36,3 +36,7 @@ add_executable(example_tcp ${EXAMPLES_DIR}/tcp.cpp)
 add_executable(example_udp ${EXAMPLES_DIR}/udp.cpp)
 target_link_libraries(example_tcp shared)
 target_link_libraries(example_udp shared)
+
+file(GLOB INCLUDE_HEADERS "include/*.h")
+install(FILES ${INCLUDE_HEADERS} DESTINATION include/${CMAKE_PROJECT_NAME})
+install(TARGETS shared DESTINATION lib)
