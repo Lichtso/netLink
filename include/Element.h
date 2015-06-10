@@ -23,28 +23,28 @@
 #include <cstring>
 
 //Store numbers in network endian (big endian)
-inline void storeUint8(uint8_t* target, uint8_t source);
-inline void storeInt8(uint8_t* target, int8_t source);
-inline void storeUint16(uint8_t* target, uint16_t source);
-inline void storeInt16(uint8_t* target, int16_t source);
-inline void storeFloat32(uint8_t* target, float source);
-inline void storeUint32(uint8_t* target, uint32_t source);
-inline void storeInt32(uint8_t* target, int32_t source);
-inline void storeFloat64(uint8_t* target, double source);
-inline void storeUint64(uint8_t* target, uint64_t source);
-inline void storeInt64(uint8_t* target, int64_t source);
+void storeUint8(uint8_t* target, uint8_t source);
+void storeInt8(uint8_t* target, int8_t source);
+void storeUint16(uint8_t* target, uint16_t source);
+void storeInt16(uint8_t* target, int16_t source);
+void storeFloat32(uint8_t* target, float source);
+void storeUint32(uint8_t* target, uint32_t source);
+void storeInt32(uint8_t* target, int32_t source);
+void storeFloat64(uint8_t* target, double source);
+void storeUint64(uint8_t* target, uint64_t source);
+void storeInt64(uint8_t* target, int64_t source);
 
 //Read numbers from network endian (big endian)
-inline uint8_t loadUint8(const uint8_t* source);
-inline int8_t loadInt8(const uint8_t* source);
-inline uint16_t loadUint16(const uint8_t* source);
-inline int16_t loadInt16(const uint8_t* source);
-inline float loadFloat32(const uint8_t* source);
-inline uint32_t loadUint32(const uint8_t* source);
-inline int32_t loadInt32(const uint8_t* source);
-inline double loadFloat64(const uint8_t* source);
-inline uint64_t loadUint64(const uint8_t* source);
-inline int64_t loadInt64(const uint8_t* source);
+uint8_t loadUint8(const uint8_t* source);
+int8_t loadInt8(const uint8_t* source);
+uint16_t loadUint16(const uint8_t* source);
+int16_t loadInt16(const uint8_t* source);
+float loadFloat32(const uint8_t* source);
+uint32_t loadUint32(const uint8_t* source);
+int32_t loadInt32(const uint8_t* source);
+double loadFloat64(const uint8_t* source);
+uint64_t loadUint64(const uint8_t* source);
+int64_t loadInt64(const uint8_t* source);
 
 namespace MsgPack {
 

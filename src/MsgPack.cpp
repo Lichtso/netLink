@@ -37,92 +37,92 @@
     return target;
 #endif
 
-inline void storeUint8(uint8_t* target, uint8_t source) {
+void storeUint8(uint8_t* target, uint8_t source) {
     *reinterpret_cast<uint8_t*>(target) = source;
 }
 
-inline void storeInt8(uint8_t* target, int8_t source) {
+void storeInt8(uint8_t* target, int8_t source) {
     *reinterpret_cast<int8_t*>(target) = source;
 }
 
-inline void storeUint16(uint8_t* target, uint16_t source) {
+void storeUint16(uint8_t* target, uint16_t source) {
     storeBSwap(16);
 }
 
-inline void storeInt16(uint8_t* target, int16_t source) {
+void storeInt16(uint8_t* target, int16_t source) {
     storeBSwap(16);
 }
 
-inline void storeFloat32(uint8_t* target, float source) {
+void storeFloat32(uint8_t* target, float source) {
     storeBSwap(32);
 }
 
-inline void storeUint32(uint8_t* target, uint32_t source) {
+void storeUint32(uint8_t* target, uint32_t source) {
     storeBSwap(32);
 }
 
-inline void storeInt32(uint8_t* target, int32_t source) {
+void storeInt32(uint8_t* target, int32_t source) {
     storeBSwap(32);
 }
 
-inline void storeFloat64(uint8_t* target, double source) {
+void storeFloat64(uint8_t* target, double source) {
     storeBSwap(64);
 }
 
-inline void storeUint64(uint8_t* target, uint64_t source) {
+void storeUint64(uint8_t* target, uint64_t source) {
     storeBSwap(64);
 }
 
-inline void storeInt64(uint8_t* target, int64_t source) {
+void storeInt64(uint8_t* target, int64_t source) {
     storeBSwap(64);
 }
 
 
 
-inline uint8_t loadUint8(const uint8_t* source) {
+uint8_t loadUint8(const uint8_t* source) {
     return *reinterpret_cast<const uint8_t*>(source);
 }
 
-inline int8_t loadInt8(const uint8_t* source) {
+int8_t loadInt8(const uint8_t* source) {
     return *reinterpret_cast<const int8_t*>(source);
 }
 
-inline uint16_t loadUint16(const uint8_t* source) {
+uint16_t loadUint16(const uint8_t* source) {
     uint16_t target;
     loadBSwap(16);
 }
 
-inline int16_t loadInt16(const uint8_t* source) {
+int16_t loadInt16(const uint8_t* source) {
     int16_t target;
     loadBSwap(16);
 }
 
-inline float loadFloat32(const uint8_t* source) {
+float loadFloat32(const uint8_t* source) {
     float target;
     loadBSwap(32);
 }
 
-inline uint32_t loadUint32(const uint8_t* source) {
+uint32_t loadUint32(const uint8_t* source) {
     uint32_t target;
     loadBSwap(32);
 }
 
-inline int32_t loadInt32(const uint8_t* source) {
+int32_t loadInt32(const uint8_t* source) {
     int32_t target;
     loadBSwap(32);
 }
 
-inline double loadFloat64(const uint8_t* source) {
+double loadFloat64(const uint8_t* source) {
     double target;
     loadBSwap(64);
 }
 
-inline uint64_t loadUint64(const uint8_t* source) {
+uint64_t loadUint64(const uint8_t* source) {
     uint64_t target;
     loadBSwap(64);
 }
 
-inline int64_t loadInt64(const uint8_t* source) {
+int64_t loadInt64(const uint8_t* source) {
     int64_t target;
     loadBSwap(64);
 }
