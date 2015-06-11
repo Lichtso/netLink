@@ -14,6 +14,8 @@ add_library(shared SHARED ${SOURCES})
 add_library(static STATIC ${SOURCES})
 set_target_properties(shared PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 set_target_properties(static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+set_target_properties(shared PROPERTIES DEBUG_POSTFIX -d)
+set_target_properties(static PROPERTIES DEBUG_POSTFIX -d)
 
 if(WIN32)
     target_link_libraries(shared ws2_32)
