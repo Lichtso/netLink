@@ -221,7 +221,11 @@ namespace MsgPack {
     }
 
     Type Header::getType() const {
-        return (Type)header[0];
+        auto type = (Type)header[0];
+        if(type < FIXARRAY) return FIXMAP;
+        if(type < FIXSTR) return FIXARRAY;
+        if(type < NIL) return FIXSTR;
+        return type;
     }
 
     uint32_t Header::getSizeInBytes() const {
@@ -635,7 +639,10 @@ namespace MsgPack {
     }
 
     Type Number::getType() const {
-        return (Type)data[0];
+        auto type = (Type)data[0];
+        if(type < FIXMAP) return FIXUINT;
+        if(type >= FIXINT) return FIXINT;
+        return type;
     }
 
     std::unique_ptr<Element> Factory(uint64_t value) {
