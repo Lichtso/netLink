@@ -155,6 +155,11 @@ namespace netLink {
         std::streamsize receive(char_type* buffer, std::streamsize size);
         //! Sends size bytes from buffer
         std::streamsize send(const char_type* buffer, std::streamsize size);
+        /*! Redirects received data to all Sockets in destinations
+         @warning If one destination can't handle the outgoing load, false is returned and all other destinations get out of sync
+         @return true only if the data was successfully redirected to all specified destinations
+        */
+        bool redirect(const std::vector<std::shared_ptr<Socket>>& destinations);
 
         //! Get the size of the input intermediate buffer in bytes
         std::streamsize getInputBufferSize();

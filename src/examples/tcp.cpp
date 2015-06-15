@@ -82,7 +82,6 @@ int main(int argc, char** argv) {
                 std::cout << secondKey->stdString() << " : " << *secondValue << std::endl;
             }
         }
-
     };
 
     //Ask user for a nice IP address

@@ -392,8 +392,13 @@ std::streamsize Socket::advanceInputBuffer() {
 }
 
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
+	if(type == TCP_SERVER)
+		throw Exception(Exception::BAD_TYPE);
+	if(status != Socket::Status::READY && status != Socket::Status::BUSY)
+		return 0;
     size = std::min(size, showmanyc());
-    if(size == 0) return 0;
+    if(size == 0)
+		return 0;
 
     switch(type) {
         case UDP_PEER: {
@@ -405,7 +410,7 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
 			#endif
             int result = recvfrom(handle, (char*)buffer, size, 0, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
 
-            if(result == -1) {
+            if(result <= 0) {
                 portRemote = 0;
                 hostRemote = "";
                 throw Exception(Exception::ERROR_READ);
@@ -418,8 +423,8 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
         case TCP_SERVERS_CLIENT: {
             int result = recv(handle, (char*)buffer, size, 0);
 
-            if(result == -1)
-                throw Exception(Exception::ERROR_READ);
+            if(result <= 0)
+				throw Exception(Exception::ERROR_READ);
 
             return result;
         }
@@ -431,7 +436,10 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
 }
 
 std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
-    if(size == 0) return 0;
+	if(type == TCP_SERVER)
+		throw Exception(Exception::BAD_TYPE);
+	if(status != Socket::Status::READY || size == 0)
+		return 0;
 
     switch(type) {
         case UDP_PEER: {
@@ -440,10 +448,10 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
             size_t sentBytes = 0;
             while(sentBytes < (size_t)size) {
                 int result = ::sendto(handle, (const char*)buffer + sentBytes, size - sentBytes, 0, info->ai_addr, info->ai_addrlen);
-
-                if(result == -1)
-                    throw Exception(Exception::ERROR_SEND);
-
+				if(result <= 0) {
+					status = BUSY;
+	                throw Exception(Exception::ERROR_SEND);
+				}
                 sentBytes += result;
             }
 
@@ -454,10 +462,10 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
             size_t sentBytes = 0;
             while(sentBytes < (size_t)size) {
                 int result = ::send(handle, (const char*)buffer + sentBytes, size - sentBytes, 0);
-
-                if(result == -1)
-                    throw Exception(Exception::ERROR_SEND);
-
+				if(result <= 0) {
+					status = BUSY;
+	                throw Exception(Exception::ERROR_SEND);
+				}
                 sentBytes += result;
             }
             return sentBytes;
@@ -467,6 +475,22 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
         case TCP_SERVER:
             throw Exception(Exception::BAD_TYPE);
     }
+}
+
+bool Socket::redirect(const std::vector<std::shared_ptr<Socket>>& destinations) {
+	if(type == TCP_SERVER)
+		throw Exception(Exception::BAD_TYPE);
+
+	while(in_avail()) {
+		auto length = egptr()-gptr();
+		for(const auto& destination : destinations)
+			if(destination->sputn(gptr(), length) < length)
+				return false;
+		gbump(length);
+		advanceInputBuffer();
+	}
+
+	return true;
 }
 
 std::streamsize Socket::getInputBufferSize() {
@@ -479,7 +503,7 @@ std::streamsize Socket::getOutputBufferSize() {
 
 void Socket::setInputBufferSize(std::streamsize n) {
     if(eback()) {
-        delete [] eback();
+        delete[] eback();
         setg(NULL, NULL, NULL);
     }
     if(n == 0) return;
@@ -493,7 +517,7 @@ void Socket::setInputBufferSize(std::streamsize n) {
 
 void Socket::setOutputBufferSize(std::streamsize n) {
     if(pbase()) {
-        delete [] pbase();
+        delete[] pbase();
         setp(NULL, NULL);
     }
     if(n == 0) return;

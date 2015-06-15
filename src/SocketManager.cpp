@@ -105,6 +105,7 @@ void SocketManager::listen(double secLeft) {
                     newSocket->disconnect();
                     socket->clients.erase(newSocket);
                 }
+                sockets.insert(newSocket);
             }
         }else{
             if(FD_ISSET(socket->handle, &readfds)) {
