@@ -39,11 +39,20 @@ namespace MsgPack {
         Number(float value);
         //! Initialize from 64 bit float
         Number(double value);
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         Type getType() const;
+        //! Returns true if getType() is one of FIXUINT, UINT_8, UINT_16, UINT_32, UINT_64
+        bool isUnsignedInteger() const;
+        //! Returns true if getType() is one of FIXINT, INT_8, INT_16, INT_32, INT_64
+        bool isSignedInteger() const;
+        //! Returns true if getType() is one of FLOAT_32, FLOAT_64
+        bool isFloatingPoint() const;
         //! Returns the value as given data type T
         template<class T> T getValue() const {
-            if(data[0] < 0x80 || data[0] >= 0xE0)
+            if(data[0] < FIXMAP)
+                return (T)data[0];
+            else if(data[0] >= FIXINT)
                 return (T)reinterpret_cast<const int8_t&>(data[0]);
             else
                 switch(data[0]) {

@@ -34,6 +34,7 @@ namespace MsgPack {
         //! Initialize from boolean
         Primitive(bool value);
         Primitive() :Primitive(Type::NIL) { }
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         Type getType() const;
         //! Returns if type is NIL

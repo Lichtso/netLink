@@ -128,6 +128,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a5f020d15b2b44c92f896e95b152d4a94">Number</a> (double value)</td></tr>
 <tr class="memdesc:a5f020d15b2b44c92f896e95b152d4a94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from 64 bit float. <br /></td></tr>
 <tr class="separator:a5f020d15b2b44c92f896e95b152d4a94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e110463b0d6c7804a49d97ca069719c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e110463b0d6c7804a49d97ca069719c"></a>
+std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a1e110463b0d6c7804a49d97ca069719c">copy</a> () const </td></tr>
+<tr class="memdesc:a1e110463b0d6c7804a49d97ca069719c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a deep copy of this element. <br /></td></tr>
+<tr class="separator:a1e110463b0d6c7804a49d97ca069719c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3850d623735954da21e65b1d901e5649"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3850d623735954da21e65b1d901e5649"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a3850d623735954da21e65b1d901e5649">toJSON</a> (std::ostream &amp;stream) const </td></tr>
 <tr class="memdesc:a3850d623735954da21e65b1d901e5649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br /></td></tr>
@@ -136,6 +140,18 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 Type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a0ca5301cde0faa2cbca0ea6cbe1e41ff">getType</a> () const </td></tr>
 <tr class="memdesc:a0ca5301cde0faa2cbca0ea6cbe1e41ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the MsgPack::Type. <br /></td></tr>
 <tr class="separator:a0ca5301cde0faa2cbca0ea6cbe1e41ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45f279124a1b1c6962b810b190505fa8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45f279124a1b1c6962b810b190505fa8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a45f279124a1b1c6962b810b190505fa8">isUnsignedInteger</a> () const </td></tr>
+<tr class="memdesc:a45f279124a1b1c6962b810b190505fa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <a class="el" href="class_msg_pack_1_1_number.html#a0ca5301cde0faa2cbca0ea6cbe1e41ff" title="Returns the MsgPack::Type. ">getType()</a> is one of FIXUINT, UINT_8, UINT_16, UINT_32, UINT_64. <br /></td></tr>
+<tr class="separator:a45f279124a1b1c6962b810b190505fa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fb6f25d7468da7df8dd1eaa4454b668"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8fb6f25d7468da7df8dd1eaa4454b668"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a8fb6f25d7468da7df8dd1eaa4454b668">isSignedInteger</a> () const </td></tr>
+<tr class="memdesc:a8fb6f25d7468da7df8dd1eaa4454b668"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <a class="el" href="class_msg_pack_1_1_number.html#a0ca5301cde0faa2cbca0ea6cbe1e41ff" title="Returns the MsgPack::Type. ">getType()</a> is one of FIXINT, INT_8, INT_16, INT_32, INT_64. <br /></td></tr>
+<tr class="separator:a8fb6f25d7468da7df8dd1eaa4454b668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09dbf784abdd384080a8a22277187d76"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09dbf784abdd384080a8a22277187d76"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a09dbf784abdd384080a8a22277187d76">isFloatingPoint</a> () const </td></tr>
+<tr class="memdesc:a09dbf784abdd384080a8a22277187d76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if <a class="el" href="class_msg_pack_1_1_number.html#a0ca5301cde0faa2cbca0ea6cbe1e41ff" title="Returns the MsgPack::Type. ">getType()</a> is one of FLOAT_32, FLOAT_64. <br /></td></tr>
+<tr class="separator:a09dbf784abdd384080a8a22277187d76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7e36061337ee2414c5f5d74b2a90bff"><td class="memTemplParams" colspan="2"><a class="anchor" id="aa7e36061337ee2414c5f5d74b2a90bff"></a>
 template&lt;class T &gt; </td></tr>
 <tr class="memitem:aa7e36061337ee2414c5f5d74b2a90bff"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#aa7e36061337ee2414c5f5d74b2a90bff">getValue</a> () const </td></tr>

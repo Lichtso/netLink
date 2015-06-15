@@ -113,6 +113,8 @@ namespace MsgPack {
         virtual int64_t getEndPos() const = 0;
         public:
         virtual ~Element() { }
+        //! Creates a deep copy of this element
+        virtual std::unique_ptr<Element> copy() const = 0;
         //! Writes a human readable JSON-like string into the given stream
         virtual void toJSON(std::ostream& stream) const = 0;
         //! Returns the MsgPack::Type

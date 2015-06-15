@@ -14,5 +14,5 @@ var searchData=
   ['startserialize',['startSerialize',['../class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243',1,'MsgPack::Element::startSerialize()'],['../class_msg_pack_1_1_header.html#a61a541b11c0c76e2953e1e8a49c33fe5',1,'MsgPack::Header::startSerialize()']]],
   ['stdstring',['stdString',['../class_msg_pack_1_1_string.html#ad228bde452ce0ab4af39e76db51a2045',1,'MsgPack::String']]],
   ['streammanager',['StreamManager',['../class_msg_pack_1_1_stream_manager.html#a687df76ed12734d94a7653cfda7ab9e6',1,'MsgPack::StreamManager']]],
-  ['string',['String',['../class_msg_pack_1_1_string.html#a22b929a28436959267aef3e3a7b1ee3f',1,'MsgPack::String::String(const char *str, uint32_t len)'],['../class_msg_pack_1_1_string.html#a59f3bd0f4b95d96b3eb67f21c347293f',1,'MsgPack::String::String(const char *str)'],['../class_msg_pack_1_1_string.html#a299e484b3646a4a02883b1d1119ac11b',1,'MsgPack::String::String(const std::string &amp;str)']]]
+  ['string',['String',['../class_msg_pack_1_1_string.html#a2cd43b3d19eb16b841993ae097737ed4',1,'MsgPack::String::String(uint32_t len, const void *str)'],['../class_msg_pack_1_1_string.html#a59f3bd0f4b95d96b3eb67f21c347293f',1,'MsgPack::String::String(const char *str)'],['../class_msg_pack_1_1_string.html#a299e484b3646a4a02883b1d1119ac11b',1,'MsgPack::String::String(const std::string &amp;str)']]]
 ];

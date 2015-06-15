@@ -30,6 +30,7 @@ namespace MsgPack {
         public:
         //! Initialize from element vector (move semantic)
         Array(std::vector<std::unique_ptr<Element>>&& elements);
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
         std::vector<std::unique_ptr<Element>>* getContainer();
@@ -48,6 +49,7 @@ namespace MsgPack {
         public:
         //! Initialize from element vector (move semantic)
         Map(std::vector<std::unique_ptr<Element>>&& elements);
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
         std::vector<std::unique_ptr<Element>>* getContainer();

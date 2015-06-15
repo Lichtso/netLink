@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['binary',['Binary',['../class_msg_pack_1_1_binary.html#a48596ef0cbd4011984fbf0654f5a605b',1,'MsgPack::Binary']]]
+  ['binary',['Binary',['../class_msg_pack_1_1_binary.html#af3809c133e523b96d536fd915f06c95f',1,'MsgPack::Binary']]]
 ];

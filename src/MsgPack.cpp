@@ -156,6 +156,10 @@ namespace MsgPack {
         return 1;
     }
 
+    std::unique_ptr<Element> Primitive::copy() const {
+        return std::unique_ptr<Element>(new Primitive(type));
+    }
+
     void Primitive::toJSON(std::ostream& stream) const {
         switch(type) {
             case Type::NIL:
@@ -272,7 +276,7 @@ namespace MsgPack {
 
 
 
-    Binary::Binary(uint32_t len, const uint8_t* _data) {
+    Binary::Binary(uint32_t len, const void* _data) {
         if(len > 0) {
             data.reset(new uint8_t[len]);
             memcpy(data.get(), _data, len);
@@ -316,8 +320,15 @@ namespace MsgPack {
         }
     }
 
+    std::unique_ptr<Element> Binary::copy() const {
+        auto len = getLength();
+        auto _data = new uint8_t[len];
+        memcpy(_data, getData(), len);
+        return std::unique_ptr<Element>(new Binary(len, _data));
+    }
+
     void Binary::toJSON(std::ostream& stream) const {
-        uint32_t len = getEndPos();
+        auto len = getLength();
         stream << "< Buffer length=" << len << " data: ";
         for(uint32_t i = 0; i < len; i ++)
             stream << (uint16_t)data[i] << " ";
@@ -330,7 +341,7 @@ namespace MsgPack {
 
 
 
-    Extended::Extended(uint8_t type, uint32_t len, const uint8_t* _data) {
+    Extended::Extended(uint8_t type, uint32_t len, const void* _data) {
         data.reset(new uint8_t[len+1]);
         data[0] = type;
         memcpy(&data[1], _data, len);
@@ -408,8 +419,15 @@ namespace MsgPack {
         }
     }
 
+    std::unique_ptr<Element> Extended::copy() const {
+        auto len = getLength();
+        auto _data = new uint8_t[len];
+        memcpy(_data, getData(), len);
+        return std::unique_ptr<Element>(new Extended(getDataType(), len, _data));
+    }
+
     void Extended::toJSON(std::ostream& stream) const {
-        uint32_t len = getEndPos();
+        auto len = getLength();
         stream << "< Extended type=" << (uint16_t)data[0];
         stream << " length=" << (len-1) << " data: ";
         for(uint32_t i = 1; i < len; i ++)
@@ -431,7 +449,7 @@ namespace MsgPack {
 
 
 
-    String::String(const char* str, uint32_t len) {
+    String::String(uint32_t len, const void* str) {
         if(len > 0) {
             data.reset(new uint8_t[len]);
             memcpy(data.get(), str, len);
@@ -451,11 +469,11 @@ namespace MsgPack {
         }
     }
 
-	String::String(const char* str) :String(str, strlen(str)) {
+	String::String(const char* str) :String(strlen(str), str) {
 
     }
 
-	String::String(const std::string& str) :String(str.c_str(), str.size()) {
+	String::String(const std::string& str) :String(str.size(), str.c_str()) {
 
     }
 
@@ -491,10 +509,21 @@ namespace MsgPack {
         }
     }
 
+    std::unique_ptr<Element> String::copy() const {
+        auto len = getLength();
+        auto _data = new uint8_t[len];
+        memcpy(_data, getData(), len);
+        return std::unique_ptr<Element>(new String(len, _data));
+    }
+
     void String::toJSON(std::ostream& stream) const {
         stream << "\"";
 		stream.write(reinterpret_cast<const char*>(data.get()), getEndPos());
         stream << "\"";
+    }
+
+    uint8_t* String::getData() const {
+        return data.get();
     }
 
     std::string String::stdString() const {
@@ -600,8 +629,16 @@ namespace MsgPack {
         }
     }
 
+    std::unique_ptr<Element> Number::copy() const {
+        auto result = new Number();
+        memcpy(result->data, data, sizeof(data));
+        return std::unique_ptr<Element>(result);
+    }
+
     void Number::toJSON(std::ostream& stream) const {
-            if(data[0] < 0x80 || data[0] >= 0xE0)
+            if(data[0] < FIXMAP)
+                stream << (int16_t)data[0];
+            else if(data[0] >= FIXINT)
                 stream << (int16_t)reinterpret_cast<const int8_t&>(data[0]);
             else
                 switch(data[0]) {
@@ -643,6 +680,18 @@ namespace MsgPack {
         if(type < FIXMAP) return FIXUINT;
         if(type >= FIXINT) return FIXINT;
         return type;
+    }
+
+    bool Number::isUnsignedInteger() const {
+        return (data[0] < FIXMAP || (data[0] >= UINT_8 && data[0] <= UINT_64));
+    }
+
+    bool Number::isSignedInteger() const {
+        return (data[0] >= FIXINT || (data[0] >= INT_8 && data[0] <= INT_64));
+    }
+
+    bool Number::isFloatingPoint() const {
+        return (data[0] == FLOAT_32 || data[0] == FLOAT_64);
     }
 
     std::unique_ptr<Element> Factory(uint64_t value) {
@@ -687,6 +736,10 @@ namespace MsgPack {
             default:
                 return 0;
         }
+    }
+
+    std::unique_ptr<Element> ArrayHeader::copy() const {
+        return std::unique_ptr<Element>(new ArrayHeader(getLength()));
     }
 
     void ArrayHeader::toJSON(std::ostream& stream) const {
@@ -739,6 +792,10 @@ namespace MsgPack {
         }
     }
 
+    std::unique_ptr<Element> MapHeader::copy() const {
+        return std::unique_ptr<Element>(new MapHeader(getLength()));
+    }
+
     void MapHeader::toJSON(std::ostream& stream) const {
         stream << "< Map length=" << getLength() << " >";
     }
@@ -775,6 +832,15 @@ namespace MsgPack {
             return true;
         }else
             return false;
+    }
+
+    std::unique_ptr<Element> Array::copy() const {
+        auto len = getLength();
+        std::vector<std::unique_ptr<Element>> _elements;
+        _elements.reserve(len);
+        for(const auto& i : elements)
+            _elements.push_back(std::unique_ptr<Element>(i->copy()));
+        return std::unique_ptr<Element>(new Array(std::move(_elements)));
     }
 
     void Array::toJSON(std::ostream& stream) const {
@@ -821,6 +887,15 @@ namespace MsgPack {
             return true;
         }else
             return false;
+    }
+
+    std::unique_ptr<Element> Map::copy() const {
+        auto len = getLength();
+        std::vector<std::unique_ptr<Element>> _elements;
+        _elements.reserve(len);
+        for(const auto& i : elements)
+            _elements.push_back(std::unique_ptr<Element>(i->copy()));
+        return std::unique_ptr<Element>(new Map(std::move(_elements)));
     }
 
     void Map::toJSON(std::ostream& stream) const {

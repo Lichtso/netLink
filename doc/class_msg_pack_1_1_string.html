@@ -113,10 +113,10 @@ Inheritance diagram for MsgPack::String:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a22b929a28436959267aef3e3a7b1ee3f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a22b929a28436959267aef3e3a7b1ee3f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a22b929a28436959267aef3e3a7b1ee3f">String</a> (const char *str, uint32_t len)</td></tr>
-<tr class="memdesc:a22b929a28436959267aef3e3a7b1ee3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from raw c string and length in bytes. <br /></td></tr>
-<tr class="separator:a22b929a28436959267aef3e3a7b1ee3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2cd43b3d19eb16b841993ae097737ed4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cd43b3d19eb16b841993ae097737ed4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a2cd43b3d19eb16b841993ae097737ed4">String</a> (uint32_t len, const void *str)</td></tr>
+<tr class="memdesc:a2cd43b3d19eb16b841993ae097737ed4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from raw c string and length in bytes. <br /></td></tr>
+<tr class="separator:a2cd43b3d19eb16b841993ae097737ed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59f3bd0f4b95d96b3eb67f21c347293f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59f3bd0f4b95d96b3eb67f21c347293f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a59f3bd0f4b95d96b3eb67f21c347293f">String</a> (const char *str)</td></tr>
 <tr class="memdesc:a59f3bd0f4b95d96b3eb67f21c347293f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from nullterminated c string. <br /></td></tr>
@@ -125,10 +125,18 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a299e484b3646a4a02883b1d1119ac11b">String</a> (const std::string &amp;str)</td></tr>
 <tr class="memdesc:a299e484b3646a4a02883b1d1119ac11b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from std::string. <br /></td></tr>
 <tr class="separator:a299e484b3646a4a02883b1d1119ac11b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afafa5240012162f59b5deae7f912e8e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afafa5240012162f59b5deae7f912e8e4"></a>
+std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#afafa5240012162f59b5deae7f912e8e4">copy</a> () const </td></tr>
+<tr class="memdesc:afafa5240012162f59b5deae7f912e8e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a deep copy of this element. <br /></td></tr>
+<tr class="separator:afafa5240012162f59b5deae7f912e8e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a191e76b1a4c4c493ea90600e0de03670"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a191e76b1a4c4c493ea90600e0de03670"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a191e76b1a4c4c493ea90600e0de03670">toJSON</a> (std::ostream &amp;stream) const </td></tr>
 <tr class="memdesc:a191e76b1a4c4c493ea90600e0de03670"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br /></td></tr>
 <tr class="separator:a191e76b1a4c4c493ea90600e0de03670"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a662ee4e51607c488b52f8e612cd1d810"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a662ee4e51607c488b52f8e612cd1d810"></a>
+uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#a662ee4e51607c488b52f8e612cd1d810">getData</a> () const </td></tr>
+<tr class="memdesc:a662ee4e51607c488b52f8e612cd1d810"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the binary data. <br /></td></tr>
+<tr class="separator:a662ee4e51607c488b52f8e612cd1d810"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad228bde452ce0ab4af39e76db51a2045"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad228bde452ce0ab4af39e76db51a2045"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_string.html#ad228bde452ce0ab4af39e76db51a2045">stdString</a> () const </td></tr>
 <tr class="memdesc:ad228bde452ce0ab4af39e76db51a2045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a std::string represenation of the content. <br /></td></tr>

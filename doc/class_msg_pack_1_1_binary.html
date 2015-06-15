@@ -113,10 +113,14 @@ Inheritance diagram for MsgPack::Binary:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a48596ef0cbd4011984fbf0654f5a605b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48596ef0cbd4011984fbf0654f5a605b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#a48596ef0cbd4011984fbf0654f5a605b">Binary</a> (uint32_t len, const uint8_t *<a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a>)</td></tr>
-<tr class="memdesc:a48596ef0cbd4011984fbf0654f5a605b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from len in bytes and raw data (copy semantic) <br /></td></tr>
-<tr class="separator:a48596ef0cbd4011984fbf0654f5a605b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3809c133e523b96d536fd915f06c95f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3809c133e523b96d536fd915f06c95f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#af3809c133e523b96d536fd915f06c95f">Binary</a> (uint32_t len, const void *<a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a>)</td></tr>
+<tr class="memdesc:af3809c133e523b96d536fd915f06c95f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from len in bytes and raw data (copy semantic) <br /></td></tr>
+<tr class="separator:af3809c133e523b96d536fd915f06c95f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad895c5f980c2983fa0204ac5f3adb32c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad895c5f980c2983fa0204ac5f3adb32c"></a>
+std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#ad895c5f980c2983fa0204ac5f3adb32c">copy</a> () const </td></tr>
+<tr class="memdesc:ad895c5f980c2983fa0204ac5f3adb32c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a deep copy of this element. <br /></td></tr>
+<tr class="separator:ad895c5f980c2983fa0204ac5f3adb32c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f9bbcd477df46232d4b92a7bd274754"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f9bbcd477df46232d4b92a7bd274754"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_binary.html#a1f9bbcd477df46232d4b92a7bd274754">toJSON</a> (std::ostream &amp;stream) const </td></tr>
 <tr class="memdesc:a1f9bbcd477df46232d4b92a7bd274754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br /></td></tr>

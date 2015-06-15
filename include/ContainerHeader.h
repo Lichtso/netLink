@@ -29,6 +29,7 @@ namespace MsgPack {
         public:
         //! Initialize with len elements to follow
         ArrayHeader(uint32_t len);
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
         //! Returns the count of elements in the container
@@ -45,6 +46,7 @@ namespace MsgPack {
         public:
         //! Initialize with len key/value pairs to follow
         MapHeader(uint32_t len);
+        std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
         //! Returns the count of elements in the container

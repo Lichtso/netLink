@@ -113,10 +113,14 @@ Inheritance diagram for MsgPack::Extended:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1f6e343a925a42b6d36903c3e37622e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f6e343a925a42b6d36903c3e37622e2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_extended.html#a1f6e343a925a42b6d36903c3e37622e2">Extended</a> (uint8_t type, uint32_t len, const uint8_t *<a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a>)</td></tr>
-<tr class="memdesc:a1f6e343a925a42b6d36903c3e37622e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from type, len in bytes and raw data (copy semantic) <br /></td></tr>
-<tr class="separator:a1f6e343a925a42b6d36903c3e37622e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba623bd1d30d0b7bdebddebc67254ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ba623bd1d30d0b7bdebddebc67254ac"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_extended.html#a0ba623bd1d30d0b7bdebddebc67254ac">Extended</a> (uint8_t type, uint32_t len, const void *<a class="el" href="class_msg_pack_1_1_data.html#ab9454cff5b943d13d1bf35cd095110dc">data</a>)</td></tr>
+<tr class="memdesc:a0ba623bd1d30d0b7bdebddebc67254ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from type, len in bytes and raw data (copy semantic) <br /></td></tr>
+<tr class="separator:a0ba623bd1d30d0b7bdebddebc67254ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1268b9cae8828974d2edf948a59d3d09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1268b9cae8828974d2edf948a59d3d09"></a>
+std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_extended.html#a1268b9cae8828974d2edf948a59d3d09">copy</a> () const </td></tr>
+<tr class="memdesc:a1268b9cae8828974d2edf948a59d3d09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a deep copy of this element. <br /></td></tr>
+<tr class="separator:a1268b9cae8828974d2edf948a59d3d09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3571dd4fead5021ddcd97e9bd7c3327d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3571dd4fead5021ddcd97e9bd7c3327d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_extended.html#a3571dd4fead5021ddcd97e9bd7c3327d">toJSON</a> (std::ostream &amp;stream) const </td></tr>
 <tr class="memdesc:a3571dd4fead5021ddcd97e9bd7c3327d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a human readable JSON-like string into the given stream. <br /></td></tr>
