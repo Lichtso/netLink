@@ -151,15 +151,22 @@ namespace netLink {
          @pre The input intermediate buffer must be used
          */
         std::streamsize advanceInputBuffer();
-        //! Receives size bytes into buffer
+        /*! Receives size bytes into buffer
+         @return The actual number of bytes which were received
+         @pre Type must not be TCP_SERVER and status must be READY or BUSY
+        */
         std::streamsize receive(char_type* buffer, std::streamsize size);
-        //! Sends size bytes from buffer
+        /*! Sends size bytes from buffer
+         @return The actual number of bytes which were sent
+         @pre Type must not be TCP_SERVER and status must be READY
+        */
         std::streamsize send(const char_type* buffer, std::streamsize size);
         /*! Redirects received data to all Sockets in destinations
-         @warning If one destination can't handle the outgoing load, false is returned and all other destinations get out of sync
-         @return true only if the data was successfully redirected to all specified destinations
+         @param destinations A list of destinations to sent the data to
+         @return The actual number of bytes which were redirected
+         @warning If one destination can't handle the outgoing load, a Expection is thrown and all other destinations get out of sync (data loss)
         */
-        bool redirect(const std::vector<std::shared_ptr<Socket>>& destinations);
+        std::streamsize redirect(const std::vector<std::shared_ptr<Socket>>& destinations);
 
         //! Get the size of the input intermediate buffer in bytes
         std::streamsize getInputBufferSize();

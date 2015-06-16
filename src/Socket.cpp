@@ -477,20 +477,22 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
     }
 }
 
-bool Socket::redirect(const std::vector<std::shared_ptr<Socket>>& destinations) {
+std::streamsize Socket::redirect(const std::vector<std::shared_ptr<Socket>>& destinations) {
 	if(type == TCP_SERVER)
 		throw Exception(Exception::BAD_TYPE);
 
+	std::streamsize size = 0;
 	while(in_avail()) {
 		auto length = egptr()-gptr();
 		for(const auto& destination : destinations)
 			if(destination->sputn(gptr(), length) < length)
-				return false;
+				throw Exception(Exception::ERROR_SEND);
 		gbump(length);
+		size += length;
 		advanceInputBuffer();
 	}
 
-	return true;
+	return size;
 }
 
 std::streamsize Socket::getInputBufferSize() {
