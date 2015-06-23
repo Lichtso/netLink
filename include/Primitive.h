@@ -27,8 +27,8 @@ namespace MsgPack {
         uint8_t type; //!< Internal type field
         //! Internal initialize from type
         Primitive(Type type);
-        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(uint8_t firstByte);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
         //! Initialize from boolean

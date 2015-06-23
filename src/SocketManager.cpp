@@ -29,6 +29,12 @@ std::shared_ptr<Socket> SocketManager::newMsgPackSocket() {
     return socket;
 }
 
+#define checkSocketStillValid(sockets, socket, iterator) \
+    if(socket->status == Socket::Status::NOT_CONNECTED) { \
+        sockets.erase(iterator); \
+        continue; \
+    }
+
 void SocketManager::listen(double secLeft) {
     fd_set readfds, writefds, exceptfds;
     FD_ZERO(&readfds);
@@ -39,12 +45,7 @@ void SocketManager::listen(double secLeft) {
     std::set<std::shared_ptr<Socket>> selection;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
-
-        //Garbage collect disconnected sockets
-        if(socket->status == Socket::Status::NOT_CONNECTED) {
-            sockets.erase(iterator);
-            continue;
-        }
+        checkSocketStillValid(sockets, socket, iterator);
 
         //Add the socket to the listen set
         maxHandle = std::max(maxHandle, socket->handle);
@@ -56,12 +57,7 @@ void SocketManager::listen(double secLeft) {
             //Iterate all TCP_SERVERS_CLIENTs
             foreach_e(socket->clients, clientIterator) {
                 Socket* client = (*clientIterator).get();
-
-                //Garbage collect disconnected clients
-                if(client->status == Socket::Status::NOT_CONNECTED) {
-                    socket->clients.erase(clientIterator);
-                    continue;
-                }
+                checkSocketStillValid(socket->clients, client, clientIterator)
 
                 //Add client to the listen set
                 maxHandle = std::max(maxHandle, client->handle);
@@ -88,6 +84,7 @@ void SocketManager::listen(double secLeft) {
 
     foreach_e(selection, iterator) {
         Socket* socket = (*iterator).get();
+        checkSocketStillValid(sockets, socket, iterator)
         MsgPackSocket* msgPackSocket = dynamic_cast<MsgPackSocket*>(socket);
 
         //Exception occured: disconnect
@@ -105,7 +102,6 @@ void SocketManager::listen(double secLeft) {
                     newSocket->disconnect();
                     socket->clients.erase(newSocket);
                 }
-                sockets.insert(newSocket);
             }
         }else{
             if(FD_ISSET(socket->handle, &readfds)) {
@@ -128,10 +124,10 @@ void SocketManager::listen(double secLeft) {
                     }
                 }else if(onReceive)
                     onReceive(this, *iterator);
+                checkSocketStillValid(sockets, socket, iterator)
             }
 
             Socket::Status prev = (Socket::Status) socket->status;
-
             if(FD_ISSET(socket->handle, &writefds))
                 socket->status = Socket::Status::READY;
             else
@@ -139,6 +135,7 @@ void SocketManager::listen(double secLeft) {
 
             if(onStatusChanged && socket->status != prev)
                 onStatusChanged(this, *iterator, prev);
+            checkSocketStillValid(sockets, socket, iterator)
 
             //Try to send data of MsgPack queue in socket
             if(socket->status == Socket::Status::READY && msgPackSocket)

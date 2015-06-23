@@ -37,92 +37,92 @@
     return target;
 #endif
 
-void storeUint8(uint8_t* target, uint8_t source) {
-    *reinterpret_cast<uint8_t*>(target) = source;
+void storeUint8(char* target, uint8_t source) {
+    reinterpret_cast<uint8_t&>(target) = source;
 }
 
-void storeInt8(uint8_t* target, int8_t source) {
-    *reinterpret_cast<int8_t*>(target) = source;
+void storeInt8(char* target, int8_t source) {
+    reinterpret_cast<int8_t&>(target) = source;
 }
 
-void storeUint16(uint8_t* target, uint16_t source) {
+void storeUint16(char* target, uint16_t source) {
     storeBSwap(16);
 }
 
-void storeInt16(uint8_t* target, int16_t source) {
+void storeInt16(char* target, int16_t source) {
     storeBSwap(16);
 }
 
-void storeFloat32(uint8_t* target, float source) {
+void storeFloat32(char* target, float source) {
+    storeUint32(target, reinterpret_cast<const uint32_t&>(source));
+}
+
+void storeUint32(char* target, uint32_t source) {
     storeBSwap(32);
 }
 
-void storeUint32(uint8_t* target, uint32_t source) {
+void storeInt32(char* target, int32_t source) {
     storeBSwap(32);
 }
 
-void storeInt32(uint8_t* target, int32_t source) {
-    storeBSwap(32);
+void storeFloat64(char* target, double source) {
+    storeUint64(target, reinterpret_cast<const uint64_t&>(source));
 }
 
-void storeFloat64(uint8_t* target, double source) {
+void storeUint64(char* target, uint64_t source) {
     storeBSwap(64);
 }
 
-void storeUint64(uint8_t* target, uint64_t source) {
-    storeBSwap(64);
-}
-
-void storeInt64(uint8_t* target, int64_t source) {
+void storeInt64(char* target, int64_t source) {
     storeBSwap(64);
 }
 
 
 
-uint8_t loadUint8(const uint8_t* source) {
-    return *reinterpret_cast<const uint8_t*>(source);
+uint8_t loadUint8(const char* source) {
+    return reinterpret_cast<const uint8_t&>(source);
 }
 
-int8_t loadInt8(const uint8_t* source) {
-    return *reinterpret_cast<const int8_t*>(source);
+int8_t loadInt8(const char* source) {
+    return reinterpret_cast<const int8_t&>(source);
 }
 
-uint16_t loadUint16(const uint8_t* source) {
+uint16_t loadUint16(const char* source) {
     uint16_t target;
     loadBSwap(16);
 }
 
-int16_t loadInt16(const uint8_t* source) {
+int16_t loadInt16(const char* source) {
     int16_t target;
     loadBSwap(16);
 }
 
-float loadFloat32(const uint8_t* source) {
-    float target;
-    loadBSwap(32);
+float loadFloat32(const char* source) {
+    uint32_t target = loadUint32(source);
+    return reinterpret_cast<const float&>(target);
 }
 
-uint32_t loadUint32(const uint8_t* source) {
+uint32_t loadUint32(const char* source) {
     uint32_t target;
     loadBSwap(32);
 }
 
-int32_t loadInt32(const uint8_t* source) {
+int32_t loadInt32(const char* source) {
     int32_t target;
     loadBSwap(32);
 }
 
-double loadFloat64(const uint8_t* source) {
-    double target;
-    loadBSwap(64);
+double loadFloat64(const char* source) {
+    uint64_t target = loadUint64(source);
+    return reinterpret_cast<const double&>(target);
 }
 
-uint64_t loadUint64(const uint8_t* source) {
+uint64_t loadUint64(const char* source) {
     uint64_t target;
     loadBSwap(64);
 }
 
-int64_t loadInt64(const uint8_t* source) {
+int64_t loadInt64(const char* source) {
     int64_t target;
     loadBSwap(64);
 }
@@ -140,14 +140,14 @@ namespace MsgPack {
 
     }
 
-    int64_t Primitive::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
-        type = (uint8_t)streamBuffer->sbumpc();
+    int64_t Primitive::startDeserialize(uint8_t firstByte) {
+        type = firstByte;
         return 1;
     }
 
-    std::streamsize Primitive::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Primitive::serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) >= 0)
-            return (++ pos);
+            return (++pos);
         else
             return 0;
     }
@@ -195,12 +195,12 @@ namespace MsgPack {
         return -getHeaderLength();
     }
 
-    int64_t Header::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
-        header[0] = (uint8_t)streamBuffer->sbumpc();
+    int64_t Header::startDeserialize(uint8_t firstByte) {
+        header[0] = firstByte;
         return 1-getHeaderLength();
     }
 
-    std::streamsize Header::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Header::serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
             bytes = streamBuffer->sputn(header+getHeaderLength()+pos, bytes);
@@ -210,7 +210,7 @@ namespace MsgPack {
             return 0;
     }
 
-    std::streamsize Header::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Header::deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         if(pos < 0) {
             bytes = std::min(bytes, (std::streamsize)(-pos));
             bytes = streamBuffer->sgetn(header+getHeaderLength()+pos, bytes);
@@ -225,11 +225,11 @@ namespace MsgPack {
     }
 
     Type Header::getType() const {
-        auto type = (Type)header[0];
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
         if(type < FIXARRAY) return FIXMAP;
         if(type < FIXSTR) return FIXARRAY;
         if(type < NIL) return FIXSTR;
-        return type;
+        return static_cast<Type>(type);
     }
 
     uint32_t Header::getSizeInBytes() const {
@@ -242,7 +242,7 @@ namespace MsgPack {
 
 
 
-    std::streamsize Data::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Data::serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         std::streamsize bytesDone = Header::serialize(pos, streamBuffer, bytes);
 
         if(pos >= 0 && data) {
@@ -255,14 +255,14 @@ namespace MsgPack {
         return bytesDone;
     }
 
-    std::streamsize Data::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Data::deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         std::streamsize bytesDone = Header::deserialize(pos, streamBuffer, bytes);
 
         if(pos >= 0) {
             int64_t dataLen = getEndPos();
             if(dataLen > 0) {
                 if(!data)
-                    data.reset(new uint8_t[dataLen]);
+                    data.reset(new char[dataLen]);
 
                 bytes = std::min(bytes, (std::streamsize)(dataLen-pos));
                 bytes = streamBuffer->sgetn(data.get()+pos, bytes);
@@ -278,7 +278,7 @@ namespace MsgPack {
 
     Binary::Binary(uint32_t len, const void* _data) {
         if(len > 0) {
-            data.reset(new uint8_t[len]);
+            data.reset(new char[len]);
             memcpy(data.get(), _data, len);
         }
 
@@ -295,7 +295,8 @@ namespace MsgPack {
     }
 
     int64_t Binary::getEndPos() const {
-        switch(header[0]) {
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        switch(type) {
             case Type::BIN_8:
                 return loadUint8(&header[1]);
             case Type::BIN_16:
@@ -308,7 +309,8 @@ namespace MsgPack {
     }
 
     int64_t Binary::getHeaderLength() const {
-        switch(header[0]) {
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        switch(type) {
             case Type::BIN_8:
                 return 2;
             case Type::BIN_16:
@@ -322,7 +324,7 @@ namespace MsgPack {
 
     std::unique_ptr<Element> Binary::copy() const {
         auto len = getLength();
-        auto _data = new uint8_t[len];
+        auto _data = new char[len];
         memcpy(_data, getData(), len);
         return std::unique_ptr<Element>(new Binary(len, _data));
     }
@@ -335,14 +337,14 @@ namespace MsgPack {
         stream << ">";
     }
 
-    uint8_t* Binary::getData() const {
+    char* Binary::getData() const {
         return data.get();
     }
 
 
 
     Extended::Extended(uint8_t type, uint32_t len, const void* _data) {
-        data.reset(new uint8_t[len+1]);
+        data.reset(new char[len+1]);
         data[0] = type;
         memcpy(&data[1], _data, len);
 
@@ -378,7 +380,8 @@ namespace MsgPack {
     }
 
     int64_t Extended::getEndPos() const {
-        switch(header[0]) {
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        switch(type) {
             case Type::FIXEXT_8:
                 return 2;
             case Type::FIXEXT_16:
@@ -401,7 +404,8 @@ namespace MsgPack {
     }
 
     int64_t Extended::getHeaderLength() const {
-        switch(header[0]) {
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        switch(type) {
             case Type::FIXEXT_8:
             case Type::FIXEXT_16:
             case Type::FIXEXT_32:
@@ -421,7 +425,7 @@ namespace MsgPack {
 
     std::unique_ptr<Element> Extended::copy() const {
         auto len = getLength();
-        auto _data = new uint8_t[len];
+        auto _data = new char[len];
         memcpy(_data, getData(), len);
         return std::unique_ptr<Element>(new Extended(getDataType(), len, _data));
     }
@@ -439,7 +443,7 @@ namespace MsgPack {
         return data[0];
     }
 
-    uint8_t* Extended::getData() const {
+    char* Extended::getData() const {
         return &data[1];
     }
 
@@ -451,7 +455,7 @@ namespace MsgPack {
 
     String::String(uint32_t len, const void* str) {
         if(len > 0) {
-            data.reset(new uint8_t[len]);
+            data.reset(new char[len]);
             memcpy(data.get(), str, len);
         }
 
@@ -478,10 +482,11 @@ namespace MsgPack {
     }
 
     int64_t String::getEndPos() const {
-        if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
-            return header[0] - Type::FIXSTR;
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXSTR && type < Type::NIL)
+            return type - Type::FIXSTR;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::STR_8:
                 return loadUint8(&header[1]);
             case Type::STR_16:
@@ -494,10 +499,11 @@ namespace MsgPack {
     }
 
     int64_t String::getHeaderLength() const {
-        if(header[0] >= Type::FIXSTR && header[0] < Type::NIL)
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXSTR && type < Type::NIL)
             return 1;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::STR_8:
                 return 2;
             case Type::STR_16:
@@ -511,7 +517,7 @@ namespace MsgPack {
 
     std::unique_ptr<Element> String::copy() const {
         auto len = getLength();
-        auto _data = new uint8_t[len];
+        auto _data = new char[len];
         memcpy(_data, getData(), len);
         return std::unique_ptr<Element>(new String(len, _data));
     }
@@ -522,7 +528,7 @@ namespace MsgPack {
         stream << "\"";
     }
 
-    uint8_t* String::getData() const {
+    char* String::getData() const {
         return data.get();
     }
 
@@ -586,19 +592,19 @@ namespace MsgPack {
         storeFloat64(data+1, value);
     }
 
-    int64_t Number::startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) {
-        data[0] = (uint8_t)streamBuffer->sbumpc();
+    int64_t Number::startDeserialize(uint8_t firstByte) {
+        data[0] = firstByte;
         return 1;
     }
 
-    std::streamsize Number::serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Number::serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
         bytes = streamBuffer->sputn(data+pos, bytes);
         pos += bytes;
         return bytes;
     }
 
-    std::streamsize Number::deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) {
+    std::streamsize Number::deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
         bytes = std::min(bytes, (std::streamsize)(getEndPos()-pos));
         bytes = streamBuffer->sgetn(data+pos, bytes);
         pos += bytes;
@@ -606,10 +612,11 @@ namespace MsgPack {
     }
 
     int64_t Number::getEndPos() const {
-        if(data[0] < 0x80 || data[0] >= 0xE0)
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        if(type < 0x80 || type >= 0xE0)
             return 1;
 
-        switch(data[0]) {
+        switch(type) {
             case Type::UINT_8:
             case Type::INT_8:
                 return 2;
@@ -636,62 +643,66 @@ namespace MsgPack {
     }
 
     void Number::toJSON(std::ostream& stream) const {
-            if(data[0] < FIXMAP)
-                stream << (int16_t)data[0];
-            else if(data[0] >= FIXINT)
-                stream << (int16_t)reinterpret_cast<const int8_t&>(data[0]);
-            else
-                switch(data[0]) {
-                    case Type::FLOAT_32:
-                        stream << loadFloat32(data+1);
-                    break;
-                    case Type::FLOAT_64:
-                        stream << loadFloat64(data+1);
-                    break;
-                    case Type::UINT_8:
-                        stream << (uint16_t)loadUint8(data+1);
-                    break;
-                    case Type::UINT_16:
-                        stream << loadUint16(data+1);
-                    break;
-                    case Type::UINT_32:
-                        stream << loadUint32(data+1);
-                    break;
-                    case Type::UINT_64:
-                        stream << loadUint64(data+1);
-                    break;
-                    case Type::INT_8:
-                        stream << (int16_t)loadInt8(data+1);
-                    break;
-                    case Type::INT_16:
-                        stream << loadInt16(data+1);
-                    break;
-                    case Type::INT_32:
-                        stream << loadInt32(data+1);
-                    break;
-                    case Type::INT_64:
-                        stream << loadInt64(data+1);
-                    break;
-                }
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        if(type < FIXMAP)
+            stream << (int16_t)type;
+        else if(type >= FIXINT)
+            stream << (int16_t)reinterpret_cast<const int8_t&>(type);
+        else
+            switch(type) {
+                case Type::FLOAT_32:
+                    stream << loadFloat32(data+1);
+                break;
+                case Type::FLOAT_64:
+                    stream << loadFloat64(data+1);
+                break;
+                case Type::UINT_8:
+                    stream << (uint16_t)loadUint8(data+1);
+                break;
+                case Type::UINT_16:
+                    stream << loadUint16(data+1);
+                break;
+                case Type::UINT_32:
+                    stream << loadUint32(data+1);
+                break;
+                case Type::UINT_64:
+                    stream << loadUint64(data+1);
+                break;
+                case Type::INT_8:
+                    stream << (int16_t)loadInt8(data+1);
+                break;
+                case Type::INT_16:
+                    stream << loadInt16(data+1);
+                break;
+                case Type::INT_32:
+                    stream << loadInt32(data+1);
+                break;
+                case Type::INT_64:
+                    stream << loadInt64(data+1);
+                break;
+            }
     }
 
     Type Number::getType() const {
-        auto type = (Type)data[0];
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
         if(type < FIXMAP) return FIXUINT;
         if(type >= FIXINT) return FIXINT;
-        return type;
+        return static_cast<Type>(type);
     }
 
     bool Number::isUnsignedInteger() const {
-        return (data[0] < FIXMAP || (data[0] >= UINT_8 && data[0] <= UINT_64));
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        return (type < FIXMAP || (type >= UINT_8 && type <= UINT_64));
     }
 
     bool Number::isSignedInteger() const {
-        return (data[0] >= FIXINT || (data[0] >= INT_8 && data[0] <= INT_64));
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        return (type >= FIXINT || (type >= INT_8 && type <= INT_64));
     }
 
     bool Number::isFloatingPoint() const {
-        return (data[0] == FLOAT_32 || data[0] == FLOAT_64);
+        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        return (type == FLOAT_32 || type == FLOAT_64);
     }
 
     std::unique_ptr<Element> Factory(uint64_t value) {
@@ -725,10 +736,11 @@ namespace MsgPack {
     }
 
     uint32_t ArrayHeader::getLength() const {
-        if(header[0] >= Type::FIXARRAY && header[0] < Type::FIXSTR)
-            return header[0] - Type::FIXARRAY;
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXARRAY && type < Type::FIXSTR)
+            return type - Type::FIXARRAY;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::ARRAY_16:
                 return loadUint16(&header[1]);
             case Type::ARRAY_32:
@@ -751,10 +763,11 @@ namespace MsgPack {
     }
 
     int64_t ArrayHeader::getHeaderLength() const {
-        if(header[0] >= Type::FIXARRAY && header[0] < Type::FIXSTR)
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXARRAY && type < Type::FIXSTR)
             return 1;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::ARRAY_16:
                 return 3;
             case Type::ARRAY_32:
@@ -779,10 +792,11 @@ namespace MsgPack {
     }
 
     int64_t MapHeader::getHeaderLength() const {
-        if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXMAP && type < Type::FIXARRAY)
             return 1;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::MAP_16:
                 return 3;
             case Type::MAP_32:
@@ -805,10 +819,11 @@ namespace MsgPack {
     }
 
     uint32_t MapHeader::getLength() const {
-        if(header[0] >= Type::FIXMAP && header[0] < Type::FIXARRAY)
-            return header[0] - Type::FIXMAP;
+        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        if(type >= Type::FIXMAP && type < Type::FIXARRAY)
+            return type - Type::FIXMAP;
 
-        switch(header[0]) {
+        switch(type) {
             case Type::MAP_16:
                 return loadUint16(&header[1]);
             case Type::MAP_32:
@@ -1055,13 +1070,13 @@ namespace MsgPack {
                     continue;
             }else{
                 //Deserialize next element
-                int read = streamBuffer->sgetc();
-                if(read < 0) break;
-                Element* element;
-                uint8_t nextByte = (uint8_t)read;
+                int read = streamBuffer->sbumpc();
+                if(read == EOF) break;
                 bytesLeft --;
                 bytesDone ++;
 
+                Element* element;
+                uint8_t nextByte = static_cast<uint8_t>(read);
                 if(nextByte < Type::FIXMAP || nextByte >= Type::FIXINT)
                     element = new Number();
                 else if(nextByte < Type::FIXARRAY)
@@ -1119,7 +1134,7 @@ namespace MsgPack {
                     rootElement.reset(element);
 
                 //Check if element is done
-                int64_t pos = element->startDeserialize(streamBuffer);
+                int64_t pos = element->startDeserialize(nextByte);
                 if(pos < element->getEndPos() || element->containerDeserialized()) {
                     stack.push_back(StackElement(element, pos));
                     continue;

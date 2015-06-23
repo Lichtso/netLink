@@ -24,9 +24,9 @@ namespace MsgPack {
         friend Serializer;
         friend Deserializer;
         protected:
-        std::unique_ptr<uint8_t[]> data; //!< The raw data buffer
-        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        std::unique_ptr<char[]> data; //!< The raw data buffer
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
     };
 
     //! MsgPack::Data to represent binary/raw data elements
@@ -43,7 +43,7 @@ namespace MsgPack {
         std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         //! Returns a pointer to the binary data
-        uint8_t* getData() const;
+        char* getData() const;
     };
 
     //! MsgPack::Data to represent extended elements
@@ -62,7 +62,7 @@ namespace MsgPack {
         //! Returns the user defined data type
         uint8_t getDataType() const;
         //! Returns a pointer to the binary data
-        uint8_t* getData() const;
+        char* getData() const;
         uint32_t getLength() const;
     };
 
@@ -84,7 +84,7 @@ namespace MsgPack {
         std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         //! Returns a pointer to the binary data
-        uint8_t* getData() const;
+        char* getData() const;
         //! Returns a std::string represenation of the content
         std::string stdString() const;
     };

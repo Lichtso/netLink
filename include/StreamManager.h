@@ -25,9 +25,9 @@ namespace MsgPack {
         typedef std::pair<Element*, int64_t> StackElement; //!< To store the (de)serializer position
         std::unique_ptr<Element> rootElement; //!< The element at the root of the hierarchy
         std::vector<StackElement> stack; //!< The element hierarchy stack
-        std::basic_streambuf<uint8_t>* streamBuffer; //!< The raw stream buffer
+        std::streambuf* streamBuffer; //!< The raw stream buffer
         //! Initalize from stream buffer
-        StreamManager(std::basic_streambuf<uint8_t>* _streamBuffer) : streamBuffer(_streamBuffer) { }
+        StreamManager(std::streambuf* _streamBuffer) : streamBuffer(_streamBuffer) { }
     };
 
     //! Used to serialize elements into a std::streambuf
@@ -35,15 +35,10 @@ namespace MsgPack {
         typedef std::function<std::unique_ptr<Element>()> PullCallback; //!< Typedef of callback to get the next element to be serialized
         public:
         /*! Constructs the Serializer
-         @param _streamBuffer A std::basic_streambuf<uint8_t> to be used as target for read operations
-         */
-        Serializer(std::basic_streambuf<uint8_t>* _streamBuffer)
-            : StreamManager(_streamBuffer) { }
-        /*! Constructs the Serializer
          @param _streamBuffer A std::streambuf to be used as target for read operations
          */
         Serializer(std::streambuf* _streamBuffer)
-            : Serializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer)) { }
+            : StreamManager(_streamBuffer) { }
         /*! Pulls elements and writes them into the streamBuffer
          @param pullElement Callback which will be called to get the next element
          @param bytes Limit of bytes to write or 0 to write as much as possible
@@ -68,15 +63,10 @@ namespace MsgPack {
         typedef std::function<bool(std::unique_ptr<Element> parsedElement)> PushCallback; //!< Typedef of callback to return deserialized elements
         public:
         /*! Constructs the Deserializer
-         @param _streamBuffer A std::basic_streambuf<uint8_t> to be used as target for write operations
-         */
-        Deserializer(std::basic_streambuf<uint8_t>* _streamBuffer)
-            : StreamManager(_streamBuffer) { }
-        /*! Constructs the Deserializer
          @param _streamBuffer A std::streambuf to be used as target for write operations
          */
         Deserializer(std::streambuf* _streamBuffer)
-            : Deserializer(reinterpret_cast<std::basic_streambuf<uint8_t>*>(_streamBuffer)) { }
+            : StreamManager(_streamBuffer) { }
         /*! Deserializes elements from the streamBuffer
          @param pushElement Callback which will be called when the next element has
                             been deserialized and can return true to stop the deserialization

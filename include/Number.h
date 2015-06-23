@@ -24,11 +24,11 @@ namespace MsgPack {
         friend Serializer;
         friend Deserializer;
         protected:
-        uint8_t data[9]; //!< Internal raw represenation of the number
+        char data[9]; //!< Internal raw represenation of the number
         Number() { }
-        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(uint8_t firstByte);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         public:
         //! Initialize from unsigned 64 bit integer
@@ -50,12 +50,13 @@ namespace MsgPack {
         bool isFloatingPoint() const;
         //! Returns the value as given data type T
         template<class T> T getValue() const {
-            if(data[0] < FIXMAP)
-                return (T)data[0];
-            else if(data[0] >= FIXINT)
-                return (T)reinterpret_cast<const int8_t&>(data[0]);
+            uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+            if(type < FIXMAP)
+                return (T)type;
+            else if(type >= FIXINT)
+                return (T)reinterpret_cast<const int8_t&>(type);
             else
-                switch(data[0]) {
+                switch(type) {
                     case Type::FLOAT_32:
                         return (T)loadFloat32(data+1);
                     case Type::FLOAT_64:

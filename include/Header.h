@@ -24,11 +24,11 @@ namespace MsgPack {
         friend Serializer;
         friend Deserializer;
         protected:
-        uint8_t header[5]; //!< Internal buffer of the header
+        char header[5]; //!< Internal buffer of the header
         int64_t startSerialize();
-        int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer);
-        std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
-        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes);
+        int64_t startDeserialize(uint8_t firstByte);
+        std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
+        std::streamsize deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
         int64_t getEndPos() const;
         //! Returns the size of the header in bytes
         virtual int64_t getHeaderLength() const = 0;

@@ -165,18 +165,18 @@ virtual uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a51d90eff319c80c30036312447050964"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51d90eff319c80c30036312447050964"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a51d90eff319c80c30036312447050964">startDeserialize</a> (std::basic_streambuf&lt; uint8_t &gt; *streamBuffer)</td></tr>
-<tr class="memdesc:a51d90eff319c80c30036312447050964"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in one byte and returns the initial deserializer position in bytes (negative value if there is a header) <br /></td></tr>
-<tr class="separator:a51d90eff319c80c30036312447050964"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c4e8a7fe00ae7bfe6f45e0344432c9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c4e8a7fe00ae7bfe6f45e0344432c9b"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a3c4e8a7fe00ae7bfe6f45e0344432c9b">serialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
-<tr class="memdesc:a3c4e8a7fe00ae7bfe6f45e0344432c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes bytes at the given serializer position pos into streamBuffer. <br /></td></tr>
-<tr class="separator:a3c4e8a7fe00ae7bfe6f45e0344432c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ce510bdafb6c35eb6390d56dc2e998c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ce510bdafb6c35eb6390d56dc2e998c"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a0ce510bdafb6c35eb6390d56dc2e998c">deserialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; uint8_t &gt; *streamBuffer, std::streamsize bytes)</td></tr>
-<tr class="memdesc:a0ce510bdafb6c35eb6390d56dc2e998c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserializes bytes at the given deserializer position pos from streamBuffer. <br /></td></tr>
-<tr class="separator:a0ce510bdafb6c35eb6390d56dc2e998c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc0b3b28c008affa858cfff5a608b2bd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abc0b3b28c008affa858cfff5a608b2bd"></a>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#abc0b3b28c008affa858cfff5a608b2bd">startDeserialize</a> (uint8_t firstByte)</td></tr>
+<tr class="memdesc:abc0b3b28c008affa858cfff5a608b2bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in one byte and returns the initial deserializer position in bytes (negative value if there is a header) <br /></td></tr>
+<tr class="separator:abc0b3b28c008affa858cfff5a608b2bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a208481162e797fa58a3b370efa39039e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a208481162e797fa58a3b370efa39039e"></a>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a208481162e797fa58a3b370efa39039e">serialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; char &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:a208481162e797fa58a3b370efa39039e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes bytes at the given serializer position pos into streamBuffer. <br /></td></tr>
+<tr class="separator:a208481162e797fa58a3b370efa39039e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76bc8f07201cc3ceea0d86c33839b09b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a76bc8f07201cc3ceea0d86c33839b09b"></a>
+std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a76bc8f07201cc3ceea0d86c33839b09b">deserialize</a> (int64_t &amp;pos, std::basic_streambuf&lt; char &gt; *streamBuffer, std::streamsize bytes)</td></tr>
+<tr class="memdesc:a76bc8f07201cc3ceea0d86c33839b09b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserializes bytes at the given deserializer position pos from streamBuffer. <br /></td></tr>
+<tr class="separator:a76bc8f07201cc3ceea0d86c33839b09b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4e8a7efe766ce907c1fa7f4bf4b329f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4e8a7efe766ce907c1fa7f4bf4b329f"></a>
 int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#af4e8a7efe766ce907c1fa7f4bf4b329f">getEndPos</a> () const </td></tr>
 <tr class="memdesc:af4e8a7efe766ce907c1fa7f4bf4b329f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first invalid (de)serializer position. <br /></td></tr>
@@ -197,10 +197,10 @@ virtual std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a0d0905b14e6408d8e72e2a302c589f02"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d0905b14e6408d8e72e2a302c589f02"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a0d0905b14e6408d8e72e2a302c589f02">data</a> [9]</td></tr>
-<tr class="memdesc:a0d0905b14e6408d8e72e2a302c589f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal raw represenation of the number. <br /></td></tr>
-<tr class="separator:a0d0905b14e6408d8e72e2a302c589f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f26d0709773a5ee25b4058969cd025d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f26d0709773a5ee25b4058969cd025d"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_number.html#a1f26d0709773a5ee25b4058969cd025d">data</a> [9]</td></tr>
+<tr class="memdesc:a1f26d0709773a5ee25b4058969cd025d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal raw represenation of the number. <br /></td></tr>
+<tr class="separator:a1f26d0709773a5ee25b4058969cd025d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream. ">MsgPack::Element</a> for all types of numbers. </p>

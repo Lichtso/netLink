@@ -357,10 +357,10 @@ Socket::Status Socket::getStatus() const {
 
 std::streamsize Socket::showmanyc() {
 	#ifdef WIN32
-	unsigned long result = -1;
+	unsigned long result = 0;
 	if(ioctlsocket(handle, FIONREAD, &result)) {
 	#else
-	int result = -1;
+	int result = 0;
 	if(ioctl(handle, FIONREAD, &result)) {
 	#endif
         disconnect();
@@ -609,8 +609,10 @@ void Socket::disconnect() {
     setInputBufferSize(0);
     setOutputBufferSize(0);
     clients.clear();
-    if(handle != -1)
-	   closesocket(handle);
+    if(handle != -1) {
+		closesocket(handle);
+		handle = -1;
+	}
 }
 
 };

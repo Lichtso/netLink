@@ -23,28 +23,28 @@
 #include <cstring>
 
 //Store numbers in network endian (big endian)
-void storeUint8(uint8_t* target, uint8_t source);
-void storeInt8(uint8_t* target, int8_t source);
-void storeUint16(uint8_t* target, uint16_t source);
-void storeInt16(uint8_t* target, int16_t source);
-void storeFloat32(uint8_t* target, float source);
-void storeUint32(uint8_t* target, uint32_t source);
-void storeInt32(uint8_t* target, int32_t source);
-void storeFloat64(uint8_t* target, double source);
-void storeUint64(uint8_t* target, uint64_t source);
-void storeInt64(uint8_t* target, int64_t source);
+void storeUint8(char* target, uint8_t source);
+void storeInt8(char* target, int8_t source);
+void storeUint16(char* target, uint16_t source);
+void storeInt16(char* target, int16_t source);
+void storeFloat32(char* target, float source);
+void storeUint32(char* target, uint32_t source);
+void storeInt32(char* target, int32_t source);
+void storeFloat64(char* target, double source);
+void storeUint64(char* target, uint64_t source);
+void storeInt64(char* target, int64_t source);
 
 //Read numbers from network endian (big endian)
-uint8_t loadUint8(const uint8_t* source);
-int8_t loadInt8(const uint8_t* source);
-uint16_t loadUint16(const uint8_t* source);
-int16_t loadInt16(const uint8_t* source);
-float loadFloat32(const uint8_t* source);
-uint32_t loadUint32(const uint8_t* source);
-int32_t loadInt32(const uint8_t* source);
-double loadFloat64(const uint8_t* source);
-uint64_t loadUint64(const uint8_t* source);
-int64_t loadInt64(const uint8_t* source);
+uint8_t loadUint8(const char* source);
+int8_t loadInt8(const char* source);
+uint16_t loadUint16(const char* source);
+int16_t loadInt16(const char* source);
+float loadFloat32(const char* source);
+uint32_t loadUint32(const char* source);
+int32_t loadInt32(const char* source);
+double loadFloat64(const char* source);
+uint64_t loadUint64(const char* source);
+int64_t loadInt64(const char* source);
 
 namespace MsgPack {
 
@@ -100,11 +100,11 @@ namespace MsgPack {
         //! Returns the initial serializer position in bytes (negative value if there is a header)
         virtual int64_t startSerialize() { return 0; };
         //! Reads in one byte and returns the initial deserializer position in bytes (negative value if there is a header)
-        virtual int64_t startDeserialize(std::basic_streambuf<uint8_t>* streamBuffer) = 0;
+        virtual int64_t startDeserialize(uint8_t firstByte) = 0;
         //! Serializes bytes at the given serializer position pos into streamBuffer
-        virtual std::streamsize serialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) = 0;
+        virtual std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) = 0;
         //! Deserializes bytes at the given deserializer position pos from streamBuffer
-        virtual std::streamsize deserialize(int64_t& pos, std::basic_streambuf<uint8_t>* streamBuffer, std::streamsize bytes) { return 0; };
+        virtual std::streamsize deserialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) { return 0; };
         //! Returns true if the header of a container is deserialized and reserves the necessary space for its element vector
         virtual bool containerDeserialized() { return false; };
         //! Returns a raw pointer to the element vector of a container

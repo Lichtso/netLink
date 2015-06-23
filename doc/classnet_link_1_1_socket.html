@@ -109,7 +109,7 @@ Inheritance diagram for netLink::Socket:</div>
  <div class="center">
   <img src="classnet_link_1_1_socket.png" usemap="#netLink::Socket_map" alt=""/>
   <map id="netLink::Socket_map" name="netLink::Socket_map">
-<area href="classnet_link_1_1_msg_pack_socket.html" title="Socket with MsgPack abstraction layer. " alt="netLink::MsgPackSocket" shape="rect" coords="0,112,187,136"/>
+<area href="classnet_link_1_1_msg_pack_socket.html" title="Socket with MsgPack abstraction layer. " alt="netLink::MsgPackSocket" shape="rect" coords="0,112,148,136"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -170,14 +170,12 @@ std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <tr class="separator:a45b84b56d91ba13f163e27c8a5f5b5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b34d0af8706a7fa4bf3c293fc25dffe"><td class="memItemLeft" align="right" valign="top">std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a6b34d0af8706a7fa4bf3c293fc25dffe">advanceInputBuffer</a> ()</td></tr>
 <tr class="separator:a6b34d0af8706a7fa4bf3c293fc25dffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37881f83ff1b3e38033ac11896a8121c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37881f83ff1b3e38033ac11896a8121c"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a37881f83ff1b3e38033ac11896a8121c">receive</a> (char_type *buffer, std::streamsize size)</td></tr>
-<tr class="memdesc:a37881f83ff1b3e38033ac11896a8121c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives size bytes into buffer. <br /></td></tr>
+<tr class="memitem:a37881f83ff1b3e38033ac11896a8121c"><td class="memItemLeft" align="right" valign="top">std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a37881f83ff1b3e38033ac11896a8121c">receive</a> (char_type *buffer, std::streamsize size)</td></tr>
 <tr class="separator:a37881f83ff1b3e38033ac11896a8121c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a030ae9949ab2d23ece036dac7aae42d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a030ae9949ab2d23ece036dac7aae42d4"></a>
-std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a030ae9949ab2d23ece036dac7aae42d4">send</a> (const char_type *buffer, std::streamsize size)</td></tr>
-<tr class="memdesc:a030ae9949ab2d23ece036dac7aae42d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends size bytes from buffer. <br /></td></tr>
+<tr class="memitem:a030ae9949ab2d23ece036dac7aae42d4"><td class="memItemLeft" align="right" valign="top">std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a030ae9949ab2d23ece036dac7aae42d4">send</a> (const char_type *buffer, std::streamsize size)</td></tr>
 <tr class="separator:a030ae9949ab2d23ece036dac7aae42d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba96d2bc86b5910a8967382b113b741a"><td class="memItemLeft" align="right" valign="top">std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#aba96d2bc86b5910a8967382b113b741a">redirect</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classnet_link_1_1_socket.html">Socket</a> &gt;&gt; &amp;destinations)</td></tr>
+<tr class="separator:aba96d2bc86b5910a8967382b113b741a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a160f1b17b2591bd5b0f0f4799d1605"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2a160f1b17b2591bd5b0f0f4799d1605"></a>
 std::streamsize&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_link_1_1_socket.html#a2a160f1b17b2591bd5b0f0f4799d1605">getInputBufferSize</a> ()</td></tr>
 <tr class="memdesc:a2a160f1b17b2591bd5b0f0f4799d1605"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the size of the input intermediate buffer in bytes. <br /></td></tr>
@@ -535,6 +533,86 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a37881f83ff1b3e38033ac11896a8121c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::streamsize netLink::Socket::receive </td>
+          <td>(</td>
+          <td class="paramtype">char_type *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Receives size bytes into buffer </p><dl class="section return"><dt>Returns</dt><dd>The actual number of bytes which were received </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>Type must not be TCP_SERVER and status must be READY or BUSY </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aba96d2bc86b5910a8967382b113b741a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::streamsize netLink::Socket::redirect </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classnet_link_1_1_socket.html">Socket</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>destinations</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Redirects received data to all Sockets in destinations </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">destinations</td><td>A list of destinations to sent the data to </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The actual number of bytes which were redirected </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>If one destination can't handle the outgoing load, a Expection is thrown and all other destinations get out of sync (data loss) </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a030ae9949ab2d23ece036dac7aae42d4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::streamsize netLink::Socket::send </td>
+          <td>(</td>
+          <td class="paramtype">const char_type *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::streamsize&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Sends size bytes from buffer </p><dl class="section return"><dt>Returns</dt><dd>The actual number of bytes which were sent </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>Type must not be TCP_SERVER and status must be READY </dd></dl>
 
 </div>
 </div>

@@ -22,8 +22,8 @@ namespace netLink {
     class SocketManager;
 
     //! Socket and stream buffer
-    class Socket : public std::basic_streambuf<uint8_t> {
-        typedef std::basic_streambuf<uint8_t> super; //!< Typedef of super class
+    class Socket : public std::streambuf {
+        typedef std::streambuf super; //!< Typedef of super class
         friend SocketManager;
 
         struct AddrinfoDestructor {
