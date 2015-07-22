@@ -21,6 +21,7 @@
 #include <functional>
 #include <climits>
 #include <cstring>
+#include <cstdint>
 
 //Store numbers in network endian (big endian)
 void storeUint8(char* target, uint8_t source);
