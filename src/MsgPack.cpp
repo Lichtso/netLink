@@ -132,13 +132,11 @@ int64_t loadInt64(const char* source) {
 namespace MsgPack {
 
 
-    Primitive::Primitive(Type _type) : type(_type) {
+    Primitive::Primitive(Type _type) : type(_type) { }
 
-    }
+    Primitive::Primitive(bool value) : Primitive((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) { }
 
-    Primitive::Primitive(bool value) : Primitive((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) {
-
-    }
+    Primitive::Primitive() : type(Type::NIL) { }
 
     int64_t Primitive::startDeserialize(uint8_t firstByte) {
         type = firstByte;
