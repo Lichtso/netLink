@@ -70,6 +70,7 @@ namespace MsgPack {
     class String : public Data {
         friend class Serializer;
         friend class Deserializer;
+        void init(uint32_t len, const void* str);
         protected:
         String() { }
         int64_t getEndPos() const;

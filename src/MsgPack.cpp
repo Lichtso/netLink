@@ -134,7 +134,7 @@ namespace MsgPack {
 
     Primitive::Primitive(Type _type) : type(_type) { }
 
-    Primitive::Primitive(bool value) : Primitive((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) { }
+    Primitive::Primitive(bool value) : type((value) ? Type::BOOL_TRUE : Type::BOOL_FALSE) { }
 
     Primitive::Primitive() : type(Type::NIL) { }
 
@@ -451,7 +451,7 @@ namespace MsgPack {
 
 
 
-    String::String(uint32_t len, const void* str) {
+    void String::init(uint32_t len, const void* str) {
         if(len > 0) {
             data.reset(new char[len]);
             memcpy(data.get(), str, len);
@@ -471,12 +471,16 @@ namespace MsgPack {
         }
     }
 
-	String::String(const char* str) :String(strlen(str), str) {
-
+    String::String(uint32_t len, const void* str) {
+        init(len, str);
     }
 
-	String::String(const std::string& str) :String(str.size(), str.c_str()) {
+	String::String(const char* str) {
+        init(strlen(str), str);
+    }
 
+	String::String(const std::string& str) {
+        init(str.size(), str.c_str());
     }
 
     int64_t String::getEndPos() const {
