@@ -22,7 +22,7 @@ namespace netLink {
     //! Socket with MsgPack abstraction layer
     class MsgPackSocket : public Socket {
         typedef Socket super;
-        friend SocketManager;
+        friend class SocketManager;
 
         protected:
         std::shared_ptr<Socket> SocketFactory() {

@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::Element to represent one byte primitives like booleans and null
     class Primitive : public Element {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         uint8_t type; //!< Internal type field
         //! Internal initialize from type

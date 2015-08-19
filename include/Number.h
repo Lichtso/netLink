@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::Element for all types of numbers
     class Number : public Element {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         char data[9]; //!< Internal raw represenation of the number
         Number() { }

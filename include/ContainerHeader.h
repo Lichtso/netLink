@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::Header representing only the header of a array
     class ArrayHeader : public Header {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         ArrayHeader() { }
         int64_t getHeaderLength() const;
@@ -38,8 +38,8 @@ namespace MsgPack {
 
     //! MsgPack::Header representing only the header of a map
     class MapHeader : public Header {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         MapHeader() { }
         int64_t getHeaderLength() const;

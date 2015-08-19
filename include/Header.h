@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::Element to represent the header of a dynamical length element
     class Header : public Element {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         char header[5]; //!< Internal buffer of the header
         int64_t startSerialize();

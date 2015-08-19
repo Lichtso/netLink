@@ -94,8 +94,8 @@ namespace MsgPack {
 
     //! Abstract class to represent one element in a MsgPack stream
     class Element {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         Element() { }
         //! Returns the initial serializer position in bytes (negative value if there is a header)

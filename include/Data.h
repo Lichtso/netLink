@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::Header with a additional buffer used as body
     class Data : public Header {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         std::unique_ptr<char[]> data; //!< The raw data buffer
         std::streamsize serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes);
@@ -31,8 +31,8 @@ namespace MsgPack {
 
     //! MsgPack::Data to represent binary/raw data elements
     class Binary : public Data {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         Binary() { }
         int64_t getEndPos() const;
@@ -48,8 +48,8 @@ namespace MsgPack {
 
     //! MsgPack::Data to represent extended elements
     class Extended : public Data {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         Extended() { }
         int64_t getEndPos() const;
@@ -68,8 +68,8 @@ namespace MsgPack {
 
     //! MsgPack::Data to represent strings
     class String : public Data {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         String() { }
         int64_t getEndPos() const;

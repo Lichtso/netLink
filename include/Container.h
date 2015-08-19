@@ -21,8 +21,8 @@ namespace MsgPack {
 
     //! MsgPack::ArrayHeader representing the header and the content of a array
     class Array : public ArrayHeader {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         std::vector<std::unique_ptr<Element>> elements; //!< Element vector
         Array() { }
@@ -40,8 +40,8 @@ namespace MsgPack {
 
     //! MsgPack::MapHeader representing the header and the content of a map
     class Map : public MapHeader {
-        friend Serializer;
-        friend Deserializer;
+        friend class Serializer;
+        friend class Deserializer;
         protected:
         std::vector<std::unique_ptr<Element>> elements; //!< Element vector is key/value interlaced
         Map() { }

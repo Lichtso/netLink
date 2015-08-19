@@ -24,7 +24,7 @@ namespace netLink {
     //! Socket and stream buffer
     class Socket : public std::streambuf {
         typedef std::streambuf super; //!< Typedef of super class
-        friend SocketManager;
+        friend class SocketManager;
 
         struct AddrinfoDestructor {
             AddrinfoDestructor() { };
@@ -41,7 +41,7 @@ namespace netLink {
 		int sync();
 
         //Input functions (get)
-        std::streamsize inputIntermediateSize = 0;
+        std::streamsize inputIntermediateSize;
         std::streamsize xsgetn(char_type* buffer, std::streamsize size);
         int_type underflow();
 
@@ -76,10 +76,10 @@ namespace netLink {
         };
 
         protected:
-        IPVersion ipVersion = ANY; //!< IP version which is in use
-        Type type = NONE; //!< Type of the socket
-        unsigned int status = NOT_CONNECTED; //!< Or listen queue size if socket is TCP_SERVER
-        int handle = -1; //!< Handle used for the system interface
+        IPVersion ipVersion; //!< IP version which is in use
+        Type type; //!< Type of the socket
+        unsigned int status; //!< Or listen queue size if socket is TCP_SERVER
+        int handle; //!< Handle used for the system interface
         /*! Initzialize system handle
          @param blocking Waits for connection if true
         */
@@ -98,8 +98,8 @@ namespace netLink {
         std::set<std::shared_ptr<Socket>> clients; //!< Client sockets of a server
         std::string hostLocal, //!< Host string of local
                     hostRemote; //!< Host string of remote
-        unsigned int portLocal = 0, //!< Port of local
-                     portRemote = 0; //!< Port of remote
+        unsigned int portLocal, //!< Port of local
+                     portRemote; //!< Port of remote
 
         /*! Setup socket as TCP client
          @param hostRemote The remote host to connect to

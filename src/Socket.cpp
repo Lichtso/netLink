@@ -327,7 +327,9 @@ void Socket::initAsUdpPeer(const std::string& _hostLocal, unsigned _portLocal) {
     initSocket(false);
 }
 
-Socket::Socket() {
+Socket::Socket() :inputIntermediateSize(0),
+	ipVersion(ANY), type(NONE), status(NOT_CONNECTED),
+	handle(-1), portLocal(0), portRemote(0) {
     #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
     setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
     #endif
