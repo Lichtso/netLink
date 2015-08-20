@@ -33,7 +33,7 @@ namespace MsgPack {
         std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
-        std::vector<std::unique_ptr<Element>>* getContainer();
+        std::vector<std::unique_ptr<Element>>* getElementsVector();
         //! Returns the entry at the index or nullptr if out of bounds
         Element* getEntry(uint32_t index) const;
     };
@@ -52,7 +52,11 @@ namespace MsgPack {
         std::unique_ptr<Element> copy() const;
         void toJSON(std::ostream& stream) const;
         uint32_t getSizeInBytes() const;
-        std::vector<std::unique_ptr<Element>>* getContainer();
+        std::vector<std::unique_ptr<Element>>* getElementsVector();
+        /*! Generates a map of the element vector
+         * @warning Life time of return value depends on this object
+         */
+        std::map<std::string, Element*> getElementsMap() const;
         //! Returns the entry pair at the index or nullptr if out of bounds
         std::pair<String*, Element*> getEntry(uint32_t index) const;
         //! Returns the key at the index or nullptr if out of bounds

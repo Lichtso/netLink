@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="class_msg_pack_1_1_array-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">MsgPack::Array Class Reference</div>  </div>
@@ -130,10 +131,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#aebc5202bc442c32344c5909d610c2dcc">getSizeInBytes</a> () const </td></tr>
 <tr class="memdesc:aebc5202bc442c32344c5909d610c2dcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size in bytes this <a class="el" href="class_msg_pack_1_1_element.html" title="Abstract class to represent one element in a MsgPack stream. ">MsgPack::Element</a> takes if completely serialized. <br /></td></tr>
 <tr class="separator:aebc5202bc442c32344c5909d610c2dcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a81e17345bc71cc4fd210760a970dd2c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a81e17345bc71cc4fd210760a970dd2c4"></a>
-std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt; &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#a81e17345bc71cc4fd210760a970dd2c4">getContainer</a> ()</td></tr>
-<tr class="memdesc:a81e17345bc71cc4fd210760a970dd2c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a raw pointer to the element vector of a container. <br /></td></tr>
-<tr class="separator:a81e17345bc71cc4fd210760a970dd2c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0412ed2fdf76484c449fb71403a645d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0412ed2fdf76484c449fb71403a645d0"></a>
+std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_element.html">Element</a> &gt; &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#a0412ed2fdf76484c449fb71403a645d0">getElementsVector</a> ()</td></tr>
+<tr class="memdesc:a0412ed2fdf76484c449fb71403a645d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a raw pointer to the element vector of a container. <br /></td></tr>
+<tr class="separator:a0412ed2fdf76484c449fb71403a645d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a705e57e991ce681410faf56c7c427893"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a705e57e991ce681410faf56c7c427893"></a>
 <a class="el" href="class_msg_pack_1_1_element.html">Element</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_array.html#a705e57e991ce681410faf56c7c427893">getEntry</a> (uint32_t index) const </td></tr>
 <tr class="memdesc:a705e57e991ce681410faf56c7c427893"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the entry at the index or nullptr if out of bounds. <br /></td></tr>
@@ -213,6 +214,15 @@ std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_msg_pack_1_1_eleme
 char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_msg_pack_1_1_header.html#aad66a58f9f1c736cd57a1889049d0a8b">header</a> [5]</td></tr>
 <tr class="memdesc:aad66a58f9f1c736cd57a1889049d0a8b inherit pro_attribs_class_msg_pack_1_1_header"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal buffer of the header. <br /></td></tr>
 <tr class="separator:aad66a58f9f1c736cd57a1889049d0a8b inherit pro_attribs_class_msg_pack_1_1_header"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ad3f5346f31d572dd2ab4fcd658de5bc4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3f5346f31d572dd2ab4fcd658de5bc4"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>Serializer</b></td></tr>
+<tr class="separator:ad3f5346f31d572dd2ab4fcd658de5bc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c541e43f0cc8d5a52e519ebcf1709f5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0c541e43f0cc8d5a52e519ebcf1709f5"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>Deserializer</b></td></tr>
+<tr class="separator:a0c541e43f0cc8d5a52e519ebcf1709f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_msg_pack_1_1_array_header.html" title="MsgPack::Header representing only the header of a array. ">MsgPack::ArrayHeader</a> representing the header and the content of a array. </p>

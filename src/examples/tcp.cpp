@@ -62,24 +62,17 @@ int main(int argc, char** argv) {
         // Parse the *element
         auto elementMap = dynamic_cast<MsgPack::Map*>(element.get());
         if(elementMap) { // The received element is a map
-            auto container = elementMap->getContainer();
             // Iterate them sequentially
             std::cout << "Iterate them sequentially:" << std::endl;
-            for(auto& elementInContainer : *container) {
-                auto str = dynamic_cast<MsgPack::String*>(elementInContainer.get());
-                if(str) // elementInContainer is a string
-                    std::cout << *elementInContainer << std::endl;
-            }
+            auto container = elementMap->getElementsMap();
+            for(auto& pair : container)
+                std::cout << pair.first << " : " << *pair.second << std::endl;
             // Or just access them directly
             if(elementMap->getLength() >= 2) {
                 std::cout << "Access them directly:" << std::endl;
-                auto firstKey = elementMap->getKey(0);
-                auto firstValue = elementMap->getValue(0);
-                auto secondKey = elementMap->getKey(1);
-                auto secondValue = elementMap->getValue(1);
+                std::cout << elementMap->getKey(0)->stdString() << " : " << *elementMap->getValue(0) << std::endl;
+                std::cout << elementMap->getKey(1)->stdString() << " : " << *elementMap->getValue(1) << std::endl;
                 // ... and so on
-                std::cout << firstKey->stdString() << " : " << *firstValue << std::endl;
-                std::cout << secondKey->stdString() << " : " << *secondValue << std::endl;
             }
         }
     };

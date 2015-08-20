@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <map>
 #include <queue>
 #include <memory>
 #include <sstream>
@@ -109,7 +110,7 @@ namespace MsgPack {
         //! Returns true if the header of a container is deserialized and reserves the necessary space for its element vector
         virtual bool containerDeserialized() { return false; };
         //! Returns a raw pointer to the element vector of a container
-        virtual std::vector<std::unique_ptr<Element>>* getContainer() { return NULL; };
+        virtual std::vector<std::unique_ptr<Element>>* getElementsVector() { return NULL; };
         //! Returns the first invalid (de)serializer position
         virtual int64_t getEndPos() const = 0;
         public:

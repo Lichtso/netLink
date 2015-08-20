@@ -881,7 +881,7 @@ namespace MsgPack {
         return size;
     }
 
-    std::vector<std::unique_ptr<Element>>* Array::getContainer() {
+    std::vector<std::unique_ptr<Element>>* Array::getElementsVector() {
         return &elements;
     }
 
@@ -940,8 +940,19 @@ namespace MsgPack {
         return size;
     }
 
-    std::vector<std::unique_ptr<Element>>* Map::getContainer() {
+    std::vector<std::unique_ptr<Element>>* Map::getElementsVector() {
         return &elements;
+    }
+
+    std::map<std::string, Element*> Map::getElementsMap() const {
+        std::map<std::string, Element*> map;
+        for(size_t index = 0; index < elements.size(); index += 2) {
+            String* key = dynamic_cast<String*>(elements[index].get());
+            if(index+1 == elements.size()) break;
+            Element* value = elements[index+1].get();
+            map.insert(std::pair<std::string, Element*>(key->stdString(), value));
+        }
+        return map;
     }
 
     std::pair<String*, Element*> Map::getEntry(uint32_t index) const {
@@ -998,7 +1009,7 @@ namespace MsgPack {
                 continue; //Not done yet
 
             //Finish element
-            std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getContainer();
+            std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getElementsVector();
             if(container && container->size() > 0) {
                 //Serialized header, begin with first child
                 Element* childElement = container->begin()->get();
@@ -1010,7 +1021,7 @@ namespace MsgPack {
             uint32_t stackIndex = stack.size()-1;
             while(true) {
                 stackPointer = &stack[stackIndex];
-                container = stackPointer->first->getContainer();
+                container = stackPointer->first->getElementsVector();
                 if(container && stackPointer->second+1 < (int64_t)container->size()) {
                     //Container is not done yet. move to next element
                     int64_t pos = ++ stackPointer->second;
@@ -1130,7 +1141,7 @@ namespace MsgPack {
 
                 //Put element in parent container
                 if(stack.size() > 0) {
-                    std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getContainer();
+                    std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getElementsVector();
                     *(container->begin()+stackPointer->second) = std::move(std::unique_ptr<Element>(element));
                 }else
                     rootElement.reset(element);
@@ -1149,7 +1160,7 @@ namespace MsgPack {
                 uint32_t stackIndex = stack.size()-1;
                 std::vector<std::unique_ptr<Element>>* container;
                 while(true) {
-                    container = stack[stackIndex].first->getContainer();
+                    container = stack[stackIndex].first->getElementsVector();
                     if(container && stack[stackIndex].second+1 < (int64_t)container->size()) {
                         stack[stackIndex ++].second ++;
                         break;

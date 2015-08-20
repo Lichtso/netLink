@@ -104,118 +104,120 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;queue&gt;</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;sstream&gt;</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;climits&gt;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;cstring&gt;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">//Store numbers in network endian (big endian)</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keywordtype">void</span> storeUint8(<span class="keywordtype">char</span>* target, uint8_t source);</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keywordtype">void</span> storeInt8(<span class="keywordtype">char</span>* target, int8_t source);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keywordtype">void</span> storeUint16(<span class="keywordtype">char</span>* target, uint16_t source);</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keywordtype">void</span> storeInt16(<span class="keywordtype">char</span>* target, int16_t source);</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keywordtype">void</span> storeFloat32(<span class="keywordtype">char</span>* target, <span class="keywordtype">float</span> source);</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keywordtype">void</span> storeUint32(<span class="keywordtype">char</span>* target, uint32_t source);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">void</span> storeInt32(<span class="keywordtype">char</span>* target, int32_t source);</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keywordtype">void</span> storeFloat64(<span class="keywordtype">char</span>* target, <span class="keywordtype">double</span> source);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keywordtype">void</span> storeUint64(<span class="keywordtype">char</span>* target, uint64_t source);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keywordtype">void</span> storeInt64(<span class="keywordtype">char</span>* target, int64_t source);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">//Read numbers from network endian (big endian)</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;uint8_t loadUint8(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;int8_t loadInt8(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;uint16_t loadUint16(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;int16_t loadInt16(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keywordtype">float</span> loadFloat32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;uint32_t loadUint32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;int32_t loadInt32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keywordtype">double</span> loadFloat64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;uint64_t loadUint64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;int64_t loadInt64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_msg_pack.html">MsgPack</a> {</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;map&gt;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;queue&gt;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;sstream&gt;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;climits&gt;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &lt;cstring&gt;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">//Store numbers in network endian (big endian)</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keywordtype">void</span> storeUint8(<span class="keywordtype">char</span>* target, uint8_t source);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keywordtype">void</span> storeInt8(<span class="keywordtype">char</span>* target, int8_t source);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keywordtype">void</span> storeUint16(<span class="keywordtype">char</span>* target, uint16_t source);</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keywordtype">void</span> storeInt16(<span class="keywordtype">char</span>* target, int16_t source);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">void</span> storeFloat32(<span class="keywordtype">char</span>* target, <span class="keywordtype">float</span> source);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keywordtype">void</span> storeUint32(<span class="keywordtype">char</span>* target, uint32_t source);</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keywordtype">void</span> storeInt32(<span class="keywordtype">char</span>* target, int32_t source);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keywordtype">void</span> storeFloat64(<span class="keywordtype">char</span>* target, <span class="keywordtype">double</span> source);</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keywordtype">void</span> storeUint64(<span class="keywordtype">char</span>* target, uint64_t source);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keywordtype">void</span> storeInt64(<span class="keywordtype">char</span>* target, int64_t source);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">//Read numbers from network endian (big endian)</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;uint8_t loadUint8(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;int8_t loadInt8(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;uint16_t loadUint16(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;int16_t loadInt16(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keywordtype">float</span> loadFloat32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;uint32_t loadUint32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;int32_t loadInt32(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keywordtype">double</span> loadFloat64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;uint64_t loadUint64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;int64_t loadInt64(<span class="keyword">const</span> <span class="keywordtype">char</span>* source);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">class </span>Serializer;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">class </span>Deserializer;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keyword">enum</span> Type {</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        FIXUINT = 0x00,</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        FIXMAP = 0x80,</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        FIXARRAY = 0x90,</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        FIXSTR = 0xA0,</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        NIL = 0xC0,</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        UNDEFINED = 0xC1,</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        BOOL_FALSE = 0xC2,</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        BOOL_TRUE = 0xC3,</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        BIN_8 = 0xC4,</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        BIN_16 = 0xC5,</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        BIN_32 = 0xC6,</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        EXT_8 = 0xC7,</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        EXT_16 = 0xC8,</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        EXT_32 = 0xC9,</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        FLOAT_32 = 0xCA,</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        FLOAT_64 = 0xCB,</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        UINT_8 = 0xCC,</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        UINT_16 = 0xCD,</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        UINT_32 = 0xCE,</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        UINT_64 = 0xCF,</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        INT_8 = 0xD0,</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        INT_16 = 0xD1,</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        INT_32 = 0xD2,</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        INT_64 = 0xD3,</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        FIXEXT_8 = 0xD4,</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        FIXEXT_16 = 0xD5,</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        FIXEXT_32 = 0xD6,</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        FIXEXT_64 = 0xD7,</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        FIXEXT_128 = 0xD8,</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        STR_8 = 0xD9,</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        STR_16 = 0xDA,</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        STR_32 = 0xDB,</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        ARRAY_16 = 0xDC,</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        ARRAY_32 = 0xDD,</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        MAP_16 = 0xDE,</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        MAP_32 = 0xDF,</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        FIXINT = 0xE0</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    };</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
-<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html">   95</a></span>&#160;    <span class="keyword">class </span><a class="code" href="class_msg_pack_1_1_element.html">Element</a> {</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keyword">friend</span> <a class="code" href="class_msg_pack_1_1_serializer.html">Serializer</a>;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keyword">friend</span> <a class="code" href="class_msg_pack_1_1_deserializer.html">Deserializer</a>;</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <a class="code" href="class_msg_pack_1_1_element.html">Element</a>() { }</div>
-<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">  101</a></span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">startSerialize</a>() { <span class="keywordflow">return</span> 0; };</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a7487754e1758cdab091822fbe97e8c55">startDeserialize</a>(uint8_t firstByte) = 0;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keyword">virtual</span> std::streamsize <a class="code" href="class_msg_pack_1_1_element.html#ad6914dffd1849882c6a4c315c2b39f3a">serialize</a>(int64_t&amp; pos, std::basic_streambuf&lt;char&gt;* streamBuffer, std::streamsize bytes) = 0;</div>
-<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">  107</a></span>&#160;        <span class="keyword">virtual</span> std::streamsize <a class="code" href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">deserialize</a>(int64_t&amp; pos, std::basic_streambuf&lt;char&gt;* streamBuffer, std::streamsize bytes) { <span class="keywordflow">return</span> 0; };</div>
-<div class="line"><a name="l00109"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">  109</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">containerDeserialized</a>() { <span class="keywordflow">return</span> <span class="keyword">false</span>; };</div>
-<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#abdfddef644b2e5b7d0b07e5d6f68815d">  111</a></span>&#160;        <span class="keyword">virtual</span> std::vector&lt;std::unique_ptr&lt;Element&gt;&gt;* <a class="code" href="class_msg_pack_1_1_element.html#abdfddef644b2e5b7d0b07e5d6f68815d">getContainer</a>() { <span class="keywordflow">return</span> NULL; };</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a994120fc667b2ffbc163057bb520247e">getEndPos</a>() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="class_msg_pack_1_1_element.html">Element</a>() { }</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keyword">virtual</span> std::unique_ptr&lt;Element&gt; <a class="code" href="class_msg_pack_1_1_element.html#a468bed88c62e7cbb1cf18c3356a101fc">copy</a>() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_element.html#ad4363c2a4e0dbc522587a46c6542a3b1">toJSON</a>(std::ostream&amp; stream) <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keyword">virtual</span> Type <a class="code" href="class_msg_pack_1_1_element.html#af9cf8191016ea14574124577621c1a4a">getType</a>() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">  123</a></span>&#160;        <span class="keyword">virtual</span> uint32_t <a class="code" href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">getSizeInBytes</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="class_msg_pack_1_1_element.html#a994120fc667b2ffbc163057bb520247e">getEndPos</a>(); };</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    };</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;};</div>
-<div class="ttc" id="class_msg_pack_1_1_element_html_a385642caa044d461759d06e04e929da8"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">MsgPack::Element::containerDeserialized</a></div><div class="ttdeci">virtual bool containerDeserialized()</div><div class="ttdoc">Returns true if the header of a container is deserialized and reserves the necessary space for its el...</div><div class="ttdef"><b>Definition:</b> Element.h:109</div></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_msg_pack.html">MsgPack</a> {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">class </span>Serializer;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keyword">class </span>Deserializer;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">enum</span> Type {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        FIXUINT = 0x00,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        FIXMAP = 0x80,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        FIXARRAY = 0x90,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        FIXSTR = 0xA0,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        NIL = 0xC0,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        UNDEFINED = 0xC1,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        BOOL_FALSE = 0xC2,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        BOOL_TRUE = 0xC3,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        BIN_8 = 0xC4,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        BIN_16 = 0xC5,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        BIN_32 = 0xC6,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        EXT_8 = 0xC7,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        EXT_16 = 0xC8,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        EXT_32 = 0xC9,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        FLOAT_32 = 0xCA,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        FLOAT_64 = 0xCB,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        UINT_8 = 0xCC,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        UINT_16 = 0xCD,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        UINT_32 = 0xCE,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        UINT_64 = 0xCF,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        INT_8 = 0xD0,</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        INT_16 = 0xD1,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        INT_32 = 0xD2,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        INT_64 = 0xD3,</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        FIXEXT_8 = 0xD4,</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        FIXEXT_16 = 0xD5,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        FIXEXT_32 = 0xD6,</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        FIXEXT_64 = 0xD7,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        FIXEXT_128 = 0xD8,</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        STR_8 = 0xD9,</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        STR_16 = 0xDA,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        STR_32 = 0xDB,</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        ARRAY_16 = 0xDC,</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        ARRAY_32 = 0xDD,</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        MAP_16 = 0xDE,</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        MAP_32 = 0xDF,</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        FIXINT = 0xE0</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    };</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
+<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html">   97</a></span>&#160;    <span class="keyword">class </span><a class="code" href="class_msg_pack_1_1_element.html">Element</a> {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_msg_pack_1_1_serializer.html">Serializer</a>;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_msg_pack_1_1_deserializer.html">Deserializer</a>;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <a class="code" href="class_msg_pack_1_1_element.html">Element</a>() { }</div>
+<div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">  103</a></span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">startSerialize</a>() { <span class="keywordflow">return</span> 0; };</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a7487754e1758cdab091822fbe97e8c55">startDeserialize</a>(uint8_t firstByte) = 0;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keyword">virtual</span> std::streamsize <a class="code" href="class_msg_pack_1_1_element.html#ad6914dffd1849882c6a4c315c2b39f3a">serialize</a>(int64_t&amp; pos, std::basic_streambuf&lt;char&gt;* streamBuffer, std::streamsize bytes) = 0;</div>
+<div class="line"><a name="l00109"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">  109</a></span>&#160;        <span class="keyword">virtual</span> std::streamsize <a class="code" href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">deserialize</a>(int64_t&amp; pos, std::basic_streambuf&lt;char&gt;* streamBuffer, std::streamsize bytes) { <span class="keywordflow">return</span> 0; };</div>
+<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">  111</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">containerDeserialized</a>() { <span class="keywordflow">return</span> <span class="keyword">false</span>; };</div>
+<div class="line"><a name="l00113"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#af3123fb7105170674f0adcedcedb71a8">  113</a></span>&#160;        <span class="keyword">virtual</span> std::vector&lt;std::unique_ptr&lt;Element&gt;&gt;* <a class="code" href="class_msg_pack_1_1_element.html#af3123fb7105170674f0adcedcedb71a8">getElementsVector</a>() { <span class="keywordflow">return</span> NULL; };</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keyword">virtual</span> int64_t <a class="code" href="class_msg_pack_1_1_element.html#a994120fc667b2ffbc163057bb520247e">getEndPos</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="class_msg_pack_1_1_element.html">Element</a>() { }</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keyword">virtual</span> std::unique_ptr&lt;Element&gt; <a class="code" href="class_msg_pack_1_1_element.html#a468bed88c62e7cbb1cf18c3356a101fc">copy</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="class_msg_pack_1_1_element.html#ad4363c2a4e0dbc522587a46c6542a3b1">toJSON</a>(std::ostream&amp; stream) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keyword">virtual</span> Type <a class="code" href="class_msg_pack_1_1_element.html#af9cf8191016ea14574124577621c1a4a">getType</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">  125</a></span>&#160;        <span class="keyword">virtual</span> uint32_t <a class="code" href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">getSizeInBytes</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="class_msg_pack_1_1_element.html#a994120fc667b2ffbc163057bb520247e">getEndPos</a>(); };</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    };</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;};</div>
+<div class="ttc" id="class_msg_pack_1_1_element_html_a385642caa044d461759d06e04e929da8"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a385642caa044d461759d06e04e929da8">MsgPack::Element::containerDeserialized</a></div><div class="ttdeci">virtual bool containerDeserialized()</div><div class="ttdoc">Returns true if the header of a container is deserialized and reserves the necessary space for its el...</div><div class="ttdef"><b>Definition:</b> Element.h:111</div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_af9cf8191016ea14574124577621c1a4a"><div class="ttname"><a href="class_msg_pack_1_1_element.html#af9cf8191016ea14574124577621c1a4a">MsgPack::Element::getType</a></div><div class="ttdeci">virtual Type getType() const =0</div><div class="ttdoc">Returns the MsgPack::Type. </div></div>
-<div class="ttc" id="class_msg_pack_1_1_element_html_abdfddef644b2e5b7d0b07e5d6f68815d"><div class="ttname"><a href="class_msg_pack_1_1_element.html#abdfddef644b2e5b7d0b07e5d6f68815d">MsgPack::Element::getContainer</a></div><div class="ttdeci">virtual std::vector&lt; std::unique_ptr&lt; Element &gt; &gt; * getContainer()</div><div class="ttdoc">Returns a raw pointer to the element vector of a container. </div><div class="ttdef"><b>Definition:</b> Element.h:111</div></div>
 <div class="ttc" id="namespace_msg_pack_html"><div class="ttname"><a href="namespace_msg_pack.html">MsgPack</a></div><div class="ttdef"><b>Definition:</b> MsgPack.cpp:132</div></div>
-<div class="ttc" id="class_msg_pack_1_1_element_html_ae9df3b425c000add853b5c07e1317c76"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">MsgPack::Element::getSizeInBytes</a></div><div class="ttdeci">virtual uint32_t getSizeInBytes() const </div><div class="ttdoc">Returns the size in bytes this MsgPack::Element takes if completely serialized. </div><div class="ttdef"><b>Definition:</b> Element.h:123</div></div>
+<div class="ttc" id="class_msg_pack_1_1_element_html_ae9df3b425c000add853b5c07e1317c76"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ae9df3b425c000add853b5c07e1317c76">MsgPack::Element::getSizeInBytes</a></div><div class="ttdeci">virtual uint32_t getSizeInBytes() const </div><div class="ttdoc">Returns the size in bytes this MsgPack::Element takes if completely serialized. </div><div class="ttdef"><b>Definition:</b> Element.h:125</div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_a7487754e1758cdab091822fbe97e8c55"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a7487754e1758cdab091822fbe97e8c55">MsgPack::Element::startDeserialize</a></div><div class="ttdeci">virtual int64_t startDeserialize(uint8_t firstByte)=0</div><div class="ttdoc">Reads in one byte and returns the initial deserializer position in bytes (negative value if there is ...</div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_ad4363c2a4e0dbc522587a46c6542a3b1"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ad4363c2a4e0dbc522587a46c6542a3b1">MsgPack::Element::toJSON</a></div><div class="ttdeci">virtual void toJSON(std::ostream &amp;stream) const =0</div><div class="ttdoc">Writes a human readable JSON-like string into the given stream. </div></div>
-<div class="ttc" id="class_msg_pack_1_1_element_html_a2658a4a70d15fe463891a4597b85e243"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">MsgPack::Element::startSerialize</a></div><div class="ttdeci">virtual int64_t startSerialize()</div><div class="ttdoc">Returns the initial serializer position in bytes (negative value if there is a header) ...</div><div class="ttdef"><b>Definition:</b> Element.h:101</div></div>
-<div class="ttc" id="class_msg_pack_1_1_element_html"><div class="ttname"><a href="class_msg_pack_1_1_element.html">MsgPack::Element</a></div><div class="ttdoc">Abstract class to represent one element in a MsgPack stream. </div><div class="ttdef"><b>Definition:</b> Element.h:95</div></div>
+<div class="ttc" id="class_msg_pack_1_1_element_html_a2658a4a70d15fe463891a4597b85e243"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a2658a4a70d15fe463891a4597b85e243">MsgPack::Element::startSerialize</a></div><div class="ttdeci">virtual int64_t startSerialize()</div><div class="ttdoc">Returns the initial serializer position in bytes (negative value if there is a header) ...</div><div class="ttdef"><b>Definition:</b> Element.h:103</div></div>
+<div class="ttc" id="class_msg_pack_1_1_element_html"><div class="ttname"><a href="class_msg_pack_1_1_element.html">MsgPack::Element</a></div><div class="ttdoc">Abstract class to represent one element in a MsgPack stream. </div><div class="ttdef"><b>Definition:</b> Element.h:97</div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_ad6914dffd1849882c6a4c315c2b39f3a"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ad6914dffd1849882c6a4c315c2b39f3a">MsgPack::Element::serialize</a></div><div class="ttdeci">virtual std::streamsize serialize(int64_t &amp;pos, std::basic_streambuf&lt; char &gt; *streamBuffer, std::streamsize bytes)=0</div><div class="ttdoc">Serializes bytes at the given serializer position pos into streamBuffer. </div></div>
+<div class="ttc" id="class_msg_pack_1_1_element_html_af3123fb7105170674f0adcedcedb71a8"><div class="ttname"><a href="class_msg_pack_1_1_element.html#af3123fb7105170674f0adcedcedb71a8">MsgPack::Element::getElementsVector</a></div><div class="ttdeci">virtual std::vector&lt; std::unique_ptr&lt; Element &gt; &gt; * getElementsVector()</div><div class="ttdoc">Returns a raw pointer to the element vector of a container. </div><div class="ttdef"><b>Definition:</b> Element.h:113</div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_a994120fc667b2ffbc163057bb520247e"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a994120fc667b2ffbc163057bb520247e">MsgPack::Element::getEndPos</a></div><div class="ttdeci">virtual int64_t getEndPos() const =0</div><div class="ttdoc">Returns the first invalid (de)serializer position. </div></div>
 <div class="ttc" id="class_msg_pack_1_1_element_html_a468bed88c62e7cbb1cf18c3356a101fc"><div class="ttname"><a href="class_msg_pack_1_1_element.html#a468bed88c62e7cbb1cf18c3356a101fc">MsgPack::Element::copy</a></div><div class="ttdeci">virtual std::unique_ptr&lt; Element &gt; copy() const =0</div><div class="ttdoc">Creates a deep copy of this element. </div></div>
 <div class="ttc" id="class_msg_pack_1_1_serializer_html"><div class="ttname"><a href="class_msg_pack_1_1_serializer.html">MsgPack::Serializer</a></div><div class="ttdoc">Used to serialize elements into a std::streambuf. </div><div class="ttdef"><b>Definition:</b> StreamManager.h:34</div></div>
 <div class="ttc" id="class_msg_pack_1_1_deserializer_html"><div class="ttname"><a href="class_msg_pack_1_1_deserializer.html">MsgPack::Deserializer</a></div><div class="ttdoc">Used to deserialize elements from a std::streambuf. </div><div class="ttdef"><b>Definition:</b> StreamManager.h:62</div></div>
-<div class="ttc" id="class_msg_pack_1_1_element_html_ae79129328781728c7de690826dfbc774"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">MsgPack::Element::deserialize</a></div><div class="ttdeci">virtual std::streamsize deserialize(int64_t &amp;pos, std::basic_streambuf&lt; char &gt; *streamBuffer, std::streamsize bytes)</div><div class="ttdoc">Deserializes bytes at the given deserializer position pos from streamBuffer. </div><div class="ttdef"><b>Definition:</b> Element.h:107</div></div>
+<div class="ttc" id="class_msg_pack_1_1_element_html_ae79129328781728c7de690826dfbc774"><div class="ttname"><a href="class_msg_pack_1_1_element.html#ae79129328781728c7de690826dfbc774">MsgPack::Element::deserialize</a></div><div class="ttdeci">virtual std::streamsize deserialize(int64_t &amp;pos, std::basic_streambuf&lt; char &gt; *streamBuffer, std::streamsize bytes)</div><div class="ttdoc">Deserializes bytes at the given deserializer position pos from streamBuffer. </div><div class="ttdef"><b>Definition:</b> Element.h:109</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
