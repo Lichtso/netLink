@@ -50,11 +50,11 @@ namespace MsgPack {
         bool isFloatingPoint() const;
         //! Returns the value as given data type T
         template<class T> T getValue() const {
-            uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+            uint8_t type = static_cast<const uint8_t>(data[0]);
             if(type < FIXMAP)
                 return (T)type;
             else if(type >= FIXINT)
-                return (T)reinterpret_cast<const int8_t&>(type);
+                return (T)static_cast<const int8_t>(type);
             else
                 switch(type) {
                     case Type::FLOAT_32:

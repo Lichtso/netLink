@@ -38,11 +38,11 @@
 #endif
 
 void storeUint8(char* target, uint8_t source) {
-    reinterpret_cast<uint8_t&>(target) = source;
+    *reinterpret_cast<uint8_t*>(target) = source;
 }
 
 void storeInt8(char* target, int8_t source) {
-    reinterpret_cast<int8_t&>(target) = source;
+    *reinterpret_cast<int8_t*>(target) = source;
 }
 
 void storeUint16(char* target, uint16_t source) {
@@ -80,11 +80,11 @@ void storeInt64(char* target, int64_t source) {
 
 
 uint8_t loadUint8(const char* source) {
-    return reinterpret_cast<const uint8_t&>(source);
+    return *reinterpret_cast<const uint8_t*>(source);
 }
 
 int8_t loadInt8(const char* source) {
-    return reinterpret_cast<const int8_t&>(source);
+    return *reinterpret_cast<const int8_t*>(source);
 }
 
 uint16_t loadUint16(const char* source) {
@@ -223,7 +223,7 @@ namespace MsgPack {
     }
 
     Type Header::getType() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type < FIXARRAY) return FIXMAP;
         if(type < FIXSTR) return FIXARRAY;
         if(type < NIL) return FIXSTR;
@@ -293,7 +293,7 @@ namespace MsgPack {
     }
 
     int64_t Binary::getEndPos() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         switch(type) {
             case Type::BIN_8:
                 return loadUint8(&header[1]);
@@ -307,7 +307,7 @@ namespace MsgPack {
     }
 
     int64_t Binary::getHeaderLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         switch(type) {
             case Type::BIN_8:
                 return 2;
@@ -378,7 +378,7 @@ namespace MsgPack {
     }
 
     int64_t Extended::getEndPos() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         switch(type) {
             case Type::FIXEXT_8:
                 return 2;
@@ -402,7 +402,7 @@ namespace MsgPack {
     }
 
     int64_t Extended::getHeaderLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         switch(type) {
             case Type::FIXEXT_8:
             case Type::FIXEXT_16:
@@ -475,16 +475,16 @@ namespace MsgPack {
         init(len, str);
     }
 
-	String::String(const char* str) {
+    String::String(const char* str) {
         init(strlen(str), str);
     }
 
-	String::String(const std::string& str) {
+    String::String(const std::string& str) {
         init(str.size(), str.c_str());
     }
 
     int64_t String::getEndPos() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXSTR && type < Type::NIL)
             return type - Type::FIXSTR;
 
@@ -501,7 +501,7 @@ namespace MsgPack {
     }
 
     int64_t String::getHeaderLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXSTR && type < Type::NIL)
             return 1;
 
@@ -614,7 +614,7 @@ namespace MsgPack {
     }
 
     int64_t Number::getEndPos() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         if(type < 0x80 || type >= 0xE0)
             return 1;
 
@@ -645,11 +645,11 @@ namespace MsgPack {
     }
 
     void Number::toJSON(std::ostream& stream) const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         if(type < FIXMAP)
             stream << (int16_t)type;
         else if(type >= FIXINT)
-            stream << (int16_t)reinterpret_cast<const int8_t&>(type);
+            stream << (int16_t)static_cast<const int8_t>(type);
         else
             switch(type) {
                 case Type::FLOAT_32:
@@ -686,24 +686,24 @@ namespace MsgPack {
     }
 
     Type Number::getType() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         if(type < FIXMAP) return FIXUINT;
         if(type >= FIXINT) return FIXINT;
         return static_cast<Type>(type);
     }
 
     bool Number::isUnsignedInteger() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         return (type < FIXMAP || (type >= UINT_8 && type <= UINT_64));
     }
 
     bool Number::isSignedInteger() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         return (type >= FIXINT || (type >= INT_8 && type <= INT_64));
     }
 
     bool Number::isFloatingPoint() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(data[0]);
+        uint8_t type = static_cast<const uint8_t>(data[0]);
         return (type == FLOAT_32 || type == FLOAT_64);
     }
 
@@ -738,7 +738,7 @@ namespace MsgPack {
     }
 
     uint32_t ArrayHeader::getLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXARRAY && type < Type::FIXSTR)
             return type - Type::FIXARRAY;
 
@@ -765,7 +765,7 @@ namespace MsgPack {
     }
 
     int64_t ArrayHeader::getHeaderLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXARRAY && type < Type::FIXSTR)
             return 1;
 
@@ -794,7 +794,7 @@ namespace MsgPack {
     }
 
     int64_t MapHeader::getHeaderLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXMAP && type < Type::FIXARRAY)
             return 1;
 
@@ -821,7 +821,7 @@ namespace MsgPack {
     }
 
     uint32_t MapHeader::getLength() const {
-        uint8_t type = reinterpret_cast<const uint8_t&>(header[0]);
+        uint8_t type = static_cast<const uint8_t>(header[0]);
         if(type >= Type::FIXMAP && type < Type::FIXARRAY)
             return type - Type::FIXMAP;
 
