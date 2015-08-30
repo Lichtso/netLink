@@ -897,6 +897,14 @@ namespace MsgPack {
             elements.erase(elements.end()-1);
     }
 
+    Map::Map(std::map<std::string, std::unique_ptr<Element>>&& _elements)
+        : MapHeader(_elements.size()) {
+        for(auto& pair : _elements) {
+            elements.push_back(std::unique_ptr<Element>(new MsgPack::String(pair.first)));
+            elements.push_back(std::move(pair.second));
+        }
+    }
+
     bool Map::containerDeserialized() {
         uint32_t len = getLength();
         if(len > 0) {
