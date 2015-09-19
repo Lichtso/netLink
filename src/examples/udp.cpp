@@ -32,8 +32,13 @@ int main(int argc, char** argv) {
     //Alloc a new socket and insert it into the SocketManager
     std::shared_ptr<netLink::Socket> socket = socketManager.newMsgPackSocket();
 
-    //Init socket as UDP listening to all incoming adresses (let the system choose IPv4 or IPv6) on port 3824
-    socket->initAsUdpPeer("*", 3824);
+    try {
+        //Init socket as UDP listening to all incoming adresses (let the system choose IPv4 or IPv6) on port 3824
+        socket->initAsUdpPeer("*", 3824);
+    }catch(netLink::Exception exc) {
+        std::cout << "Address is already in use" << std::endl;
+        return 1;
+    }
 
     //Define the destination for the next sent message (depending on the choosen IP version)
     socket->hostRemote = (socket->getIPVersion() == netLink::Socket::IPv4) ? "224.0.0.100" : "FF02:0001::";
@@ -44,7 +49,7 @@ int main(int argc, char** argv) {
 
     //Prepare a MsgPack encoded message
     netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
-    msgPackSocket << MsgPack::Factory("Test message");
+    msgPackSocket << MsgPack::Factory("Hello, Multicast Group!");
     msgPackSocket << MsgPack__Factory(ArrayHeader(3));
     msgPackSocket << MsgPack__Factory(MapHeader(2));
     msgPackSocket << MsgPack::Factory("Boolean");
@@ -54,10 +59,9 @@ int main(int argc, char** argv) {
     msgPackSocket << MsgPack__Factory(ArrayHeader(0));
     msgPackSocket << MsgPack::Factory();
 
-    while(true) {
-        //Let the SocketManager poll from all sockets, events will be triggered here
+    //Let the SocketManager poll from all sockets, events will be triggered here
+    while(true)
         socketManager.listen();
-    }
 
     return 0;
 }

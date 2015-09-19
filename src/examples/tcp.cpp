@@ -35,23 +35,30 @@ int main(int argc, char** argv) {
     };
 
     //Define a callback, fired when a sockets state changes
-    socketManager.onStatusChanged = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::Socket::Status prev) {
-        if(socket->getStatus() == netLink::Socket::Status::READY) {
-            std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << std::endl;
+    socketManager.onStatusChange = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::Socket::Status prev) {
+        netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
 
-            //Prepare a MsgPack encoded message
-            netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
-            msgPackSocket << MsgPack__Factory(MapHeader(2));
-            msgPackSocket << MsgPack::Factory("type");
-            msgPackSocket << MsgPack::Factory("post");
-            msgPackSocket << MsgPack::Factory("message");
-            msgPackSocket << MsgPack::Factory("Hello World!");
+        switch(socket->getStatus()) {
+            case netLink::Socket::Status::READY:
+                std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << std::endl;
+
+                //Prepare a MsgPack encoded message
+                msgPackSocket << MsgPack__Factory(MapHeader(2));
+                msgPackSocket << MsgPack::Factory("type");
+                msgPackSocket << MsgPack::Factory("post");
+                msgPackSocket << MsgPack::Factory("message");
+                msgPackSocket << MsgPack::Factory("Hello World!");
+            break;
+            case netLink::Socket::Status::NOT_CONNECTED:
+                if(prev == netLink::Socket::Status::CONNECTING)
+                    std::cout << "Connecting to " << socket->hostRemote << ":" << socket->portRemote << std::endl << " failed";
+                else
+                    std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << std::endl;
+            break;
+            default:
+                std::cout << "Status of " << socket->hostRemote << ":" << socket->portRemote << " changed from " << prev << " to " << socket->getStatus() << std::endl;
+            break;
         }
-    };
-
-    //Define a callback, fired when a socket disconnects
-    socketManager.onDisconnect = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket) {
-        std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << std::endl;
     };
 
     //Define a callback, fired when a socket receives data
@@ -89,14 +96,13 @@ int main(int argc, char** argv) {
             else
                 socket->initAsTcpClient(socket->hostRemote, 3823);
         }catch(netLink::Exception exc) {
-            std::cout << "Could not resolve address, please try again..." << std::endl;
+            std::cout << "Address is already in use, please try again..." << std::endl;
         }
     }
 
-    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED) {
-        //Let the SocketManager poll from all sockets, events will be triggered here
+    //Let the SocketManager poll from all sockets, events will be triggered here
+    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED)
         socketManager.listen();
-    }
 
     std::cout << "Quit" << std::endl;
 

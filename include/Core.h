@@ -36,11 +36,6 @@
 #define NETLINK_DEFAULT_INPUT_BUFFER_SIZE 8192
 #define NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE 8192
 
-#define foreach_e(c,i) for(auto end##i = (c).end(), next##i = (c).begin(), \
-i = (next##i==end##i)?end##i:next##i++; \
-i != next##i; \
-i = (next##i==end##i)?end##i:next##i++)
-
 namespace netLink {
 
     //! netLink Exceptions

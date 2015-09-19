@@ -327,14 +327,17 @@ void Socket::initAsUdpPeer(const std::string& _hostLocal, unsigned _portLocal) {
     initSocket(false);
 }
 
-Socket::Socket() :inputIntermediateSize(0),
-	ipVersion(ANY), type(NONE), status(NOT_CONNECTED),
+Socket::Socket() :ipVersion(ANY), type(NONE), status(NOT_CONNECTED),
 	handle(-1), portLocal(0), portRemote(0) {
     #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
     setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+	#else
+	setInputBufferSize(0);
     #endif
-    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
-    setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
+	#if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
+    setOutputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+	#else
+	setOutputBufferSize(0);
     #endif
 };
 
@@ -506,30 +509,24 @@ std::streamsize Socket::getOutputBufferSize() {
 }
 
 void Socket::setInputBufferSize(std::streamsize n) {
-    if(eback()) {
-        delete[] eback();
-        setg(NULL, NULL, NULL);
-    }
-    if(n == 0) return;
-    if(type == TCP_SERVER)
-        throw Exception(Exception::BAD_TYPE);
-
-    char_type* readBuffer = new char_type[n];
-    setg(readBuffer, readBuffer, readBuffer);
-    inputIntermediateSize = n;
+    if(eback()) delete[] eback();
+	if(type != TCP_SERVER && n > 0) {
+    	char_type* readBuffer = new char_type[n];
+    	setg(readBuffer, readBuffer, readBuffer);
+		inputIntermediateSize = n;
+	}else{
+		setg(NULL, NULL, NULL);
+    	inputIntermediateSize = 0;
+	}
 }
 
 void Socket::setOutputBufferSize(std::streamsize n) {
-    if(pbase()) {
-        delete[] pbase();
-        setp(NULL, NULL);
-    }
-    if(n == 0) return;
-    if(type == TCP_SERVER)
-        throw Exception(Exception::BAD_TYPE);
-
-    char_type* writeBuffer = new char_type[n];
-    setp(writeBuffer, writeBuffer+n);
+    if(pbase()) delete[] pbase();
+	if(type != TCP_SERVER && n > 0) {
+    	char_type* writeBuffer = new char_type[n];
+    	setp(writeBuffer, writeBuffer+n);
+	}else
+		setp(NULL, NULL);
 }
 
 void Socket::setBlockingMode(bool blocking) {
@@ -607,9 +604,11 @@ std::shared_ptr<Socket> Socket::accept() {
 }
 
 void Socket::disconnect() {
+	ipVersion = ANY;
+	type = NONE;
     status = NOT_CONNECTED;
-    setInputBufferSize(0);
-    setOutputBufferSize(0);
+    setInputBufferSize(getInputBufferSize());
+    setOutputBufferSize(getOutputBufferSize());
     clients.clear();
     if(handle != -1) {
 		closesocket(handle);

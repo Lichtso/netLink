@@ -15,6 +15,24 @@
 
 #include "netLink.h"
 
+#define foreach_e(c, i) for(auto end##i = (c).end(), next##i = (c).begin(), \
+    i = (next##i==end##i)?end##i:next##i++; \
+    i != next##i; \
+    i = (next##i==end##i)?end##i:next##i++)
+
+#define checkSocketStillValid(socketsSet, iterator, socket) \
+    if(socket->status == Socket::Status::NOT_CONNECTED) { \
+        socketsSet.erase(*iterator); \
+        continue; \
+    }
+
+#define disconnectSocket() { \
+    socket->disconnect(); \
+    if(onStatusChange) onStatusChange(this, *iterator, prev); \
+    sockets.erase(*iterator); \
+    continue; \
+}
+
 namespace netLink {
 
 std::shared_ptr<Socket> SocketManager::newSocket() {
@@ -29,12 +47,6 @@ std::shared_ptr<Socket> SocketManager::newMsgPackSocket() {
     return socket;
 }
 
-#define checkSocketStillValid(sockets, socket, iterator) \
-    if(socket->status == Socket::Status::NOT_CONNECTED) { \
-        sockets.erase(iterator); \
-        continue; \
-    }
-
 void SocketManager::listen(double secLeft) {
     fd_set readfds, writefds, exceptfds;
     FD_ZERO(&readfds);
@@ -45,7 +57,7 @@ void SocketManager::listen(double secLeft) {
     std::set<std::shared_ptr<Socket>> selection;
     foreach_e(sockets, iterator) {
         Socket* socket = (*iterator).get();
-        checkSocketStillValid(sockets, socket, iterator);
+        checkSocketStillValid(sockets, iterator, socket);
 
         //Add the socket to the listen set
         maxHandle = std::max(maxHandle, socket->handle);
@@ -57,7 +69,7 @@ void SocketManager::listen(double secLeft) {
             //Iterate all TCP_SERVERS_CLIENTs
             foreach_e(socket->clients, clientIterator) {
                 Socket* client = (*clientIterator).get();
-                checkSocketStillValid(socket->clients, client, clientIterator)
+                checkSocketStillValid(socket->clients, clientIterator, client)
 
                 //Add client to the listen set
                 maxHandle = std::max(maxHandle, client->handle);
@@ -84,33 +96,19 @@ void SocketManager::listen(double secLeft) {
 
     foreach_e(selection, iterator) {
         Socket* socket = (*iterator).get();
-        checkSocketStillValid(sockets, socket, iterator)
+        checkSocketStillValid(sockets, iterator, socket)
+        Socket::Status prev = (Socket::Status) socket->status;
         MsgPackSocket* msgPackSocket = dynamic_cast<MsgPackSocket*>(socket);
 
         //Exception occured: disconnect
-        if(FD_ISSET(socket->handle, &exceptfds)) {
-            if(onDisconnect) onDisconnect(this, *iterator);
-            socket->disconnect();
-            break;
-        }
+        if(FD_ISSET(socket->handle, &exceptfds))
+            disconnectSocket()
 
-        if(socket->type == Socket::Type::TCP_SERVER) {
-            if(FD_ISSET(socket->handle, &readfds)) {
-                std::shared_ptr<Socket> newSocket = socket->accept();
-                //New client accepted
-                if(onConnectRequest && !onConnectRequest(this, *iterator, newSocket)) {
-                    newSocket->disconnect();
-                    socket->clients.erase(newSocket);
-                }
-            }
-        }else{
+        if(socket->type != Socket::Type::TCP_SERVER) {
             if(FD_ISSET(socket->handle, &readfds)) {
                 //Unable to read: disconnect
-                if(socket->showmanyc() <= 0) {
-                    if(onDisconnect) onDisconnect(this, *iterator);
-                    socket->disconnect();
-                    break;
-                }
+                if(socket->showmanyc() <= 0)
+                    disconnectSocket()
                 //Ensure that we only read data from the incoming packet (UDP)
                 if(socket->type == Socket::Type::UDP_PEER)
                     socket->advanceInputBuffer();
@@ -122,29 +120,38 @@ void SocketManager::listen(double secLeft) {
                         if(!element) break;
                         onReceiveMsgPack(this, *iterator, std::move(element));
                     }
-                }else if(onReceive)
-                    onReceive(this, *iterator);
-                checkSocketStillValid(sockets, socket, iterator)
+                }else if(onReceiveRaw)
+                    onReceiveRaw(this, *iterator);
+                checkSocketStillValid(sockets, iterator, socket)
             }
 
-            Socket::Status prev = (Socket::Status) socket->status;
             if(FD_ISSET(socket->handle, &writefds))
                 socket->status = Socket::Status::READY;
-            else
-                socket->status = (prev == Socket::Status::CONNECTING) ? Socket::Status::CONNECTING : Socket::Status::BUSY;
+            else if(socket->status != Socket::Status::CONNECTING)
+                socket->status = Socket::Status::BUSY;
 
-            if(onStatusChanged && socket->status != prev)
-                onStatusChanged(this, *iterator, prev);
-            checkSocketStillValid(sockets, socket, iterator)
+            if(onStatusChange && socket->status != prev)
+                onStatusChange(this, *iterator, prev);
+            checkSocketStillValid(sockets, iterator, socket)
 
             //Try to send data of MsgPack queue in socket
-            if(socket->status == Socket::Status::READY && msgPackSocket)
-                while(socket->pubsync() != EOF && msgPackSocket->queue.size()) {
-                    std::unique_ptr<MsgPack::Element>& element = msgPackSocket->queue.front();
-                    msgPackSocket->serializer << element;
-                    if(!element)
+            if(socket->status == Socket::Status::READY) {
+                if(msgPackSocket)
+                    while(msgPackSocket->queue.size()) {
+                        std::unique_ptr<MsgPack::Element>& element = msgPackSocket->queue.front();
+                        msgPackSocket->serializer << element;
+                        if(element) break;
                         msgPackSocket->queue.pop();
-                }
+                    }
+                socket->pubsync();
+            }
+        }else if(FD_ISSET(socket->handle, &readfds)) {
+            //Server got a new client
+            std::shared_ptr<Socket> newSocket = socket->accept();
+            if(onConnectRequest && !onConnectRequest(this, *iterator, newSocket)) {
+                newSocket->disconnect();
+                socket->clients.erase(newSocket);
+            }
         }
     }
 }
