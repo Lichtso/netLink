@@ -19,9 +19,9 @@ namespace netLink {
 
 #ifdef WIN32
 void init() {
-	WSADATA wsaData;
-	if(WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
-		throw Exception(Exception::ERROR_INIT);
+    WSADATA wsaData;
+    if(WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
+        throw Exception(Exception::ERROR_INIT);
 }
 #define snprintf _snprintf_s
 #else
@@ -33,11 +33,11 @@ static void readSockaddr(const struct sockaddr_storage* addr, std::string& host,
     if(addr->ss_family == AF_INET) {
         auto sin = reinterpret_cast<const struct sockaddr_in*>(addr);
         port = ntohs(sin->sin_port);
-		inet_ntop(addr->ss_family, (void*)&(sin->sin_addr), buffer, sizeof(buffer));
+        inet_ntop(addr->ss_family, (void*)&(sin->sin_addr), buffer, sizeof(buffer));
     }else{
         auto sin = reinterpret_cast<const struct sockaddr_in6*>(addr);
         port = ntohs(sin->sin6_port);
-		inet_ntop(addr->ss_family, (void*)&(sin->sin6_addr), buffer, sizeof(buffer));
+        inet_ntop(addr->ss_family, (void*)&(sin->sin6_addr), buffer, sizeof(buffer));
     }
     host = buffer;
 }
@@ -77,46 +77,46 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
 Socket::pos_type Socket::seekoff(Socket::off_type off, std::ios_base::seekdir way, std::ios_base::openmode which) {
     switch(way) {
         case std::ios_base::beg:
-			if (off < 0) break;
+            if (off < 0) break;
 
             if(which & std::ios_base::in) {
-				if(eback() + off >= egptr()) break;
+                if(eback() + off >= egptr()) break;
                 setg(eback(), eback()+off, egptr());
             }
 
             if(which & std::ios_base::out) {
-				if(pbase() + off >= epptr()) break;
+                if(pbase() + off >= epptr()) break;
                 setp(pbase(), epptr());
                 pbump(off);
             }
         return off;
         case std::ios_base::cur:
             if(which == std::ios_base::in) {
-				if(eback() + off >= egptr() || egptr() + off < eback()) break;
+                if(eback() + off >= egptr() || egptr() + off < eback()) break;
                 setg(eback(), gptr()+off, egptr());
                 return gptr()-eback();
             }else if(which == std::ios_base::out) {
-				if(pbase() + off >= epptr() || epptr() + off < pbase()) break;
+                if(pbase() + off >= epptr() || epptr() + off < pbase()) break;
                 pbump(off);
                 return pptr()-pbase();
             }else
-				break;
+                break;
         case std::ios_base::end:
-			if(off > 0) break;
+            if(off > 0) break;
 
             if(which == std::ios_base::in) {
-				if(egptr() + off < eback()) break;
+                if(egptr() + off < eback()) break;
                 setg(eback(), egptr()+off, egptr());
                 return gptr()-eback();
             }else if(which == std::ios_base::out) {
-				if(epptr() + off < pbase()) break;
+                if(epptr() + off < pbase()) break;
                 setp(pbase(), epptr());
                 pbump(off);
                 return pptr()-pbase();
             }else
                 break;
     }
-	return EOF;
+    return EOF;
 }
 
 Socket::pos_type Socket::seekpos(Socket::pos_type sp, std::ios_base::openmode which) {
@@ -199,11 +199,15 @@ void Socket::initSocket(bool blockingConnect) {
         }
 
         setBlockingMode(blockingConnect);
-		#ifdef WIN32
-		char flag = 1;
-		#else
-		int flag = 1;
-		#endif
+        #ifdef WIN32
+        char flag = 1;
+        #else
+        int flag = 1;
+        if(setsockopt(handle, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag)) == -1) {
+            disconnect();
+            throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
+        #endif
         if(setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1) {
             disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
@@ -225,7 +229,7 @@ void Socket::initSocket(bool blockingConnect) {
                 throw Exception(Exception::BAD_TYPE);
             case TCP_CLIENT:
                 if(connect(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1 && blockingConnect) {
-					closesocket(handle);
+                    closesocket(handle);
                     handle = -1;
                 }else if(blockingConnect)
                     status = READY;
@@ -234,7 +238,7 @@ void Socket::initSocket(bool blockingConnect) {
             break;
             case TCP_SERVER: {
                 if(bind(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1) {
-					closesocket(handle);
+                    closesocket(handle);
                     handle = -1;
                 }
 
@@ -245,7 +249,7 @@ void Socket::initSocket(bool blockingConnect) {
             } break;
             case UDP_PEER: {
                 if(bind(handle, nextAddr->ai_addr, nextAddr->ai_addrlen) == -1) {
-					closesocket(handle);
+                    closesocket(handle);
                     handle = -1;
                 }
 
@@ -268,41 +272,17 @@ void Socket::initSocket(bool blockingConnect) {
     }
 
     struct sockaddr_storage localAddr;
-	#ifdef WIN32
+    #ifdef WIN32
     int size = sizeof(localAddr);
-	#else
-	unsigned int size = sizeof(localAddr);
-	#endif
+    #else
+    unsigned int size = sizeof(localAddr);
+    #endif
     if(getsockname(handle, reinterpret_cast<struct sockaddr*>(&localAddr), &size) != 0) {
         disconnect();
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
     }
 
     readSockaddr(&localAddr, hostLocal, portLocal);
-}
-
-void Socket::setMulticastGroup(const struct sockaddr_storage* addr, bool join) {
-    if(ipVersion == IPv4) {
-        auto sin = reinterpret_cast<const struct sockaddr_in*>(addr)->sin_addr;
-        if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
-            struct ip_mreq mreq;
-            mreq.imr_multiaddr = sin;
-            mreq.imr_interface.s_addr = 0;
-
-			if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, (const char*)&mreq, sizeof(mreq)) == -1)
-				throw Exception(Exception::ERROR_SET_SOCK_OPT);
-        }
-    }else{
-        auto sin = reinterpret_cast<const struct sockaddr_in6*>(addr)->sin6_addr;
-        if(sin.s6_addr[0] == 0xFF) {
-            struct ipv6_mreq mreq;
-            mreq.ipv6mr_multiaddr = sin;
-            mreq.ipv6mr_interface = 0;
-
-			if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, (const char*)&mreq, sizeof(ipv6_mreq)) == -1)
-				throw Exception(Exception::ERROR_SET_SOCK_OPT);
-        }
-    }
 }
 
 void Socket::initAsTcpClient(const std::string& _hostRemote, unsigned _portRemote, bool waitUntilConnected) {
@@ -328,16 +308,16 @@ void Socket::initAsUdpPeer(const std::string& _hostLocal, unsigned _portLocal) {
 }
 
 Socket::Socket() :ipVersion(ANY), type(NONE), status(NOT_CONNECTED),
-	handle(-1), portLocal(0), portRemote(0) {
+    handle(-1), portLocal(0), portRemote(0) {
     #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
     setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
-	#else
-	setInputBufferSize(0);
+    #else
+    setInputBufferSize(0);
     #endif
-	#if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
+    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
     setOutputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
-	#else
-	setOutputBufferSize(0);
+    #else
+    setOutputBufferSize(0);
     #endif
 };
 
@@ -361,15 +341,15 @@ Socket::Status Socket::getStatus() const {
 }
 
 std::streamsize Socket::showmanyc() {
-	#ifdef WIN32
-	unsigned long result = 0;
-	if(ioctlsocket(handle, FIONREAD, &result)) {
-	#else
-	int result = 0;
-	if(ioctl(handle, FIONREAD, &result)) {
-	#endif
+    #ifdef WIN32
+    unsigned long result = 0;
+    if(ioctlsocket(handle, FIONREAD, &result)) {
+    #else
+    int result = 0;
+    if(ioctl(handle, FIONREAD, &result)) {
+    #endif
         disconnect();
-		throw Exception(Exception::ERROR_IOCTL);
+        throw Exception(Exception::ERROR_IOCTL);
     }else
         return result;
 }
@@ -397,22 +377,22 @@ std::streamsize Socket::advanceInputBuffer() {
 }
 
 std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
-	if(type == TCP_SERVER)
-		throw Exception(Exception::BAD_TYPE);
-	if(status != Socket::Status::READY && status != Socket::Status::BUSY)
-		return 0;
+    if(type == TCP_SERVER)
+        throw Exception(Exception::BAD_TYPE);
+    if(status != Socket::Status::READY && status != Socket::Status::BUSY)
+        return 0;
     size = std::min(size, showmanyc());
     if(size == 0)
-		return 0;
+        return 0;
 
     switch(type) {
         case UDP_PEER: {
             struct sockaddr_storage remoteAddr;
-			#ifdef WIN32
-			int addrSize = sizeof(remoteAddr);
-			#else
-			unsigned int addrSize = sizeof(remoteAddr);
-			#endif
+            #ifdef WIN32
+            int addrSize = sizeof(remoteAddr);
+            #else
+            unsigned int addrSize = sizeof(remoteAddr);
+            #endif
             int result = recvfrom(handle, (char*)buffer, size, 0, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
 
             if(result <= 0) {
@@ -429,11 +409,11 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
             int result = recv(handle, (char*)buffer, size, 0);
 
             if(result <= 0)
-				throw Exception(Exception::ERROR_READ);
+                throw Exception(Exception::ERROR_READ);
 
             return result;
         }
-		default:
+        default:
         case NONE:
         case TCP_SERVER:
             throw Exception(Exception::BAD_TYPE);
@@ -441,10 +421,10 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
 }
 
 std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
-	if(type == TCP_SERVER)
-		throw Exception(Exception::BAD_TYPE);
-	if(status != Socket::Status::READY || size == 0)
-		return 0;
+    if(type == TCP_SERVER)
+        throw Exception(Exception::BAD_TYPE);
+    if(status != Socket::Status::READY || size == 0)
+        return 0;
 
     switch(type) {
         case UDP_PEER: {
@@ -453,10 +433,10 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
             size_t sentBytes = 0;
             while(sentBytes < (size_t)size) {
                 int result = ::sendto(handle, (const char*)buffer + sentBytes, size - sentBytes, 0, info->ai_addr, info->ai_addrlen);
-				if(result <= 0) {
-					status = BUSY;
-	                throw Exception(Exception::ERROR_SEND);
-				}
+                if(result <= 0) {
+                    status = BUSY;
+                    throw Exception(Exception::ERROR_SEND);
+                }
                 sentBytes += result;
             }
 
@@ -467,15 +447,15 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
             size_t sentBytes = 0;
             while(sentBytes < (size_t)size) {
                 int result = ::send(handle, (const char*)buffer + sentBytes, size - sentBytes, 0);
-				if(result <= 0) {
-					status = BUSY;
-	                throw Exception(Exception::ERROR_SEND);
-				}
+                if(result <= 0) {
+                    status = BUSY;
+                    throw Exception(Exception::ERROR_SEND);
+                }
                 sentBytes += result;
             }
             return sentBytes;
         }
-		default:
+        default:
         case NONE:
         case TCP_SERVER:
             throw Exception(Exception::BAD_TYPE);
@@ -483,21 +463,21 @@ std::streamsize Socket::send(const char_type* buffer, std::streamsize size) {
 }
 
 std::streamsize Socket::redirect(const std::vector<std::shared_ptr<Socket>>& destinations) {
-	if(type == TCP_SERVER)
-		throw Exception(Exception::BAD_TYPE);
+    if(type == TCP_SERVER)
+        throw Exception(Exception::BAD_TYPE);
 
-	std::streamsize size = 0;
-	while(in_avail()) {
-		auto length = egptr()-gptr();
-		for(const auto& destination : destinations)
-			if(destination->sputn(gptr(), length) < length)
-				throw Exception(Exception::ERROR_SEND);
-		gbump(length);
-		size += length;
-		advanceInputBuffer();
-	}
+    std::streamsize size = 0;
+    while(in_avail()) {
+        auto length = egptr()-gptr();
+        for(const auto& destination : destinations)
+            if(destination->sputn(gptr(), length) < length)
+                throw Exception(Exception::ERROR_SEND);
+        gbump(length);
+        size += length;
+        advanceInputBuffer();
+    }
 
-	return size;
+    return size;
 }
 
 std::streamsize Socket::getInputBufferSize() {
@@ -510,49 +490,49 @@ std::streamsize Socket::getOutputBufferSize() {
 
 void Socket::setInputBufferSize(std::streamsize n) {
     if(eback()) delete[] eback();
-	if(type != TCP_SERVER && n > 0) {
-    	char_type* readBuffer = new char_type[n];
-    	setg(readBuffer, readBuffer, readBuffer);
-		inputIntermediateSize = n;
-	}else{
-		setg(NULL, NULL, NULL);
-    	inputIntermediateSize = 0;
-	}
+    if(type != TCP_SERVER && n > 0) {
+        char_type* readBuffer = new char_type[n];
+        setg(readBuffer, readBuffer, readBuffer);
+        inputIntermediateSize = n;
+    }else{
+        setg(NULL, NULL, NULL);
+        inputIntermediateSize = 0;
+    }
 }
 
 void Socket::setOutputBufferSize(std::streamsize n) {
     if(pbase()) delete[] pbase();
-	if(type != TCP_SERVER && n > 0) {
-    	char_type* writeBuffer = new char_type[n];
-    	setp(writeBuffer, writeBuffer+n);
-	}else
-		setp(NULL, NULL);
+    if(type != TCP_SERVER && n > 0) {
+        char_type* writeBuffer = new char_type[n];
+        setp(writeBuffer, writeBuffer+n);
+    }else
+        setp(NULL, NULL);
 }
 
 void Socket::setBlockingMode(bool blocking) {
-	#ifdef WIN32
-	unsigned long flag = !blocking;
-	if(ioctlsocket(handle, FIONBIO, &flag) != 0)
-	#else
+    #ifdef WIN32
+    unsigned long flag = !blocking;
+    if(ioctlsocket(handle, FIONBIO, &flag) != 0)
+    #else
     int flags = fcntl(handle, F_GETFL);
     if(blocking)
         flags &= ~O_NONBLOCK;
     else
         flags |= O_NONBLOCK;
     if(fcntl(handle, F_SETFL, flags) == -1)
-	#endif
-		throw Exception(Exception::ERROR_IOCTL);
+    #endif
+        throw Exception(Exception::ERROR_IOCTL);
 }
 
 void Socket::setBroadcast(bool active) {
     if(type != UDP_PEER || ipVersion != IPv4)
         throw Exception(Exception::BAD_PROTOCOL);
 
-	#ifdef WIN32
-	char flag = 1;
-	#else
-	int flag = 1;
-	#endif
+    #ifdef WIN32
+    char flag = 1;
+    #else
+    int flag = 1;
+    #endif
     if(setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &flag, sizeof(flag)) == -1)
         throw Exception(Exception::ERROR_SET_SOCK_OPT);
 }
@@ -561,18 +541,33 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
     if(type != UDP_PEER)
         throw Exception(Exception::BAD_PROTOCOL);
 
-    struct sockaddr_storage addr;
     if(ipVersion == IPv4) {
-        auto sin = reinterpret_cast<struct sockaddr_in*>(&addr);
-        if(inet_pton(AF_INET, address.c_str(), &sin->sin_addr) == -1)
+        struct in_addr sin;
+        if(inet_pton(AF_INET, address.c_str(), &sin) == -1)
             throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
-    }else{
-        auto sin = reinterpret_cast<struct sockaddr_in6*>(&addr);
-        if(inet_pton(AF_INET6, address.c_str(), &sin->sin6_addr) == -1)
-            throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
-    }
 
-    setMulticastGroup(&addr, join);
+        if((ntohl(sin.s_addr) & 0xF0000000) == 0xE0000000) {
+            struct ip_mreq mreq;
+            mreq.imr_multiaddr = sin;
+            mreq.imr_interface.s_addr = 0;
+
+            if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, (const char*)&mreq, sizeof(mreq)) == -1)
+                throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
+    }else{
+        struct in6_addr sin;
+        if(inet_pton(AF_INET6, address.c_str(), &sin) == -1)
+            throw Exception(Exception::ERROR_RESOLVING_ADDRESS);
+
+        if(sin.s6_addr[0] == 0xFF) {
+            struct ipv6_mreq mreq;
+            mreq.ipv6mr_multiaddr = sin;
+            mreq.ipv6mr_interface = 0;
+
+            if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, (const char*)&mreq, sizeof(ipv6_mreq)) == -1)
+                throw Exception(Exception::ERROR_SET_SOCK_OPT);
+        }
+    }
 }
 
 std::shared_ptr<Socket> Socket::accept() {
@@ -580,40 +575,40 @@ std::shared_ptr<Socket> Socket::accept() {
         throw Exception(Exception::BAD_TYPE);
 
     struct sockaddr_storage remoteAddr;
-	#ifdef WIN32
-	int addrSize = sizeof(remoteAddr);
-	#else
-	unsigned int addrSize = sizeof(remoteAddr);
-	#endif
+    #ifdef WIN32
+    int addrSize = sizeof(remoteAddr);
+    #else
+    unsigned int addrSize = sizeof(remoteAddr);
+    #endif
 
     int clientHandle = ::accept(handle, reinterpret_cast<struct sockaddr*>(&remoteAddr), &addrSize);
     if(clientHandle == -1) return nullptr;
 
     std::shared_ptr<Socket> client = SocketFactory();
-	client->ipVersion = ipVersion;
-	client->type = TCP_SERVERS_CLIENT;
-	client->status = READY;
-	client->handle = clientHandle;
-	client->hostLocal = hostLocal;
-	client->portLocal = portLocal;
-	readSockaddr(&remoteAddr, client->hostRemote, client->portRemote);
-	client->setBlockingMode(false);
+    client->ipVersion = ipVersion;
+    client->type = TCP_SERVERS_CLIENT;
+    client->status = READY;
+    client->handle = clientHandle;
+    client->hostLocal = hostLocal;
+    client->portLocal = portLocal;
+    readSockaddr(&remoteAddr, client->hostRemote, client->portRemote);
+    client->setBlockingMode(false);
     clients.insert(client);
 
     return client;
 }
 
 void Socket::disconnect() {
-	ipVersion = ANY;
-	type = NONE;
+    ipVersion = ANY;
+    type = NONE;
     status = NOT_CONNECTED;
     setInputBufferSize(getInputBufferSize());
     setOutputBufferSize(getOutputBufferSize());
     clients.clear();
     if(handle != -1) {
-		closesocket(handle);
-		handle = -1;
-	}
+        closesocket(handle);
+        handle = -1;
+    }
 }
 
 };

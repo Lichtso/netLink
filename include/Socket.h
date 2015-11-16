@@ -38,7 +38,7 @@ namespace netLink {
         //Buffer management and positioning
         pos_type seekoff(off_type off, std::ios_base::seekdir way, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
         pos_type seekpos(pos_type sp, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out);
-		int sync();
+        int sync();
 
         //Input functions (get)
         std::streamsize inputIntermediateSize;
@@ -84,11 +84,6 @@ namespace netLink {
          @param blocking Waits for connection if true
         */
         void initSocket(bool blocking);
-        /*! Join or leave a multicast group
-         @param addr Address of the multicast group
-         @param join true joins the group and false leaves it
-        */
-        void setMulticastGroup(const struct sockaddr_storage* addr, bool join);
         //! Generates new sockets for client connections of a server
         virtual std::shared_ptr<Socket> SocketFactory() {
             return std::shared_ptr<Socket>(new Socket());

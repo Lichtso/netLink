@@ -13,7 +13,7 @@ C++ 11 KISS principle networking library.
 * Join/Leave UDP-Multicast groups
 * UDP-IPv4-Broadcast
 * Operating Systems: Mac OS, Linux, Windows
-* MsgPack v5 support: http://msgpack.org
+* MsgPack v5 support: http://msgpack.org so it can communicate with programs running in other programming languages
 * Optional: Upgrade std::string with UTF8 support
 * Socket can be used as std::streambuf
 * SocketManager calls various events for (dis)connecting, receiving data, connection requests and status changes
