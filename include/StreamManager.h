@@ -52,7 +52,7 @@ namespace MsgPack {
         /*! Tries to serialize one MsgPack::Element into the streamBuffer
          @param element std::unique_ptr containing the element
          */
-        Serializer& operator<<(std::unique_ptr<Element>& element) {
+        Serializer& operator<<(std::unique_ptr<Element>&& element) {
             Serializer::serialize(element);
             return *this;
         }
