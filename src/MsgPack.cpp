@@ -144,8 +144,8 @@ namespace MsgPack {
     }
 
     std::streamsize Primitive::serialize(int64_t& pos, std::basic_streambuf<char>* streamBuffer, std::streamsize bytes) {
-        if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) >= 0)
-            return (++pos);
+        if(bytes > 0 && pos == 0 && streamBuffer->sputc(type) != std::streambuf::traits_type::eof())
+            return ++pos;
         else
             return 0;
     }
