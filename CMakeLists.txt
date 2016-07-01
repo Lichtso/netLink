@@ -23,8 +23,9 @@ if(WIN32)
     set(ver ${CMAKE_SYSTEM_VERSION})
     string(REPLACE "." "" ver ${ver})
     string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
+    # https://msdn.microsoft.com/en-us/library/6sehtctf.aspx
     add_definitions(-D_WIN32_WINNT=0x${ver})
-    add_definitions(-DWIN32)
+    add_definitions(-DWINVER=0x${ver})
 endif(WIN32)
 
 if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

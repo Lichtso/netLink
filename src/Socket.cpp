@@ -17,7 +17,7 @@
 
 namespace netLink {
 
-#ifdef WIN32
+#ifdef WINVER
 void init() {
     WSADATA wsaData;
     if(WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
@@ -199,7 +199,7 @@ void Socket::initSocket(bool blockingConnect) {
         }
 
         setBlockingMode(blockingConnect);
-        #ifdef WIN32
+        #ifdef WINVER
         char flag = 1;
         #else
         int flag = 1;
@@ -272,7 +272,7 @@ void Socket::initSocket(bool blockingConnect) {
     }
 
     struct sockaddr_storage localAddr;
-    #ifdef WIN32
+    #ifdef WINVER
     int size = sizeof(localAddr);
     #else
     unsigned int size = sizeof(localAddr);
@@ -341,7 +341,7 @@ Socket::Status Socket::getStatus() const {
 }
 
 std::streamsize Socket::showmanyc() {
-    #ifdef WIN32
+    #ifdef WINVER
     unsigned long result = 0;
     if(ioctlsocket(handle, FIONREAD, &result)) {
     #else
@@ -388,7 +388,7 @@ std::streamsize Socket::receive(char_type* buffer, std::streamsize size) {
     switch(type) {
         case UDP_PEER: {
             struct sockaddr_storage remoteAddr;
-            #ifdef WIN32
+            #ifdef WINVER
             int addrSize = sizeof(remoteAddr);
             #else
             unsigned int addrSize = sizeof(remoteAddr);
@@ -510,7 +510,7 @@ void Socket::setOutputBufferSize(std::streamsize n) {
 }
 
 void Socket::setBlockingMode(bool blocking) {
-    #ifdef WIN32
+    #ifdef WINVER
     unsigned long flag = !blocking;
     if(ioctlsocket(handle, FIONBIO, &flag) != 0)
     #else
@@ -528,7 +528,7 @@ void Socket::setBroadcast(bool active) {
     if(type != UDP_PEER || ipVersion != IPv4)
         throw Exception(Exception::BAD_PROTOCOL);
 
-    #ifdef WIN32
+    #ifdef WINVER
     char flag = 1;
     #else
     int flag = 1;
@@ -575,7 +575,7 @@ std::shared_ptr<Socket> Socket::accept() {
         throw Exception(Exception::BAD_TYPE);
 
     struct sockaddr_storage remoteAddr;
-    #ifdef WIN32
+    #ifdef WINVER
     int addrSize = sizeof(remoteAddr);
     #else
     unsigned int addrSize = sizeof(remoteAddr);

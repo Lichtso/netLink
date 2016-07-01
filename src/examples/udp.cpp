@@ -17,7 +17,7 @@
 #include "../include/netLink.h"
 
 int main(int argc, char** argv) {
-    #ifdef WIN32
+    #ifdef WINVER
     netLink::init();
     #endif
 
