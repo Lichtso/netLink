@@ -122,7 +122,7 @@ namespace MsgPack {
         //! Returns the MsgPack::Type
         virtual Type getType() const = 0;
         //! Returns the size in bytes this MsgPack::Element takes if completely serialized
-        virtual uint32_t getSizeInBytes() const { return getEndPos(); };
+        virtual uint32_t getSizeInBytes() const { return static_cast<uint32_t>(getEndPos()); };
     };
 
 };

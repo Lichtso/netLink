@@ -231,11 +231,11 @@ namespace MsgPack {
     }
 
     uint32_t Header::getSizeInBytes() const {
-        return getHeaderLength()+getEndPos();
+        return static_cast<uint32_t>(getHeaderLength()+getEndPos());
     }
 
     uint32_t Header::getLength() const {
-        return getEndPos();
+        return static_cast<uint32_t>(getEndPos());
     }
 
 
@@ -761,7 +761,7 @@ namespace MsgPack {
     }
 
     uint32_t ArrayHeader::getSizeInBytes() const {
-        return getHeaderLength();
+        return static_cast<uint32_t>(getHeaderLength());
     }
 
     int64_t ArrayHeader::getHeaderLength() const {
@@ -817,7 +817,7 @@ namespace MsgPack {
     }
 
     uint32_t MapHeader::getSizeInBytes() const {
-        return getHeaderLength();
+        return static_cast<uint32_t>(getHeaderLength());
     }
 
     uint32_t MapHeader::getLength() const {
@@ -874,8 +874,8 @@ namespace MsgPack {
     }
 
     uint32_t Array::getSizeInBytes() const {
-        int64_t size = getHeaderLength();
-        uint32_t len = elements.size();
+        uint32_t size = getHeaderLength(),
+                 len = elements.size();
         for(uint32_t i = 1; i < len; i ++)
             size += elements[i]->getSizeInBytes();
         return size;
@@ -941,8 +941,8 @@ namespace MsgPack {
     }
 
     uint32_t Map::getSizeInBytes() const {
-        int64_t size = getHeaderLength();
-        uint32_t len = elements.size();
+        uint32_t size = getHeaderLength(),
+                 len = elements.size();
         for(uint32_t i = 1; i < len; i ++)
             size += elements[i]->getSizeInBytes();
         return size;

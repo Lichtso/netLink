@@ -16,7 +16,7 @@
 #include "Utf8.h"
 
 namespace utf8 {
-    const char bom[] = { static_cast<char>(0xEF), static_cast<char>(0xBB), static_cast<char>(0xBF), 0 };
+    const char bom[] = "\xEF\xBB\xBF";
 
     void setBOM(std::string& str) {
         if(checkBOM(str.begin())) return;
@@ -60,22 +60,22 @@ namespace utf8 {
 	void append(std::string& str, char32_t c) {
 		switch(byteSize(c)) {
 			case 1:
-			str.push_back(c);
+			str.push_back(static_cast<char>(c));
 			break;
 			case 2:
-			str.push_back(0xC0 | (c >> 6));
-			str.push_back(0x80 | (c & 0x3F));
+			str.push_back(static_cast<char>(0xC0 | (c >> 6)));
+			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
 			break;
 			case 3:
-			str.push_back(0xE0 | (c >> 12));
-			str.push_back(0x80 | ((c >> 6) & 0x3F));
-			str.push_back(0x80 | (c & 0x3F));
+			str.push_back(static_cast<char>(0xE0 | (c >> 12)));
+			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
 			break;
 			case 4:
-			str.push_back(0xF0 | (c >> 18));
-			str.push_back(0x80 | ((c >> 12) & 0x3F));
-			str.push_back(0x80 | ((c >> 6) & 0x3F));
-			str.push_back(0x80 | (c & 0x3F));
+			str.push_back(static_cast<char>(0xF0 | (c >> 18)));
+			str.push_back(static_cast<char>(0x80 | ((c >> 12) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
 			break;
 		}
 	}
