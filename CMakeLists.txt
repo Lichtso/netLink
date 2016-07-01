@@ -20,12 +20,18 @@ set_target_properties(static PROPERTIES DEBUG_POSTFIX -d)
 
 if(WIN32)
     target_link_libraries(shared ws2_32)
-    set(ver ${CMAKE_SYSTEM_VERSION})
-    string(REPLACE "." "" ver ${ver})
-    string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
     # https://msdn.microsoft.com/en-us/library/6sehtctf.aspx
-    add_definitions(-D_WIN32_WINNT=0x${ver})
-    add_definitions(-DWINVER=0x${ver})
+    if(${CMAKE_SYSTEM_VERSION} EQUAL "6.1") # Windows 7
+        add_definitions(-D_WIN32_WINNT=0x0601 -DWINVER=0x0601)
+    elseif(${CMAKE_SYSTEM_VERSION} EQUAL "6.2") # Windows 8
+        add_definitions(-D_WIN32_WINNT=0x0602 -DWINVER=0x0602)
+    elseif(${CMAKE_SYSTEM_VERSION} EQUAL "6.3") # Windows 8.1
+        add_definitions(-D_WIN32_WINNT=0x0603 -DWINVER=0x0603)
+    elseif(${CMAKE_SYSTEM_VERSION} EQUAL "10.0") # Windows 10
+        add_definitions(-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00)
+    else()
+        message(SEND_ERROR "Unknown windows version")
+    endif()
 endif(WIN32)
 
 if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
