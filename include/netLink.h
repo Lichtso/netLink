@@ -40,8 +40,9 @@ namespace netLink {
 
         /*! Listens a periode time
          @param sec Maximum time to wait in seconds or negative values to wait indefinitely
+         @return Seconds of the wait interval remaining (caused by early wakeup or nothing to wait for)
          */
-        void listen(double sec = 0.0);
+        double listen(double sec = 0.0);
     };
 
 };

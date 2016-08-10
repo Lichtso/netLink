@@ -47,7 +47,7 @@ std::shared_ptr<Socket> SocketManager::newMsgPackSocket() {
     return socket;
 }
 
-void SocketManager::listen(double secLeft) {
+double SocketManager::listen(double secLeft) {
     fd_set readfds, writefds, exceptfds;
     FD_ZERO(&readfds);
     FD_ZERO(&writefds);
@@ -81,7 +81,7 @@ void SocketManager::listen(double secLeft) {
         }else
             FD_SET(socket->handle, &writefds);
     }
-    if(maxHandle == -1) return;
+    if(maxHandle == -1) return secLeft;
 
     struct timeval timeout, *timeoutPtr;
     if(secLeft >= 0.0) {
@@ -154,6 +154,8 @@ void SocketManager::listen(double secLeft) {
             }
         }
     }
+
+    return (timeoutPtr) ? timeout.tv_sec + timeout.tv_usec / 1000000.0 : 0.0;
 }
 
 };

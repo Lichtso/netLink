@@ -198,6 +198,15 @@ void Socket::initSocket(bool blockingConnect) {
             continue;
         }
 
+        switch(nextAddr->ai_family) {
+            case AF_INET:
+                ipVersion = IPv4;
+            break;
+            case AF_INET6:
+                ipVersion = IPv6;
+            break;
+        }
+
         setBlockingMode(blockingConnect);
         #ifdef WINVER
         char flag = 1;
@@ -212,14 +221,12 @@ void Socket::initSocket(bool blockingConnect) {
             disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
-
-        switch(nextAddr->ai_family) {
-            case AF_INET:
-                ipVersion = IPv4;
-            break;
-            case AF_INET6:
-                ipVersion = IPv6;
-            break;
+        if(ipVersion == IPv6) {
+            flag = 0;
+            if(setsockopt(handle, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) == -1) {
+                disconnect();
+                throw Exception(Exception::ERROR_SET_SOCK_OPT);
+            }
         }
 
         switch(type) {

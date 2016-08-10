@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
             break;
             case netLink::Socket::Status::NOT_CONNECTED:
                 if(prev == netLink::Socket::Status::CONNECTING)
-                    std::cout << "Connecting to " << socket->hostRemote << ":" << socket->portRemote << std::endl << " failed";
+                    std::cout << "Connecting to " << socket->hostRemote << ":" << socket->portRemote << " failed" << std::endl;
                 else
                     std::cout << "Lost connection of " << socket->hostRemote << ":" << socket->portRemote << std::endl;
             break;
