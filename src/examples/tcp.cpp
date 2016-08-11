@@ -86,23 +86,24 @@ int main(int argc, char** argv) {
 
     //Ask user for a nice IP address
     std::cout << "Enter a IP-Adress to connect to a sever or '*' to start a server:" << std::endl;
-    while(socket->getStatus() == netLink::Socket::Status::NOT_CONNECTED) {
+    while(1) {
         try {
             std::cin >> socket->hostRemote;
-
             //Init socket as TCP server or client on port 3823
             if(socket->hostRemote == "*")
                 socket->initAsTcpServer("*", 3823);
             else
                 socket->initAsTcpClient(socket->hostRemote, 3823);
-        }catch(netLink::Exception exc) {
+            break;
+        } catch(netLink::Exception exc) {
             std::cout << "Address is already in use, please try again..." << std::endl;
         }
     }
 
     //Let the SocketManager poll from all sockets, events will be triggered here
-    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED)
+    do
         socketManager.listen();
+    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED);
 
     std::cout << "Quit" << std::endl;
 

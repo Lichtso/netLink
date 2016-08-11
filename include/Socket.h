@@ -134,8 +134,8 @@ namespace netLink {
         //! Returns the SocketType of the socket
         Type getType() const;
 
-        //! Returns the SocketStatus of the socket
-        Status getStatus() const;
+        //! Returns the SocketStatus of the socket (might cause it to disconnect)
+        Status getStatus();
 
         //! Returns the outstanding bytes in system cache to read
         std::streamsize showmanyc();

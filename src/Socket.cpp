@@ -340,7 +340,20 @@ Socket::Type Socket::getType() const {
     return type;
 }
 
-Socket::Status Socket::getStatus() const {
+Socket::Status Socket::getStatus() {
+    if(status != NOT_CONNECTED) {
+        int error;
+        #ifdef WINVER
+        int length = sizeof(error);
+        #else
+        socklen_t length = sizeof(error);
+        #endif
+        getsockopt(handle, SOL_SOCKET, SO_ERROR, &error, &length);
+        if(error != 0) {
+            disconnect();
+            return NOT_CONNECTED;
+        }
+    }
     if(type == TCP_SERVER)
         return (status == NOT_CONNECTED) ? NOT_CONNECTED : LISTENING;
     else
@@ -606,16 +619,16 @@ std::shared_ptr<Socket> Socket::accept() {
 }
 
 void Socket::disconnect() {
+    if(handle == -1)
+        return;
     ipVersion = ANY;
     type = NONE;
     status = NOT_CONNECTED;
     setInputBufferSize(getInputBufferSize());
     setOutputBufferSize(getOutputBufferSize());
     clients.clear();
-    if(handle != -1) {
-        closesocket(handle);
-        handle = -1;
-    }
+    closesocket(handle);
+    handle = -1;
 }
 
 };
