@@ -26,8 +26,7 @@
         continue; \
     }
 
-#define disconnectSocket() { \
-    socket->disconnect(); \
+#define removeSocket() { \
     if(onStatusChange) onStatusChange(this, *iterator, prev); \
     sockets.erase(*iterator); \
     selection.erase(*iterator); \
@@ -38,8 +37,9 @@
     Socket* socket = (*iterator).get(); \
     MsgPackSocket* msgPackSocket = dynamic_cast<MsgPackSocket*>(socket); \
     Socket::Status prev = socket->getStatus(); \
-    if(prev == Socket::Status::NOT_CONNECTED || FD_ISSET(socket->handle, &exceptfds)) \
-        disconnectSocket()
+    socket->disconnectOnError(); \
+    if(socket->getStatus() == Socket::Status::NOT_CONNECTED) \
+        removeSocket()
 
 namespace netLink {
 
@@ -55,11 +55,10 @@ std::shared_ptr<Socket> SocketManager::newMsgPackSocket() {
     return socket;
 }
 
-void SocketManager::listen(double secLeft) {
-    fd_set readfds, writefds, exceptfds;
+void SocketManager::listen(double waitUpToSeconds) {
+    fd_set readfds, writefds;
     FD_ZERO(&readfds);
     FD_ZERO(&writefds);
-    FD_ZERO(&exceptfds);
 
     int maxHandle = -1;
     std::set<std::shared_ptr<Socket>> selection;
@@ -70,7 +69,6 @@ void SocketManager::listen(double secLeft) {
         // Add the socket to the listen set
         maxHandle = std::max(maxHandle, socket->handle);
         FD_SET(socket->handle, &readfds);
-        FD_SET(socket->handle, &exceptfds);
         selection.insert(*iterator);
 
         if(socket->type == Socket::Type::TCP_SERVER) {
@@ -83,7 +81,6 @@ void SocketManager::listen(double secLeft) {
                 maxHandle = std::max(maxHandle, client->handle);
                 FD_SET(client->handle, &readfds);
                 FD_SET(client->handle, &writefds);
-                FD_SET(client->handle, &exceptfds);
                 selection.insert(*clientIterator);
             }
         } else
@@ -96,7 +93,7 @@ void SocketManager::listen(double secLeft) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
-    if(select(maxHandle+1, NULL, &writefds, &exceptfds, timeoutPtr) == -1)
+    if(select(maxHandle+1, NULL, &writefds, NULL, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
 
     foreach_e(selection, iterator) {
@@ -131,13 +128,13 @@ void SocketManager::listen(double secLeft) {
     if(selection.empty())
         return;
 
-    if(secLeft >= 0.0) {
-        timeout.tv_sec = secLeft;
-        timeout.tv_usec = fmod(secLeft, 1.0) * 1000000.0;
+    if(waitUpToSeconds >= 0.0) {
+        timeout.tv_sec = waitUpToSeconds;
+        timeout.tv_usec = fmod(waitUpToSeconds, 1.0) * 1000000.0;
     } else
         timeoutPtr = NULL;
 
-    if(select(maxHandle+1, &readfds, NULL, &exceptfds, timeoutPtr) == -1)
+    if(select(maxHandle+1, &readfds, NULL, NULL, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
 
     foreach_e(selection, iterator) {
@@ -155,8 +152,10 @@ void SocketManager::listen(double secLeft) {
             }
         } else {
             // Can not read: disconnect
-            if(socket->showmanyc() <= 0)
-                disconnectSocket()
+            if(socket->showmanyc() <= 0) {
+                socket->disconnect();
+                removeSocket()
+            }
 
             // Ensure that we only read data from the incoming packet (UDP)
             if(socket->type == Socket::Type::UDP_PEER)

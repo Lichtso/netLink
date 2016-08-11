@@ -340,20 +340,7 @@ Socket::Type Socket::getType() const {
     return type;
 }
 
-Socket::Status Socket::getStatus() {
-    if(status != NOT_CONNECTED) {
-        int error;
-        #ifdef WINVER
-        int length = sizeof(error);
-        #else
-        socklen_t length = sizeof(error);
-        #endif
-        getsockopt(handle, SOL_SOCKET, SO_ERROR, &error, &length);
-        if(error != 0) {
-            disconnect();
-            return NOT_CONNECTED;
-        }
-    }
+Socket::Status Socket::getStatus() const {
     if(type == TCP_SERVER)
         return (status == NOT_CONNECTED) ? NOT_CONNECTED : LISTENING;
     else
@@ -629,6 +616,21 @@ void Socket::disconnect() {
     clients.clear();
     closesocket(handle);
     handle = -1;
+}
+
+void Socket::disconnectOnError() {
+    if(status == NOT_CONNECTED)
+        return;
+    int error;
+    #ifdef WINVER
+    int length = sizeof(error);
+    getsockopt(handle, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &length);
+    #else
+    socklen_t length = sizeof(error);
+    getsockopt(handle, SOL_SOCKET, SO_ERROR, &error, &length);
+    #endif
+    if(error != 0)
+        disconnect();
 }
 
 };

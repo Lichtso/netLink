@@ -101,9 +101,8 @@ int main(int argc, char** argv) {
     }
 
     //Let the SocketManager poll from all sockets, events will be triggered here
-    do
+    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED)
         socketManager.listen();
-    while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED);
 
     std::cout << "Quit" << std::endl;
 

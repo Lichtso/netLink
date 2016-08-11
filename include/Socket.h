@@ -134,8 +134,8 @@ namespace netLink {
         //! Returns the SocketType of the socket
         Type getType() const;
 
-        //! Returns the SocketStatus of the socket (might cause it to disconnect)
-        Status getStatus();
+        //! Returns the SocketStatus of the socket
+        Status getStatus() const;
 
         //! Returns the outstanding bytes in system cache to read
         std::streamsize showmanyc();
@@ -195,6 +195,8 @@ namespace netLink {
         std::shared_ptr<Socket> accept();
         //! Disconnects the socket, deletes the intermediate buffers and sets the handle to -1
         void disconnect();
+        //! Check if there is a problem with this socket and disconnect in case there is one
+        void disconnectOnError();
     };
 
 };

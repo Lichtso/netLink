@@ -39,9 +39,9 @@ namespace netLink {
         std::shared_ptr<Socket> newMsgPackSocket();
 
         /*! Listens a periode time
-         @param sec Maximum time to wait for incoming data in seconds or negative values to wait indefinitely
+         @param waitUpToSeconds Maximum time to wait for incoming data in seconds or negative values to wait indefinitely
          */
-        void listen(double sec = 0.0);
+        void listen(double waitUpToSeconds = 0.0);
     };
 
 };
