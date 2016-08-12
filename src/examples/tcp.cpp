@@ -23,18 +23,18 @@ int main(int argc, char** argv) {
 
     netLink::SocketManager socketManager;
 
-    //Allocate a new socket and insert it into the SocketManager
+    // Allocate a new socket and insert it into the SocketManager
     std::shared_ptr<netLink::Socket> socket = socketManager.newMsgPackSocket();
 
-    //Define a callback, fired when a new client tries to connect
+    // Define a callback, fired when a new client tries to connect
     socketManager.onConnectRequest = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> serverSocket, std::shared_ptr<netLink::Socket> clientSocket) {
         std::cout << "Accepted connection from " << clientSocket->hostRemote << ":" << clientSocket->portRemote << std::endl;
 
-        //Accept all new connections
+        // Accept all new connections
         return true;
     };
 
-    //Define a callback, fired when a sockets state changes
+    // Define a callback, fired when a sockets state changes
     socketManager.onStatusChange = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, netLink::Socket::Status prev) {
         netLink::MsgPackSocket& msgPackSocket = *static_cast<netLink::MsgPackSocket*>(socket.get());
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
             case netLink::Socket::Status::READY:
                 std::cout << "Connection got accepted at " << socket->hostRemote << ":" << socket->portRemote << std::endl;
 
-                //Prepare a MsgPack encoded message
+                // Prepare a MsgPack encoded message
                 msgPackSocket << MsgPack__Factory(MapHeader(2));
                 msgPackSocket << MsgPack::Factory("type");
                 msgPackSocket << MsgPack::Factory("post");
@@ -61,9 +61,9 @@ int main(int argc, char** argv) {
         }
     };
 
-    //Define a callback, fired when a socket receives data
+    // Define a callback, fired when a socket receives data
     socketManager.onReceiveMsgPack = [](netLink::SocketManager* manager, std::shared_ptr<netLink::Socket> socket, std::unique_ptr<MsgPack::Element> element) {
-        //hostRemote and portRemote are now set to the origin of the last received message
+        // hostRemote and portRemote are now set to the origin of the last received message
         std::cout << "Received data from " << socket->hostRemote << ":" << socket->portRemote << ": " << *element << std::endl;
 
         // Parse the *element
@@ -84,12 +84,12 @@ int main(int argc, char** argv) {
         }
     };
 
-    //Ask user for a nice IP address
+    // Ask user for a nice IP address
     std::cout << "Enter a IP-Adress to connect to a sever or '*' to start a server:" << std::endl;
     while(1) {
         try {
             std::cin >> socket->hostRemote;
-            //Init socket as TCP server or client on port 3823
+            // Init socket as TCP server or client on port 3823
             if(socket->hostRemote == "*")
                 socket->initAsTcpServer("*", 3823);
             else
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    //Let the SocketManager poll from all sockets, events will be triggered here
+    // Let the SocketManager poll from all sockets, events will be triggered here
     while(socket->getStatus() != netLink::Socket::Status::NOT_CONNECTED)
         socketManager.listen();
 

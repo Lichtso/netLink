@@ -28,14 +28,14 @@ namespace utf8 {
 	//! Decrements a Utf8 string iterator by one character
 	template<typename iterator>
 	iterator& decrement(iterator& i) {
-        while((*(--i) & 0xC0) == 0x80);
+        while((*(--i)&0xC0) == 0x80);
         return i;
     }
 
 	//! Increments a Utf8 string iterator by one character
 	template<typename iterator>
 	iterator& increment(iterator& i) {
-        while((*(++i) & 0xC0) == 0x80);
+        while((*(++i)&0xC0) == 0x80);
         return i;
     }
 
@@ -54,9 +54,11 @@ namespace utf8 {
 	//! Decrements a Utf8 string iterator by n characters
 	template<typename iterator>
     iterator& backward(iterator& i, size_t n) {
-        for(size_t c = 0; true; -- i) {
-            if((*i & 0xC0) != 0x80) ++ c;
-            if(c > n) break;
+        for(size_t c = 0; true; --i) {
+            if((*i&0xC0) != 0x80)
+                ++c;
+            if(c > n)
+                break;
         }
         return i;
     }
@@ -64,9 +66,11 @@ namespace utf8 {
 	//! Increments a Utf8 string iterator by n characters
 	template<typename iterator>
     iterator& forward(iterator& i, size_t n) {
-        for(size_t c = 0; true; ++ i) {
-            if((*i & 0xC0) != 0x80) ++ c;
-            if(c > n) break;
+        for(size_t c = 0; true; ++i) {
+            if((*i&0xC0) != 0x80)
+                ++c;
+            if(c > n)
+                break;
         }
         return i;
     }
@@ -74,9 +78,11 @@ namespace utf8 {
 	//! Decrements a Utf8 string iterator string by n characters or stops at end iterator
 	template<typename iterator>
     iterator& backwardUntil(iterator& i, const iterator& end, size_t n) {
-        for(size_t c = 0; i > end; -- i) {
-            if((*i & 0xC0) != 0x80) ++ c;
-            if(c > n) break;
+        for(size_t c = 0; i > end; --i) {
+            if((*i&0xC0) != 0x80)
+                ++c;
+            if(c > n)
+                break;
         }
         return i;
     }
@@ -84,9 +90,11 @@ namespace utf8 {
 	//! Increments a Utf8 string iterator by n characters or stops at end iterator
 	template<typename iterator>
     iterator& forwardUntil(iterator& i, const iterator& end, size_t n) {
-        for(size_t c = 0; i < end; ++ i) {
-            if((*i & 0xC0) != 0x80) ++ c;
-            if(c > n) break;
+        for(size_t c = 0; i < end; ++i) {
+            if((*i&0xC0) != 0x80)
+                ++c;
+            if(c > n)
+                break;
         }
         return i;
     }
@@ -95,9 +103,9 @@ namespace utf8 {
 	template<typename iterator>
 	size_t difference(const iterator& end, const iterator& begin) {
         size_t len = 0;
-        for(auto i = begin; i < end; i ++)
-            if((*i & 0xC0) != 0x80)
-                len ++;
+        for(auto i = begin; i < end; ++i)
+            if((*i&0xC0) != 0x80)
+                ++len;
         return len;
     }
 
@@ -138,12 +146,13 @@ namespace utf8 {
         char32_t c;
         start:
         c = i[0];
-		if((c & 0x80) == 0) return 1;
-		s = countLeadingOneBits(c << 24);
+		if((c&0x80) == 0)
+            return 1;
+		s = countLeadingOneBits(c<<24);
 		if(s == 1) {
 			decrement(i);
             goto start;
-		}else
+		} else
 			return (s > 4) ? -1 : s;
     }
 
@@ -153,17 +162,18 @@ namespace utf8 {
         char32_t c;
         start:
         c = i[0];
-		if((c & 0x80) == 0) return c;
+		if((c&0x80) == 0)
+            return c;
 		switch(countLeadingOneBits(c << 24)) {
 			case 1:
                 decrement(i);
                 goto start;
 			case 2:
-                return (c & 0x1F) << 6 | (i[1] & 0x3F);
+                return (c&0x1F)<<6 | (i[1]&0x3F);
 			case 3:
-                return (c & 0x0F) << 12 | (i[1] & 0x3F) << 6 | (i[2] & 0x3F);
+                return (c&0x0F)<<12 | (i[1]&0x3F)<<6 | (i[2]&0x3F);
 			case 4:
-                return (c & 0x0F) << 18 | (i[1] & 0x3F) << 12 | (i[2] & 0x3F) << 6 | (i[3] & 0x3F);
+                return (c&0x0F)<<18 | (i[1]&0x3F)<<12 | (i[2]&0x3F)<<6 | (i[3]&0x3F);
             default:
                 return -1;
 		}

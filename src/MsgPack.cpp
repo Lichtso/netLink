@@ -204,7 +204,7 @@ namespace MsgPack {
             bytes = streamBuffer->sputn(header+getHeaderLength()+pos, bytes);
             pos += bytes;
             return bytes;
-        }else
+        } else
             return 0;
     }
 
@@ -214,7 +214,7 @@ namespace MsgPack {
             bytes = streamBuffer->sgetn(header+getHeaderLength()+pos, bytes);
             pos += bytes;
             return bytes;
-        }else
+        } else
             return 0;
     }
 
@@ -283,10 +283,10 @@ namespace MsgPack {
         if(len <= 0xFF) {
             header[0] = Type::BIN_8;
             storeUint8(&header[1], len);
-        }else if(len <= 0xFFFF) {
+        } else if(len <= 0xFFFF) {
             header[0] = Type::BIN_16;
             storeUint16(&header[1], len);
-        }else{
+        } else {
             header[0] = Type::BIN_32;
             storeUint32(&header[1], len);
         }
@@ -330,7 +330,7 @@ namespace MsgPack {
     void Binary::toJSON(std::ostream& stream) const {
         auto len = getLength();
         stream << "< Buffer length=" << len << " data: ";
-        for(uint32_t i = 0; i < len; i ++)
+        for(uint32_t i = 0; i < len; ++i)
             stream << (uint16_t)data[i] << " ";
         stream << ">";
     }
@@ -366,10 +366,10 @@ namespace MsgPack {
                 if(len <= 0xFF) {
                     header[0] = Type::EXT_8;
                     storeUint8(&header[1], len);
-                }else if(len <= 0xFFFF) {
+                } else if(len <= 0xFFFF) {
                     header[0] = Type::EXT_16;
                     storeUint16(&header[1], len);
-                }else{
+                } else {
                     header[0] = Type::EXT_32;
                     storeUint32(&header[1], len);
                 }
@@ -432,7 +432,7 @@ namespace MsgPack {
         auto len = getLength();
         stream << "< Extended type=" << (uint16_t)data[0];
         stream << " length=" << (len-1) << " data: ";
-        for(uint32_t i = 1; i < len; i ++)
+        for(uint32_t i = 1; i < len; ++i)
             stream << (uint16_t)data[i] << " ";
         stream << ">";
     }
@@ -462,10 +462,10 @@ namespace MsgPack {
         else if(len <= 0xFF) {
             header[0] = Type::STR_8;
             storeUint8(&header[1], len);
-        }else if(len <= 0xFFFF) {
+        } else if(len <= 0xFFFF) {
             header[0] = Type::STR_16;
             storeUint16(&header[1], len);
-        }else{
+        } else {
             header[0] = Type::STR_32;
             storeUint32(&header[1], len);
         }
@@ -554,13 +554,13 @@ namespace MsgPack {
         else if(value <= 0xFFULL) {
             data[0] = Type::UINT_8;
             storeUint8(data+1, value);
-        }else if(value <= 0xFFFFULL) {
+        } else if(value <= 0xFFFFULL) {
             data[0] = Type::UINT_16;
             storeUint16(data+1, value);
-        }else if(value <= 0xFFFFFFFFULL) {
+        } else if(value <= 0xFFFFFFFFULL) {
             data[0] = Type::UINT_32;
             storeUint32(data+1, value);
-        }else{
+        } else {
             data[0] = Type::UINT_64;
             storeUint64(data+1, value);
         }
@@ -572,13 +572,13 @@ namespace MsgPack {
         else if(value >= -0x80LL && value < 0x80LL) {
             data[0] = Type::INT_8;
             storeInt8(data+1, value);
-        }else if(value >= -0x8000LL && value < 0x8000LL) {
+        } else if(value >= -0x8000LL && value < 0x8000LL) {
             data[0] = Type::INT_16;
             storeInt16(data+1, value);
-        }else if(value >= -0x80000000LL && value < 0x80000000LL) {
+        } else if(value >= -0x80000000LL && value < 0x80000000LL) {
             data[0] = Type::INT_32;
             storeInt32(data+1, value);
-        }else{
+        } else {
             data[0] = Type::INT_64;
             storeInt64(data+1, value);
         }
@@ -731,7 +731,7 @@ namespace MsgPack {
         else if(len <= 0xFFFF) {
             header[0] = Type::ARRAY_16;
             storeUint16(&header[1], len);
-        }else{
+        } else {
             header[0] = Type::ARRAY_32;
             storeUint32(&header[1], len);
         }
@@ -787,7 +787,7 @@ namespace MsgPack {
         else if(len <= 0xFFFF) {
             header[0] = Type::MAP_16;
             storeUint16(&header[1], len);
-        }else{
+        } else {
             header[0] = Type::MAP_32;
             storeUint32(&header[1], len);
         }
@@ -847,7 +847,7 @@ namespace MsgPack {
         if(len > 0) {
             elements = std::vector<std::unique_ptr<Element>>(len);
             return true;
-        }else
+        } else
             return false;
     }
 
@@ -865,7 +865,7 @@ namespace MsgPack {
         stream << "[";
         if(len > 0) {
             elements[0]->toJSON(stream);
-            for(uint32_t i = 1; i < len; i ++) {
+            for(uint32_t i = 1; i < len; ++i) {
                 stream << ", ";
                 elements[i]->toJSON(stream);
             }
@@ -876,7 +876,7 @@ namespace MsgPack {
     uint32_t Array::getSizeInBytes() const {
         uint32_t size = getHeaderLength(),
                  len = elements.size();
-        for(uint32_t i = 1; i < len; i ++)
+        for(uint32_t i = 1; i < len; ++i)
             size += elements[i]->getSizeInBytes();
         return size;
     }
@@ -910,7 +910,7 @@ namespace MsgPack {
         if(len > 0) {
             elements = std::vector<std::unique_ptr<Element>>(len*2);
             return true;
-        }else
+        } else
             return false;
     }
 
@@ -943,7 +943,7 @@ namespace MsgPack {
     uint32_t Map::getSizeInBytes() const {
         uint32_t size = getHeaderLength(),
                  len = elements.size();
-        for(uint32_t i = 1; i < len; i ++)
+        for(uint32_t i = 1; i < len; ++i)
             size += elements[i]->getSizeInBytes();
         return size;
     }
@@ -992,62 +992,63 @@ namespace MsgPack {
         while(bytesLeft > 0 || deserializeAll) {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
-            //Try to pull next element if necessary
+            // Try to pull next element if necessary
             if(stack.size() == 0) {
                 rootElement = pullElement();
 
                 if(!rootElement)
-                    break; //Got no element: quit
+                    break; // Got no element: quit
 
                 stack.push_back(StackElement(rootElement.get(), rootElement->startSerialize()));
             }
 
-            //Find highest element in stack
+            // Find highest element in stack
             StackElement* stackPointer = &stack[stack.size()-1];
 
-            //Serialize element
+            // Serialize element
             std::streamsize bytesWritten = stackPointer->first->serialize(stackPointer->second, streamBuffer, bytesLeft);
             bytesLeft -= bytesWritten;
             bytesDone += bytesWritten;
 
             if(bytesWritten == 0)
-                break; //Stream overflow: quit
+                break; // Stream overflow: quit
 
             if(stackPointer->second < stackPointer->first->getEndPos())
-                continue; //Not done yet
+                continue; // Not done yet
 
-            //Finish element
+            // Finish element
             std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getElementsVector();
             if(container && container->size() > 0) {
-                //Serialized header, begin with first child
+                // Serialized header, begin with first child
                 Element* childElement = container->begin()->get();
                 stack.push_back(StackElement(childElement, childElement->startSerialize()));
                 continue;
             }
 
-            //Find lowest done container in stack
+            // Find lowest done container in stack
             uint32_t stackIndex = stack.size()-1;
             while(true) {
                 stackPointer = &stack[stackIndex];
                 container = stackPointer->first->getElementsVector();
                 if(container && stackPointer->second+1 < (int64_t)container->size()) {
                     //Container is not done yet. move to next element
-                    int64_t pos = ++ stackPointer->second;
-                    stackPointer = &stack[++ stackIndex];
+                    int64_t pos = ++stackPointer->second;
+                    stackPointer = &stack[++stackIndex];
                     stackPointer->first = (container->begin()+pos)->get();
                     stackPointer->second = stackPointer->first->startSerialize();
-                    stackIndex ++;
+                    ++stackIndex;
                     break;
                 }
-                //Don't drop below stackIndex = 0
-                if(stackIndex == 0) break;
-                stackIndex --;
+                // Don't drop below stackIndex = 0
+                if(stackIndex == 0)
+                    break;
+                --stackIndex;
             }
 
-            //Pop all done containers from stack
+            // Pop all done containers from stack
             stack.erase(stack.begin()+stackIndex, stack.end());
 
-            //Check if root element is done
+            // Check if root element is done
             if(stackIndex == 0)
                 rootElement.reset();
         }
@@ -1072,29 +1073,27 @@ namespace MsgPack {
         while(bytesLeft > 0 || deserializeAll) {
             if(deserializeAll) bytesLeft = LONG_MAX;
 
-            //Find highest element in stack
+            // Find highest element in stack
             StackElement* stackPointer = (stack.size() > 0) ? &stack[stack.size()-1] : NULL;
 
             if(stackPointer && stackPointer->second < stackPointer->first->getEndPos()) {
-                //Deserialize element
+                // Deserialize element
                 std::streamsize bytesRead = stackPointer->first->deserialize(stackPointer->second, streamBuffer, bytesLeft);
                 bytesLeft -= bytesRead;
                 bytesDone += bytesRead;
 
-                if(bytesRead == 0)
-                    break; //Stream underflow: quit
+                if(bytesRead == 0) // Stream underflow: quit
+                    break;
 
-                if(stackPointer->second < stackPointer->first->getEndPos())
-                    continue; //Not done yet
-
-                if(stackPointer->first->containerDeserialized())
+                if(stackPointer->second < stackPointer->first->getEndPos() || stackPointer->first->containerDeserialized())
                     continue;
-            }else{
-                //Deserialize next element
+            } else {
+                // Deserialize next element
                 int read = streamBuffer->sbumpc();
-                if(read == EOF) break;
-                bytesLeft --;
-                bytesDone ++;
+                if(read == EOF)
+                    break;
+                --bytesLeft;
+                ++bytesDone;
 
                 Element* element;
                 uint8_t nextByte = static_cast<uint8_t>(read);
@@ -1147,14 +1146,14 @@ namespace MsgPack {
                         break;
                     }
 
-                //Put element in parent container
+                // Put element in parent container
                 if(stack.size() > 0) {
                     std::vector<std::unique_ptr<Element>>* container = stackPointer->first->getElementsVector();
                     *(container->begin()+stackPointer->second) = std::move(std::unique_ptr<Element>(element));
-                }else
+                } else
                     rootElement.reset(element);
 
-                //Check if element is done
+                // Check if element is done
                 int64_t pos = element->startDeserialize(nextByte);
                 if(pos < element->getEndPos() || element->containerDeserialized()) {
                     stack.push_back(StackElement(element, pos));
@@ -1162,27 +1161,28 @@ namespace MsgPack {
                 }
             }
 
-            //Element done
+            // Element done
             if(stack.size() > 0) {
-                //Pop all done containers from stack
+                // Pop all done containers from stack
                 uint32_t stackIndex = stack.size()-1;
                 std::vector<std::unique_ptr<Element>>* container;
                 while(true) {
                     container = stack[stackIndex].first->getElementsVector();
                     if(container && stack[stackIndex].second+1 < (int64_t)container->size()) {
-                        stack[stackIndex ++].second ++;
+                        ++stack[stackIndex++].second;
                         break;
                     }
-                    if(stackIndex == 0) break;
-                    stackIndex --;
+                    if(stackIndex == 0)
+                        break;
+                    --stackIndex;
                 }
 
                 stack.erase(stack.begin()+stackIndex, stack.end());
             }
 
-            //Trigger event for done element
+            // Trigger event for done element
             if(stack.size() == 0 && pushElement(std::move(rootElement)))
-                break; //One element done: quit
+                break; // One element done: quit
         }
 
         return bytesDone;

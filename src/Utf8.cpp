@@ -19,7 +19,8 @@ namespace utf8 {
     const char bom[] = "\xEF\xBB\xBF";
 
     void setBOM(std::string& str) {
-        if(checkBOM(str.begin())) return;
+        if(checkBOM(str.begin()))
+            return;
         str.insert(0, bom);
     }
 
@@ -60,23 +61,23 @@ namespace utf8 {
 	void append(std::string& str, char32_t c) {
 		switch(byteSize(c)) {
 			case 1:
-			str.push_back(static_cast<char>(c));
-			break;
+			    str.push_back(static_cast<char>(c));
+			    break;
 			case 2:
-			str.push_back(static_cast<char>(0xC0 | (c >> 6)));
-			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
-			break;
+    			str.push_back(static_cast<char>(0xC0 | (c >> 6)));
+    			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    			break;
 			case 3:
-			str.push_back(static_cast<char>(0xE0 | (c >> 12)));
-			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
-			break;
+    			str.push_back(static_cast<char>(0xE0 | (c >> 12)));
+    			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+    			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    			break;
 			case 4:
-			str.push_back(static_cast<char>(0xF0 | (c >> 18)));
-			str.push_back(static_cast<char>(0x80 | ((c >> 12) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
-			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
-			break;
+    			str.push_back(static_cast<char>(0xF0 | (c >> 18)));
+    			str.push_back(static_cast<char>(0x80 | ((c >> 12) & 0x3F)));
+    			str.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+    			str.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    			break;
 		}
 	}
 
@@ -90,7 +91,7 @@ namespace utf8 {
 
 	std::string convertFromUtf32(const std::u32string& str) {
 		std::string result;
-		for(size_t i = 0; i < str.length(); ++ i)
+		for(size_t i = 0; i < str.length(); ++i)
 			append(result, str[i]);
 		return result;
 	}
