@@ -46,7 +46,17 @@ Socket::AddrinfoContainer Socket::getSocketInfoFor(const char* host, unsigned in
     struct addrinfo conf, *res;
     memset(&conf, 0, sizeof(conf));
     conf.ai_flags = AI_V4MAPPED;
-    conf.ai_family = AF_UNSPEC;
+    switch(ipVersion) {
+        case IPv4:
+            conf.ai_family = AF_INET;
+            break;
+        case IPv6:
+            conf.ai_family = AF_INET6;
+            break;
+        default:
+            conf.ai_family = AF_UNSPEC;
+            break;
+    }
     if(wildcardAddress)
         conf.ai_flags |= AI_PASSIVE;
     switch(type) {
