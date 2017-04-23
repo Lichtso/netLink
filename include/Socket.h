@@ -49,7 +49,6 @@ namespace netLink {
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
 
-        friend SocketManager;
         /*! Shifts the remaining data to the beginning of the input intermediate buffer
             and fills up the input intermediate buffer by receiving data (TCP)
             or writes the next received packet at the beginning of the input intermediate buffer (UDP)
