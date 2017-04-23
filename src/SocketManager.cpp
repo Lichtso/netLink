@@ -93,6 +93,9 @@ void SocketManager::listen(double waitUpToSeconds) {
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
+    #ifdef WINVER
+    if(writefds.fd_count > 0)
+    #endif
     if(select(maxHandle+1, NULL, &writefds, NULL, timeoutPtr) == -1)
         throw Exception(Exception::ERROR_SELECT);
 

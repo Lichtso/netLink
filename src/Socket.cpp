@@ -214,18 +214,18 @@ void Socket::initSocket(bool blockingConnect) {
         char flag = 1;
         #else
         int flag = 1;
-        if(setsockopt(handle, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag)) == -1) {
+        if(setsockopt(handle, SOL_SOCKET, SO_REUSEPORT, reinterpret_cast<const char*>(&flag), sizeof(flag)) == -1) {
             disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
         #endif
-        if(setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1) {
+        if(setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&flag), sizeof(flag)) == -1) {
             disconnect();
             throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
         if(ipVersion == IPv6) {
-            flag = 0;
-            if(setsockopt(handle, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) == -1) {
+            int flag = 0;
+            if(setsockopt(handle, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&flag), sizeof(flag)) == -1) {
                 disconnect();
                 throw Exception(Exception::ERROR_SET_SOCK_OPT);
             }
@@ -521,7 +521,7 @@ void Socket::setBroadcast(bool active) {
     #else
     int flag = 1;
     #endif
-    if(setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &flag, sizeof(flag)) == -1)
+    if(setsockopt(handle, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&flag), sizeof(flag)) == -1)
         throw Exception(Exception::ERROR_SET_SOCK_OPT);
 }
 
@@ -536,7 +536,7 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
             struct ip_mreq mreq;
             mreq.imr_multiaddr = sin;
             mreq.imr_interface.s_addr = 0;
-            if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, (const char*)&mreq, sizeof(mreq)) == -1)
+            if(setsockopt(handle, IPPROTO_IP, (join) ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP, reinterpret_cast<const char*>(&mreq), sizeof(mreq)) == -1)
                 throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
     } else {
@@ -547,7 +547,7 @@ void Socket::setMulticastGroup(const std::string& address, bool join) {
             struct ipv6_mreq mreq;
             mreq.ipv6mr_multiaddr = sin;
             mreq.ipv6mr_interface = 0;
-            if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, (const char*)&mreq, sizeof(ipv6_mreq)) == -1)
+            if(setsockopt(handle, IPPROTO_IPV6, (join) ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP, reinterpret_cast<const char*>(&mreq), sizeof(ipv6_mreq)) == -1)
                 throw Exception(Exception::ERROR_SET_SOCK_OPT);
         }
     }

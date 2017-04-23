@@ -49,6 +49,15 @@ namespace netLink {
         std::streamsize xsputn(const char_type* buffer, std::streamsize size);
         int_type overflow(int_type c = -1);
 
+        friend SocketManager;
+        /*! Shifts the remaining data to the beginning of the input intermediate buffer
+            and fills up the input intermediate buffer by receiving data (TCP)
+            or writes the next received packet at the beginning of the input intermediate buffer (UDP)
+         @return Size of the read packet or 0 on error
+         @pre The input intermediate buffer must be used
+         */
+        std::streamsize advanceInputBuffer();
+
         public:
         //! Defines the version of IP.
         enum IPVersion {
@@ -137,23 +146,21 @@ namespace netLink {
         //! Returns the SocketStatus of the socket
         Status getStatus() const;
 
-        //! Returns the outstanding bytes in system cache to read
+        /*! Returns only the number of outstanding bytes to be received from the system cache
+         @return Number of bytes in the system cache, not including iostream buffers
+         @warning Use in_avail() instead if you are interested in the total number of bytes which can be read
+        */
         std::streamsize showmanyc();
-        /*! Shifts the remaining data to the beginning of the input intermediate buffer
-            and fills up the input intermediate buffer by receiving data if TCP
-            or writes the next received packet at the beginning of the input intermediate buffer if UDP
-         @return Size of the read packet or 0 on error
-         @pre The input intermediate buffer must be used
-         */
-        std::streamsize advanceInputBuffer();
         /*! Receives size bytes into buffer
          @return The actual number of bytes which were received
          @pre Type must not be TCP_SERVER and status must be READY or BUSY
+         @warning In most cases you don't want to call this directly but use the iostream API instead (see wiki)
         */
         std::streamsize receive(char_type* buffer, std::streamsize size);
         /*! Sends size bytes from buffer
          @return The actual number of bytes which were sent
          @pre Type must not be TCP_SERVER and status must be READY
+         @warning In most cases you don't want to call this directly but use the iostream API instead (see wiki)
         */
         std::streamsize send(const char_type* buffer, std::streamsize size);
         /*! Redirects received data to all Sockets in destinations
