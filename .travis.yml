@@ -4,13 +4,14 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler:
-        - clang
-        - gcc
+      compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: clang
     - os: osx
-      compiler:
-        - clang
-        - gcc
+      compiler: gcc
+    - os: osx
+      compiler: clang
 
 script:
   - cmake -D CMAKE_CXX_COMPILER=$CXX CMakeLists.txt
