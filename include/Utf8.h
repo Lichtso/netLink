@@ -19,6 +19,7 @@
 #include <string>
 
 #ifdef _MSC_VER
+#include <intrin.h>
 #define countLeadingOneBits(x) __lzcnt(~(x))
 #else
 #define countLeadingOneBits(x) __builtin_clz(~(x))
