@@ -134,20 +134,25 @@ Socket::pos_type Socket::seekpos(Socket::pos_type sp, std::ios_base::openmode wh
 }
 
 int Socket::sync() {
-    if(getOutputBufferSize() <= 0) // No output buffer
+    if(getOutputBufferSize() == 0) // No output buffer
         return EOF;
     if(pptr() == pbase()) // Allready in sync
         return 0;
     try {
-        setp(pbase(), pptr()+send(pbase(), pptr()-pbase()));
-        return 0;
+        std::streamsize rest = pptr()-pbase(),
+                        sentBytes = send(pbase(), rest);
+        rest -= sentBytes;
+        memmove(pbase(), pbase()+sentBytes, rest);
+        setp(pbase(), epptr());
+        pbump(rest);
     } catch(Exception err) {
         return EOF;
     }
+    return 0;
 }
 
 std::streamsize Socket::xsgetn(char_type* buffer, std::streamsize size) {
-    if(inputIntermediateSize > 0) // Read from input buffer
+    if(getInputBufferSize()) // Read from input buffer
         return super::xsgetn(buffer, size);
     try {
         return receive(buffer, size);
@@ -285,6 +290,8 @@ void Socket::initSocket(bool blockingConnect) {
         throw Exception(Exception::ERROR_GET_SOCK_NAME);
     }
     readSockaddr(&localAddr, hostLocal, portLocal);
+    setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+    setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
 }
 
 void Socket::initAsTcpClient(const std::string& _hostRemote, unsigned _portRemote, bool waitUntilConnected) {
@@ -310,18 +317,7 @@ void Socket::initAsUdpPeer(const std::string& _hostLocal, unsigned _portLocal) {
 }
 
 Socket::Socket() :ipVersion(ANY), type(NONE), status(NOT_CONNECTED),
-    handle(-1), portLocal(0), portRemote(0) {
-    #if NETLINK_DEFAULT_INPUT_BUFFER_SIZE > 0
-    setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
-    #else
-    setInputBufferSize(0);
-    #endif
-    #if NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE > 0
-    setOutputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
-    #else
-    setOutputBufferSize(0);
-    #endif
-};
+    handle(-1), portLocal(0), portRemote(0) { }
 
 Socket::~Socket() {
     disconnect();
@@ -357,7 +353,7 @@ std::streamsize Socket::showmanyc() {
 }
 
 std::streamsize Socket::advanceInputBuffer() {
-    if(inputIntermediateSize == 0) // No input buffer
+    if(getInputBufferSize() == 0) // No input buffer
         return 0;
     std::streamsize inAvail;
     if(type == UDP_PEER)
@@ -367,7 +363,7 @@ std::streamsize Socket::advanceInputBuffer() {
         memmove(eback(), gptr(), inAvail);
     }
     try {
-        inAvail += receive(eback()+inAvail, inputIntermediateSize-inAvail);
+        inAvail += receive(eback()+inAvail, getInputBufferSize()-inAvail);
     } catch(Exception err) {
 
     }
@@ -572,6 +568,8 @@ std::shared_ptr<Socket> Socket::accept() {
     client->hostLocal = hostLocal;
     client->portLocal = portLocal;
     readSockaddr(&remoteAddr, client->hostRemote, client->portRemote);
+    client->setInputBufferSize(NETLINK_DEFAULT_INPUT_BUFFER_SIZE);
+    client->setOutputBufferSize(NETLINK_DEFAULT_OUTPUT_BUFFER_SIZE);
     client->setBlockingMode(false);
     clients.insert(client);
     return client;
@@ -583,8 +581,8 @@ void Socket::disconnect() {
     ipVersion = ANY;
     type = NONE;
     status = NOT_CONNECTED;
-    setInputBufferSize(getInputBufferSize());
-    setOutputBufferSize(getOutputBufferSize());
+    setInputBufferSize(0);
+    setOutputBufferSize(0);
     clients.clear();
     closesocket(handle);
     handle = -1;
