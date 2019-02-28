@@ -12,6 +12,8 @@ matrix:
       compiler: gcc
     - os: osx
       compiler: clang
+    - os: windows
+      compiler: clang
 
 script:
   - cmake -D CMAKE_CXX_COMPILER=$CXX CMakeLists.txt
