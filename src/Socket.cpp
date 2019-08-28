@@ -138,6 +138,8 @@ int Socket::sync() {
         return EOF;
     if(pptr() == pbase()) // Allready in sync
         return 0;
+    if(this->status == BUSY) //Not able to write data
+		return EOF;
     try {
         std::streamsize rest = pptr()-pbase(),
                         sentBytes = send(pbase(), rest);
