@@ -26,3 +26,6 @@ C++ 11 KISS principle networking library.
 [Doxygen online documentation](http://lichtso.github.io/netLink/doc/annotated.html)
 
 [MsgPack tutorial](https://github.com/Lichtso/netLink/wiki/MsgPack)
+
+## History:
+This library was inspired by the ["NetLink Sockets C++ Library"](https://sourceforge.net/projects/netlinksockets/files/release/1.0.0-pre-3/) from [Pedro Francisco Pareja Ruiz](https://github.com/PedroPareja), from which it got its general topic and name.
