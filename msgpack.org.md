@@ -1,6 +1,6 @@
 # MsgPack v5 implementation for C++ 11
 
-[![License](https://img.shields.io/badge/License-ZLIB-brightgreen.svg)](http://en.wikipedia.org/wiki/Zlib_License)
+[![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## Features
 * std::streambuf serializer and deserializer
