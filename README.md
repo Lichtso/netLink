@@ -2,7 +2,6 @@
 
 C++ 11 KISS principle networking library.
 
-[![Build Status](https://travis-ci.org/Lichtso/netLink.svg)](https://travis-ci.org/Lichtso/netLink)
 [![License](https://img.shields.io/badge/License-ZLIB-brightgreen.svg)](http://en.wikipedia.org/wiki/Zlib_License)
 
 ## Features:
