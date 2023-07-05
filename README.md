@@ -3,6 +3,7 @@
 C++ 11 KISS principle networking library.
 
 [![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![CI](https://github.com/lichtso/netLink/actions/workflows/actions.yml/badge.svg)](https://github.com/Lichtso/netLink/actions/workflows/actions.yml)
 
 ## Features:
 * C++ 11

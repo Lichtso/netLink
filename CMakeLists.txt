@@ -44,6 +44,8 @@ endif()
 
 add_executable(example_tcp ${EXAMPLES_DIR}/tcp.cpp)
 add_executable(example_udp ${EXAMPLES_DIR}/udp.cpp)
+add_dependencies(example_tcp shared static)
+add_dependencies(example_udp shared static)
 target_link_libraries(example_tcp shared)
 target_link_libraries(example_udp shared)
 
